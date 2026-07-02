@@ -164,7 +164,7 @@ const AddStock = () => {
                                     >
                                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-200">
                                             <img
-                                                src={(prod.variants && prod.variants.length > 0 && prod.variants[0].images?.length > 0) ? prod.variants[0].images[0] : (prod.images && prod.images.length > 0) ? prod.images[0] : `https://ui-avatars.com/api/?name=${encodeURIComponent(prod.name)}&background=random`}
+                                                src={(prod.variants && prod.variants.length > 0 && prod.variants[0].images?.length > 0) ? prod.variants[0].images[0] : (prod.product_images && prod.product_images.length > 0) ? prod.product_images[0] : `https://ui-avatars.com/api/?name=${encodeURIComponent(prod.name)}&background=random`}
                                                 alt={prod.name}
                                                 className="w-full h-full object-cover"
                                             />
@@ -208,7 +208,7 @@ const AddStock = () => {
                                 <div className="flex items-center gap-4">
                                     <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gray-100 shadow-inner">
                                         <img
-                                            src={(selectedProduct.variants && selectedProduct.variants.length > 0 && selectedProduct.variants[0].images?.length > 0) ? selectedProduct.variants[0].images[0] : (selectedProduct.images && selectedProduct.images.length > 0) ? selectedProduct.images[0] : `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedProduct.name)}&background=random`}
+                                            src={(selectedProduct.variants && selectedProduct.variants.length > 0 && selectedProduct.variants[0].images?.length > 0) ? selectedProduct.variants[0].images[0] : (selectedProduct.product_images && selectedProduct.product_images.length > 0) ? selectedProduct.product_images[0] : `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedProduct.name)}&background=random`}
                                             alt={selectedProduct.name}
                                             className="w-full h-full object-cover"
                                         />
