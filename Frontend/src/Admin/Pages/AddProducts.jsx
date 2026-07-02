@@ -557,13 +557,45 @@ const AddProducts = () => {
             </p>
           </div>
         </div>
-        <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600">
-          SKU: {formData.product_code || "Generating..."}
+        <div className="flex items-center gap-3">
+          {!isEdit && (
+            <button
+              type="button"
+              onClick={() => {
+                setFormData(prev => ({
+                  ...prev,
+                  name: "Test Organic Apples",
+                  brand: "FarmFresh",
+                  description: "Fresh, juicy, and organically grown apples from the best farms. Perfect for a healthy snack or baking.",
+                  country_of_origin: "India",
+                  supplier: "Green Valley Farms",
+                  delivery_time: "1-2 Days",
+                  pricing_options: [{
+                    weight_volume: "1",
+                    unit: "kg",
+                    mrp: "200",
+                    offer: "10",
+                    selling_price: "180",
+                    stock_quantity: "50"
+                  }],
+                  total_stock: "50"
+                }));
+              }}
+              className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-600 hover:bg-emerald-100 transition-colors"
+            >
+              Fill Test Data
+            </button>
+          )}
+          <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600">
+            SKU: {formData.product_code || "Generating..."}
+          </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        {/* Main Content - Left Side */}
+        <div className="xl:col-span-2 space-y-8">
+          {/* Basic Information */}
           <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
             <div className="flex items-center gap-3">
               <span className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
@@ -573,9 +605,8 @@ const AddProducts = () => {
                 Basic Information
               </h2>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2 md:col-span-2">
+            <div className="space-y-4">
+              <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                   Product Name *
                 </label>
@@ -585,52 +616,290 @@ const AddProducts = () => {
                   value={formData.name}
                   onChange={handleFormChange}
                   placeholder="Enter product name"
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
+                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs w-1/2 font-black text-gray-400 uppercase tracking-widest">
-                  Product Code (SKU)
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                  Description
                 </label>
-                <input
-                  type="text"
-                  name="product_code"
-                  value={formData.product_code}
+                <textarea
+                  name="description"
+                  value={formData.description}
                   onChange={handleFormChange}
-                  placeholder="SKU"
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
+                  rows="5"
+                  placeholder="Describe the product details..."
+                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all"
                 />
               </div>
-              <div className="space-y-2">
-                {/* <div className="flex items-center justify-between gap-3">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                    Barcode
-                  </label>
-                  <button
-                    type="button"
-                    onClick={handleGenerateBarcode}
-                    className="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-all"
-                  >
-                    Generate Barcode
-                  </button>
-                </div> */}
-                {/* <input
-                  type="text"
-                  name="barcode"
-                  value={formData.barcode}
-                  onChange={handleFormChange}
-                  placeholder="Barcode"
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
-                /> */}
-                <div className="space-y-1">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                    Generated Barcode Preview
-                  </label>
-                  {renderBarcodeSvg(formData.barcode)}
+            </div>
+          </div>
+
+          {/* Pricing & Inventory */}
+          <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <span className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
+                  <FaRupeeSign size={20} />
+                </span>
+                <div>
+                  <h2 className="text-xl font-black text-slate-800">
+                    Pricing & Inventory
+                  </h2>
+                  <p className="text-sm text-slate-500">
+                    Manage pricing variants and stock levels
+                  </p>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={addPricingOption}
+                className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-600 text-white shadow-sm hover:bg-blue-700 hover:shadow transition-all"
+                title="Add Pricing Option"
+              >
+                +
+              </button>
+            </div>
 
+            <div className="space-y-4">
+              {(formData.pricing_options || []).map((opt, idx) => (
+                <div
+                  key={idx}
+                  className="grid grid-cols-1 md:grid-cols-12 gap-4 p-5 border border-gray-100 rounded-3xl bg-gray-50/50 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                      Weight
+                    </label>
+                    <input
+                      type="text"
+                      value={opt.weight_volume}
+                      onChange={(e) =>
+                        handlePricingChange(idx, "weight_volume", e.target.value)
+                      }
+                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                      placeholder="e.g. 1"
+                    />
+                  </div>
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                      Unit
+                    </label>
+                    <select
+                      value={opt.unit}
+                      onChange={(e) =>
+                        handlePricingChange(idx, "unit", e.target.value)
+                      }
+                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    >
+                      <option value="kg">kg</option>
+                      <option value="g">g</option>
+                      <option value="ml">ml</option>
+                      <option value="L">L</option>
+                      <option value="pcs">pcs</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                      MRP
+                    </label>
+                    <input
+                      type="number"
+                      value={opt.mrp}
+                      onChange={(e) =>
+                        handlePricingChange(idx, "mrp", e.target.value)
+                      }
+                      placeholder="e.g. 100"
+                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    />
+                  </div>
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                      Offer %
+                    </label>
+                    <input
+                      type="number"
+                      value={opt.offer}
+                      onChange={(e) =>
+                        handlePricingChange(idx, "offer", e.target.value)
+                      }
+                      placeholder="e.g. 10"
+                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    />
+                  </div>
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                      Selling
+                    </label>
+                    <input
+                      type="number"
+                      value={opt.selling_price}
+                      onChange={(e) =>
+                        handlePricingChange(idx, "selling_price", e.target.value)
+                      }
+                      placeholder="e.g. 90"
+                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    />
+                  </div>
+                  <div className="md:col-span-2 flex items-end justify-end">
+                    <button
+                      type="button"
+                      onClick={() => removePricingOption(idx)}
+                      className="w-full sm:w-auto px-4 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-red-50 disabled:hover:text-red-600"
+                      disabled={formData.pricing_options.length === 1}
+                      title={
+                        formData.pricing_options.length === 1
+                          ? "Keep at least one pricing option"
+                          : "Remove option"
+                      }
+                    >
+                      <FiTrash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+              <div>
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest block mb-1">
+                  Total Stock Across Variants
+                </label>
+                <div className="text-2xl font-black text-slate-800">
+                  {formData.total_stock}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Media */}
+          <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
+            <div className="flex items-center gap-3">
+              <span className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
+                <FiImage size={20} />
+              </span>
+              <h2 className="text-xl font-black text-slate-800">Media</h2>
+            </div>
+
+            <div className="space-y-4">
+              <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                Product Images
+              </label>
+              <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-3xl py-8 cursor-pointer hover:border-purple-500 hover:bg-purple-50/50 transition-colors">
+                <FiUploadCloud size={28} className="text-gray-400" />
+                <span className="mt-3 text-sm font-semibold text-slate-600">
+                  Click to upload product images (Max 8)
+                </span>
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleMultipleImageUpload}
+                />
+              </label>
+              {formData.product_images?.length > 0 && (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 mt-4">
+                  {formData.product_images.map((img, index) => (
+                    <div key={index} className="relative group aspect-square">
+                      <img
+                        src={img}
+                        alt={`Product ${index + 1}`}
+                        className="w-full h-full object-cover rounded-2xl shadow-sm border border-gray-100"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeProductImage(index)}
+                        className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <FiTrash2 size={20} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+              <div className="space-y-3">
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                  Thumbnail Image
+                </label>
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-3xl h-32 cursor-pointer hover:border-purple-500 hover:bg-purple-50/50 transition-colors">
+                  <FiUploadCloud size={20} className="text-gray-400" />
+                  <span className="mt-2 text-xs font-semibold text-slate-600">
+                    Upload thumbnail
+                  </span>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleThumbnailUpload}
+                  />
+                </label>
+                {formData.thumbnail_image && (
+                  <div className="relative group">
+                    <img
+                      src={formData.thumbnail_image}
+                      alt="Thumbnail"
+                      className="h-32 w-full object-cover rounded-2xl shadow-sm border border-gray-100"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({...prev, thumbnail_image: ""}))}
+                      className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <FiTrash2 size={20} />
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-3">
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                  Barcode Image (Optional)
+                </label>
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-3xl h-32 cursor-pointer hover:border-purple-500 hover:bg-purple-50/50 transition-colors">
+                  <FiUploadCloud size={20} className="text-gray-400" />
+                  <span className="mt-2 text-xs font-semibold text-slate-600">
+                    Upload barcode
+                  </span>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleBarcodeUpload}
+                  />
+                </label>
+                {formData.barcode_image && (
+                  <div className="relative group">
+                    <img
+                      src={formData.barcode_image}
+                      alt="Barcode"
+                      className="h-32 w-full object-contain rounded-2xl shadow-sm border border-gray-100 bg-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({...prev, barcode_image: ""}))}
+                      className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <FiTrash2 size={20} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar - Right Side */}
+        <div className="space-y-8">
+          {/* Organization */}
+          <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
+            <h3 className="text-lg font-black text-slate-800">Organization</h3>
+            
+            <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                   Category
@@ -639,7 +908,7 @@ const AddProducts = () => {
                   name="category"
                   value={formData.category}
                   onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
+                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 >
                   <option value="">Select category</option>
                   {categories.map((cat) => (
@@ -657,7 +926,7 @@ const AddProducts = () => {
                   name="subcategory"
                   value={formData.subcategory}
                   onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
+                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   disabled={derivedSubcategories.length === 0}
                 >
                   <option value="">Select subcategory</option>
@@ -678,200 +947,53 @@ const AddProducts = () => {
                   value={formData.brand}
                   onChange={handleFormChange}
                   placeholder="Brand name"
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
+                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
-              <div className="space-y-2 md:col-span-2">
+            </div>
+            
+            <hr className="border-gray-100" />
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Description
+                  Product Code (SKU)
                 </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
+                <input
+                  type="text"
+                  name="product_code"
+                  value={formData.product_code}
                   onChange={handleFormChange}
-                  rows="4"
-                  placeholder="Describe the product"
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 resize-none"
+                  placeholder="SKU"
+                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                  Generated Barcode Preview
+                </label>
+                <div className="bg-gray-50 p-2 rounded-3xl">
+                  {renderBarcodeSvg(formData.barcode)}
+                </div>
               </div>
             </div>
           </div>
 
+          {/* Sourcing & Dates */}
           <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
-            <div className="flex items-center justify-between mb-4">
-              {/* Left Side */}
-              <div className="flex items-center gap-3">
-                <span className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
-                  <FaRupeeSign size={20} />
-                </span>
-
-                <div>
-                  <h2 className="text-xl font-black text-slate-800">
-                    Pricing & Inventory
-                  </h2>
-                  <p className="text-sm text-slate-500">
-                    Add multiple pricing and inventory options
-                  </p>
-                </div>
-              </div>
-
-              {/* Right Side */}
-              <button
-                type="button"
-                onClick={addPricingOption}
-                className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition"
-              >
-                +
-              </button>
-            </div>
-
-            {/* Multiple pricing options */}
-            <div className="mt-4">
-              <div className="space-y-3">
-                {(formData.pricing_options || []).map((opt, idx) => (
-                  <div
-                    key={idx}
-                    className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 border border-gray-100 rounded-3xl bg-gray-50"
-                  >
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-xs font-black text-gray-400">
-                          Weight
-                        </label>
-                        <input
-                          type="text"
-                          value={opt.weight_volume}
-                          onChange={(e) =>
-                            handlePricingChange(
-                              idx,
-                              "weight_volume",
-                              e.target.value,
-                            )
-                          }
-                          className="w-full px-3 py-2 bg-white rounded-2xl text-sm border border-gray-200"
-                          placeholder="e.g. 1"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-black text-gray-400">
-                          Unit
-                        </label>
-                        <select
-                          value={opt.unit}
-                          onChange={(e) =>
-                            handlePricingChange(idx, "unit", e.target.value)
-                          }
-                          className="w-full px-3 py-2 bg-white rounded-2xl text-sm border border-gray-200"
-                        >
-                          <option value="kg">kg</option>
-                          <option value="g">g</option>
-                          <option value="ml">ml</option>
-                          <option value="L">L</option>
-                          <option value="pcs">pcs</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-xs font-black text-gray-400">
-                          MRP
-                        </label>
-                        <input
-                          type="number"
-                          value={opt.mrp}
-                          onChange={(e) =>
-                            handlePricingChange(idx, "mrp", e.target.value)
-                          }
-                          className="w-full px-3 py-2 bg-white rounded-2xl text-sm border border-gray-200"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-xs font-black text-gray-400">
-                          Offer %
-                        </label>
-                        <input
-                          type="number"
-                          value={opt.offer}
-                          onChange={(e) =>
-                            handlePricingChange(idx, "offer", e.target.value)
-                          }
-                          className="w-full px-3 py-2 bg-white rounded-2xl text-sm border border-gray-200"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-black text-gray-400">
-                          Selling
-                        </label>
-                        <input
-                          type="number"
-                          value={opt.selling_price}
-                          onChange={(e) =>
-                            handlePricingChange(
-                              idx,
-                              "selling_price",
-                              e.target.value,
-                            )
-                          }
-                          className="w-full px-3 py-2 bg-white rounded-2xl text-sm border border-gray-200"
-                        />
-                      </div>
-                      <div className="flex justify-end">
-                        <button
-                          type="button"
-                          onClick={() => removePricingOption(idx)}
-                          className="w-full h-11 rounded-2xl bg-red-600 text-white flex items-center justify-center hover:bg-red-700 transition-all"
-                          disabled={formData.pricing_options.length === 1}
-                          title={
-                            formData.pricing_options.length === 1
-                              ? "Keep at least one pricing option"
-                              : "Remove option"
-                          }
-                        >
-                          <FiTrash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="mt-4">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                Total Stock
-              </label>
-              <input
-                type="number"
-                name="total_stock"
-                value={formData.total_stock}
-                readOnly
-                className="w-full px-4 py-3 bg-gray-100 rounded-2xl text-sm font-semibold text-slate-800"
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h3 className="text-lg font-black text-slate-800">Sourcing & Dates</h3>
+            <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Expiry Date
+                  Supplier
                 </label>
                 <input
-                  type="date"
-                  name="expiry_date"
-                  value={formData.expiry_date}
+                  type="text"
+                  name="supplier"
+                  value={formData.supplier}
                   onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Manufacturing Date
-                </label>
-                <input
-                  type="date"
-                  name="manufacturing_date"
-                  value={formData.manufacturing_date}
-                  onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
+                  placeholder="Supplier name"
+                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
               <div className="space-y-2">
@@ -883,141 +1005,43 @@ const AddProducts = () => {
                   name="country_of_origin"
                   value={formData.country_of_origin}
                   onChange={handleFormChange}
-                  placeholder="Country"
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
+                  placeholder="e.g. India"
+                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Supplier
-                </label>
-                <input
-                  type="text"
-                  name="supplier"
-                  value={formData.supplier}
-                  onChange={handleFormChange}
-                  placeholder="Supplier name"
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                    Mfg Date
+                  </label>
+                  <input
+                    type="date"
+                    name="manufacturing_date"
+                    value={formData.manufacturing_date}
+                    onChange={handleFormChange}
+                    className="w-full px-3 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                    Expiry Date
+                  </label>
+                  <input
+                    type="date"
+                    name="expiry_date"
+                    value={formData.expiry_date}
+                    onChange={handleFormChange}
+                    className="w-full px-3 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Visibility & Badges */}
           <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
-            <div className="flex items-center gap-3">
-              <span className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
-                <FiImage size={20} />
-              </span>
-              <h2 className="text-xl font-black text-slate-800">Media</h2>
-            </div>
-
+            <h3 className="text-lg font-black text-slate-800">Visibility & Badges</h3>
             <div className="space-y-4">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                Product Images (Multiple)
-              </label>
-              <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl py-8 cursor-pointer hover:border-blue-500 transition-colors">
-                <FiUploadCloud size={24} className="text-gray-400" />
-                <span className="mt-2 text-sm font-semibold text-slate-600">
-                  Upload product images
-                </span>
-                <input
-                  type="file"
-                  multiple
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleMultipleImageUpload}
-                />
-              </label>
-              {formData.product_images?.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {formData.product_images.map((img, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={img}
-                        alt={`Product ${index + 1}`}
-                        className="h-28 w-full object-cover rounded-2xl"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeProductImage(index)}
-                        className="absolute inset-0 flex items-center justify-center rounded-2xl bg-red-600/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <FiTrash2 size={16} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                Thumbnail Image
-              </label>
-              <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl py-6 cursor-pointer hover:border-blue-500 transition-colors">
-                <FiUploadCloud size={20} className="text-gray-400" />
-                <span className="mt-2 text-sm font-semibold text-slate-600">
-                  Upload thumbnail
-                </span>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleThumbnailUpload}
-                />
-              </label>
-              {formData.thumbnail_image && (
-                <img
-                  src={formData.thumbnail_image}
-                  alt="Thumbnail"
-                  className="h-32 w-full object-cover rounded-2xl"
-                />
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                Barcode Image
-              </label>
-              <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl py-6 cursor-pointer hover:border-blue-500 transition-colors">
-                <FiUploadCloud size={20} className="text-gray-400" />
-                <span className="mt-2 text-sm font-semibold text-slate-600">
-                  Upload barcode image
-                </span>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleBarcodeUpload}
-                />
-              </label>
-              {formData.barcode_image ? (
-                <img
-                  src={formData.barcode_image}
-                  alt="Barcode"
-                  className="h-32 w-full object-contain rounded-2xl"
-                />
-              ) : (
-                <div className="h-32 w-full rounded-2xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-sm text-gray-500">
-                  Upload a barcode image to preview it here.
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
-            <div className="flex items-center gap-3">
-              <span className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
-                <FiInfo size={20} />
-              </span>
-              <h2 className="text-xl font-black text-slate-800">
-                Status & Flags
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                   Status
@@ -1026,53 +1050,69 @@ const AddProducts = () => {
                   name="status"
                   value={formData.status}
                   onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
+                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 >
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
                 </select>
               </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Featured Product
-                </label>
-                <select
-                  name="featured_product"
-                  value={formData.featured_product}
-                  onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
-                >
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Best Seller
-                </label>
-                <select
-                  name="best_seller"
-                  value={formData.best_seller}
-                  onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
-                >
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Today's Deal
-                </label>
-                <select
-                  name="todays_deal"
-                  value={formData.todays_deal}
-                  onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
-                >
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                    Featured
+                  </label>
+                  <select
+                    name="featured_product"
+                    value={formData.featured_product}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  >
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                    Best Seller
+                  </label>
+                  <select
+                    name="best_seller"
+                    value={formData.best_seller}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  >
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                    Today's Deal
+                  </label>
+                  <select
+                    name="todays_deal"
+                    value={formData.todays_deal}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  >
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                    Returnable
+                  </label>
+                  <select
+                    name="return_available"
+                    value={formData.return_available}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  >
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
@@ -1084,85 +1124,16 @@ const AddProducts = () => {
                   value={formData.delivery_time}
                   onChange={handleFormChange}
                   placeholder="e.g. 2-3 Days"
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Return Available
-                </label>
-                <select
-                  name="return_available"
-                  value={formData.return_available}
-                  onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
-                >
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Rating
-                </label>
-                <select
-                  name="rating"
-                  value={formData.rating}
-                  onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
-                >
-                  <option value="1">1 Star</option>
-                  <option value="2">2 Stars</option>
-                  <option value="3">3 Stars</option>
-                  <option value="4">4 Stars</option>
-                  <option value="5">5 Stars</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Review Count
-                </label>
-                <input
-                  type="number"
-                  name="review_count"
-                  value={formData.review_count}
-                  onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Created At
-                </label>
-                <input
-                  type="datetime-local"
-                  name="created_at"
-                  value={formData.created_at?.slice(0, 16) || ""}
-                  onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Updated At
-                </label>
-                <input
-                  type="datetime-local"
-                  name="updated_at"
-                  value={formData.updated_at?.slice(0, 16) || ""}
-                  onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
+                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="flex justify-end">
+          
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center justify-center gap-3 bg-slate-900 text-white py-4 px-8 rounded-4xl text-lg font-black shadow-lg hover:bg-black transition-all disabled:bg-slate-400"
+            className="w-full flex items-center justify-center gap-3 bg-slate-900 text-white py-4 px-8 rounded-3xl text-lg font-black shadow-lg shadow-slate-900/20 hover:bg-black hover:shadow-xl hover:-translate-y-1 transition-all disabled:bg-slate-400 disabled:hover:translate-y-0"
           >
             {loading ? (
               <div className="flex items-center gap-3">
@@ -1171,8 +1142,8 @@ const AddProducts = () => {
               </div>
             ) : (
               <>
-                <FiSave size={18} />
-                <span>{isEdit ? "Update Product" : "Add Product"}</span>
+                <FiSave size={20} />
+                <span>{isEdit ? "Update Product" : "Save Product"}</span>
               </>
             )}
           </button>
