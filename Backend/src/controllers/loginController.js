@@ -84,24 +84,30 @@ const googleLogin = async (req, res) => {
     });
 
     const [existingRows] = await connection.query(
-      "SELECT * FROM users WHERE email = ?",
-      [email]
+      "SELECT * FROM users WHERE email = ? OR google_id = ?",
+      [email, googleId]
     );
 
     let user;
 
     if (existingRows.length) {
       user = existingRows[0];
+      if (!user.google_id && googleId) {
+        await connection.query(
+          "UPDATE users SET google_id = ? WHERE id = ?",
+          [googleId, user.id]
+        );
+        user.google_id = googleId;
+      }
     } else {
       const username = (name || email.split("@")[0]).replace(/\s+/g, "").slice(0, 100);
       const userId = crypto.randomUUID();
       const tempPassword = crypto.randomBytes(20).toString("hex");
-      const phone = googleId ? `google_${googleId.slice(0, 10)}` : "0000000000";
 
       const [insertResult] = await connection.query(
-        `INSERT INTO users (user_id, username, email, phone, password, status, role, created_by, updated_by)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [userId, username, email, phone, hashPassword(tempPassword), "active", "user", userId, userId]
+        `INSERT INTO users (user_id, username, email, phone, google_id, password, status, role, created_by, updated_by)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [userId, username, email, null, googleId || null, hashPassword(tempPassword), "active", "user", userId, userId]
       );
 
       user = {
@@ -109,7 +115,8 @@ const googleLogin = async (req, res) => {
         user_id: userId,
         username,
         email,
-        phone,
+        phone: null,
+        google_id: googleId || null,
         role: "user",
         status: "active",
       };
@@ -129,6 +136,7 @@ const googleLogin = async (req, res) => {
         username: user.username,
         email: user.email,
         phone: user.phone,
+        google_id: user.google_id || null,
         role: user.role || "user",
         status: user.status,
       },
