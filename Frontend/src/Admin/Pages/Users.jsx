@@ -5,13 +5,17 @@ import {
     FiSearch,
     FiFilter,
     FiUserPlus,
-    FiMoreVertical,
     FiMail,
     FiPhone,
     FiCalendar,
     FiUserX,
     FiX,
-    FiEdit2
+    FiEdit2,
+    FiRefreshCw,
+    FiUsers,
+    FiShield,
+    FiStar,
+    FiClock
 } from "react-icons/fi";
 import { toast, Toaster } from "react-hot-toast";
 
@@ -182,8 +186,10 @@ const Users = ({ initialTab = "All" }) => {
     };
 
     const filteredUsers = users.filter(user => {
-        const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch =
+            (user.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (user.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (user.phone || "").toLowerCase().includes(searchTerm.toLowerCase());
 
         const matchesTab = selectedTab === "All" || (selectedTab === "New" && isToday(user.rawCreated_at));
         const matchesRole = selectedRole === "all" || (user.role && user.role.toLowerCase() === selectedRole.toLowerCase());
@@ -206,18 +212,66 @@ const Users = ({ initialTab = "All" }) => {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <Toaster position="top-right" />
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+                    <div className="w-11 h-11 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center shrink-0">
+                        <FiUsers size={20} />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Users</p>
+                        <p className="text-2xl font-black text-slate-800">{users.length}</p>
+                    </div>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+                    <div className="w-11 h-11 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center shrink-0">
+                        <FiShield size={20} />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Admins</p>
+                        <p className="text-2xl font-black text-slate-800">{users.filter(u => u.role === 'admin').length}</p>
+                    </div>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+                    <div className="w-11 h-11 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center shrink-0">
+                        <FiStar size={20} />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Dealers</p>
+                        <p className="text-2xl font-black text-slate-800">{users.filter(u => u.role === 'dealer').length}</p>
+                    </div>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+                    <div className="w-11 h-11 bg-emerald-50 text-emerald-500 rounded-xl flex items-center justify-center shrink-0">
+                        <FiClock size={20} />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">New Today</p>
+                        <p className="text-2xl font-black text-slate-800">{newUsersCount}</p>
+                    </div>
+                </div>
+            </div>
 
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex flex-col">
-
+                <div className="flex flex-col" />
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={fetchUsers}
+                        className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-4 py-3 rounded-xl font-bold transition-all shadow-sm active:scale-95"
+                        title="Refresh users"
+                    >
+                        <FiRefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                    </button>
+                    <button
+                        onClick={() => { setIsEditing(false); setFormData({ username: "", name: "", email: "", phone: "", role: "user", password: "" }); setIsModalOpen(true); }}
+                        className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
+                    >
+                        <FiUserPlus /> Add New User
+                    </button>
                 </div>
-                <button
-                    onClick={() => { setIsEditing(false); setFormData({ username: "", name: "", email: "", phone: "", role: "user", password: "" }); setIsModalOpen(true); }}
-                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
-                >
-                    <FiUserPlus /> Add New User
-                </button>
             </div>
 
             {/* Tabs */}
@@ -282,10 +336,11 @@ const Users = ({ initialTab = "All" }) => {
                     <table className="w-full text-left border-collapse block md:table">
                         <thead className="hidden md:table-header-group">
                             <tr className="bg-gray-50/50">
-                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">User Profile</th>
+                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">User</th>
+                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Contact</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Role</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Joined Date</th>
+                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Joined</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
@@ -311,10 +366,11 @@ const Users = ({ initialTab = "All" }) => {
                             ) : (
                                 currentItems.map((user) => (
                                     <tr key={user.id} className="hover:bg-blue-50/30 transition-colors group block md:table-row bg-white md:bg-transparent border border-gray-100 md:border-0 rounded-2xl md:rounded-none mb-4 md:mb-0 shadow-sm md:shadow-none">
+                                        {/* User */}
                                         <td className="px-3 py-4 md:px-6 md:py-4 block md:table-cell border-b border-gray-50 md:border-b-0">
                                             <div className="flex md:block items-center justify-between w-full">
-                                                <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">User Profile</span>
-                                                <div className="flex items-center gap-3 text-right md:text-left">
+                                                <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">User</span>
+                                                <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden ring-2 ring-white shadow-sm shrink-0">
                                                         <img src={user.avatar} alt={user.name} />
                                                     </div>
@@ -325,55 +381,79 @@ const Users = ({ initialTab = "All" }) => {
                                                 </div>
                                             </div>
                                         </td>
+                                        {/* Contact */}
                                         <td className="px-3 py-4 md:px-6 md:py-4 block md:table-cell border-b border-gray-50 md:border-b-0">
                                             <div className="flex md:block items-center justify-between w-full">
-                                                <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Role</span>
-                                                <div className="relative group/role">
-                                                    <select
-                                                        value={user.role}
-                                                        onChange={(e) => handleQuickRoleUpdate(user.id, e.target.value, user)}
-                                                        className={`appearance-none cursor-pointer px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-transparent outline-none transition-all ${getRoleStyle(user.role)}`}
-                                                    >
-                                                        <option value="admin">admin</option>
-                                                        <option value="manager">manager</option>
-                                                        <option value="dealer">dealer</option>
-                                                        <option value="user">user</option>
-                                                    </select>
+                                                <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Contact</span>
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
+                                                        <FiMail size={11} className="text-gray-400 shrink-0" />
+                                                        <span className="truncate max-w-[160px]">{user.email || '—'}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                                        <FiPhone size={11} className="text-gray-400 shrink-0" />
+                                                        <span>{user.phone || '—'}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
+                                        {/* Role */}
+                                        <td className="px-3 py-4 md:px-6 md:py-4 block md:table-cell border-b border-gray-50 md:border-b-0">
+                                            <div className="flex md:block items-center justify-between w-full">
+                                                <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Role</span>
+                                                <select
+                                                    value={user.role}
+                                                    onChange={(e) => handleQuickRoleUpdate(user.id, e.target.value, user)}
+                                                    className={`appearance-none cursor-pointer px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-transparent outline-none transition-all ${getRoleStyle(user.role)}`}
+                                                >
+                                                    <option value="admin">admin</option>
+                                                    <option value="manager">manager</option>
+                                                    <option value="dealer">dealer</option>
+                                                    <option value="user">user</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                        {/* Status */}
                                         <td className="px-3 py-4 md:px-6 md:py-4 block md:table-cell border-b border-gray-50 md:border-b-0">
                                             <div className="flex md:block items-center justify-between w-full">
                                                 <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</span>
                                                 <div className="flex items-center gap-2">
-                                                    <div className={`w-2 h-2 rounded-full ${user.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-300'}`}></div>
+                                                    <div className={`w-2 h-2 rounded-full ${user.status === 'Active' ? 'bg-emerald-500 shadow-sm shadow-emerald-300' : 'bg-gray-300'}`} />
                                                     <span className="text-sm font-bold text-slate-700">{user.status}</span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-3 py-4 md:px-6 md:py-4 text-sm text-gray-500 block md:table-cell border-b border-gray-50 md:border-b-0">
+                                        {/* Joined */}
+                                        <td className="px-3 py-4 md:px-6 md:py-4 block md:table-cell border-b border-gray-50 md:border-b-0">
                                             <div className="flex md:block items-center justify-between w-full">
-                                                <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Joined Date</span>
-                                                <span>{user.joined}</span>
+                                                <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Joined</span>
+                                                <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                                                    <FiCalendar size={12} className="text-gray-400" />
+                                                    <span>{user.joined}</span>
+                                                    {isToday(user.rawCreated_at) && (
+                                                        <span className="ml-1 px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase rounded-full">New</span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </td>
-                                        <td className="px-3 py-4 md:px-6 md:py-4 block md:table-cell text-right md:text-right">
+                                        {/* Actions */}
+                                        <td className="px-3 py-4 md:px-6 md:py-4 block md:table-cell text-right">
                                             <div className="flex md:block items-center justify-between w-full">
                                                 <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</span>
                                                 <div className="flex items-center justify-end gap-2">
                                                     <button
                                                         onClick={() => openEditModal(user)}
-                                                        className="p-2 border border-gray-200 text-gray-500 rounded-lg hover:bg-green-500 hover:text-white transition-all shadow-sm md:shadow-none"
+                                                        className="p-2 border border-gray-200 text-gray-500 rounded-lg hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all"
                                                         title="Edit User"
                                                     >
-                                                        <FiEdit2 size={16} />
+                                                        <FiEdit2 size={15} />
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteUser(user.id)}
-                                                        className="p-2 border border-gray-200 text-gray-500 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm md:shadow-none"
+                                                        className="p-2 border border-gray-200 text-gray-500 rounded-lg hover:bg-red-500 hover:text-white hover:border-red-500 transition-all"
                                                         title="Delete User"
                                                     >
-                                                        <FiUserX size={16} />
+                                                        <FiUserX size={15} />
                                                     </button>
                                                 </div>
                                             </div>
