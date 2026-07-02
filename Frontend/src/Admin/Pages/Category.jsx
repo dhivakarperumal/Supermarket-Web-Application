@@ -120,13 +120,22 @@ const Category = () => {
                 return;
             }
 
+            // Aggressively compress to avoid max_allowed_packet limits
             const compressed = await imageCompression(file, {
-                maxSizeMB: 5,
-                maxWidthOrHeight: 1200,
+                maxSizeMB: 0.5,  // Reduced from 5MB to 500KB
+                maxWidthOrHeight: 800,  // Reduced from 1200 to 800px
                 useWebWorker: true,
+                fileType: "image/jpeg",  // Force JPEG for better compression
+                initialQuality: 0.7,  // Reduce quality
             });
 
             const imageUrl = await imageCompression.getDataUrlFromFile(compressed);
+            
+            // Warn if base64 is still large
+            if (imageUrl.length > 2 * 1024 * 1024) {
+                toast.warning("Image is still large, compression may take a moment");
+            }
+
             setFormData((p) => ({
                 ...p,
                 image: imageUrl,
