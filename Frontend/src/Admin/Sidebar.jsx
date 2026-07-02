@@ -142,19 +142,21 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
 
         {/* ========== LOGO ========== */}
         <div className="relative flex items-center gap-3 px-4 py-5 border-b border-white/10 overflow-hidden">
-          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-cyan-400 via-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-600/30 shrink-0 overflow-hidden">
+          <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shrink-0 overflow-hidden shadow-md">
             <img
               src="/logo.png"
               alt="Logo"
-              className="w-8 h-8 object-contain"
-              onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=SP&background=2563EB&color=fff"; }}
+              className="w-12 h-12 object-contain p-0.5"
+              onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=SP&background=fff&color=000"; }}
             />
           </div>
 
           {!collapsed && (
             <div className="overflow-hidden">
-              <h1 className="text-md font-black text-white tracking-tighter uppercase leading-none">Priyam</h1>
-              <p className="text-[9px] text-blue-400 font-bold tracking-widest uppercase opacity-70 mt-1">
+              <h1 className="text-xl font-black text-white tracking-tight uppercase leading-none">
+                <span className="text-emerald-400">Priyam</span>
+              </h1>
+              <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase mt-0.5">
                 Super Market
               </p>
             </div>

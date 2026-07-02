@@ -281,7 +281,7 @@ const Header = ({ onMenuClick }) => {
       border-b border-slate-200/60
       shadow-[0_4px_30px_rgba(0,0,0,0.04)]">
 
-      <div className="flex items-center justify-between px-4 py-3 sm:px-6">
+      <div className="flex items-center justify-between px-4 py-3.5 sm:px-6">
 
         {/* LEFT */}
         <div className="flex items-center gap-4 min-w-0">
