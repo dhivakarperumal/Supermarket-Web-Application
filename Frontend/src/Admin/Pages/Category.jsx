@@ -380,6 +380,7 @@ const Category = () => {
                                     <thead className="hidden md:table-header-group">
                                         <tr className="bg-gray-50/50 text-gray-500 text-xs uppercase tracking-wider font-bold border-b border-gray-100">
                                             <th className="px-6 py-4">S No</th>
+                                            <th className="px-6 py-4">Cat ID</th>
                                             <th className="px-6 py-4">Name</th>
                                             <th className="px-6 py-4">Image</th>
 
@@ -390,9 +391,19 @@ const Category = () => {
                                     <tbody className="block md:table-row-group divide-y divide-gray-100 px-3 py-4 md:p-0">
                                         {currentCategories.map((cat, ind) => (
                                             <tr key={cat.catId} className="hover:bg-blue-50/10 transition-colors group block md:table-row bg-white md:bg-transparent border border-gray-100 md:border-0 rounded-2xl md:rounded-none mb-4 md:mb-0 shadow-sm md:shadow-none">
+                                                {/* S No */}
                                                 <td className="px-3 py-4 md:px-6 md:py-4 align-top block md:table-cell border-b border-gray-50 md:border-b-0">
                                                     <div className="flex md:block items-center justify-between w-full">
                                                         <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">S No</span>
+                                                        <span className="text-sm font-bold text-gray-500">
+                                                            {(currentPage - 1) * itemsPerPage + ind + 1}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                {/* Cat ID */}
+                                                <td className="px-3 py-4 md:px-6 md:py-4 align-top block md:table-cell border-b border-gray-50 md:border-b-0">
+                                                    <div className="flex md:block items-center justify-between w-full">
+                                                        <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Cat ID</span>
                                                         <span className="bg-blue-50 text-blue-600 text-[10px] font-black tracking-wider uppercase px-2.5 py-1.5 rounded-lg">
                                                             {cat.catId}
                                                         </span>
