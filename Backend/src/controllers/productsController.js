@@ -132,15 +132,28 @@ const getLatestCode = async (req, res) => {
     try {
       await createProductTable();
       const [rows] = await connection.execute(
-        "SELECT product_code FROM products ORDER BY id DESC LIMIT 1"
+        "SELECT product_code FROM products WHERE product_code IS NOT NULL AND product_code != ''"
       );
 
-      let latestCode = "SPM000";
-      if (rows.length > 0 && rows[0].product_code) {
-        latestCode = rows[0].product_code;
+      let maxCodeNumber = 0;
+      for (const row of rows) {
+        const code = String(row.product_code || "").trim().toUpperCase();
+        let match = code.match(/^SPM(\d+)$/);
+        if (match) {
+          maxCodeNumber = Math.max(maxCodeNumber, parseInt(match[1], 10));
+          continue;
+        }
+
+        match = code.match(/^(\d+)$/);
+        if (match) {
+          maxCodeNumber = Math.max(maxCodeNumber, parseInt(match[1], 10));
+        }
       }
 
-      return res.status(200).json({ latestCode });
+      const nextCode = `SPM${String(maxCodeNumber + 1).padStart(3, '0')}`;
+
+      console.log(`Generated next SKU: ${nextCode}`);
+      return res.status(200).json({ latestCode: nextCode });
     } finally {
       connection.release();
     }

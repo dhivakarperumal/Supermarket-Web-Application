@@ -85,11 +85,24 @@ const AddProducts = () => {
     const normalized = String(code || "")
       .trim()
       .toUpperCase();
-    if (!normalized) return "SPM001";
-    if (/^SPM\d{3,}$/.test(normalized)) return normalized;
-    if (/^SP\d{3,}$/.test(normalized)) return `SPM${normalized.slice(2)}`;
-    if (/^\d+$/.test(normalized)) return `SPM${normalized.padStart(3, "0")}`;
-    return normalized.startsWith("SP") ? `SPM${normalized.slice(2)}` : `SPM001`;
+    
+    // If already in SPM001 format and valid, return as-is
+    if (/^SPM\d{3,}$/.test(normalized)) {
+      return normalized;
+    }
+    
+    // If empty, return SPM001
+    if (!normalized) {
+      return "SPM001";
+    }
+    
+    // If just numbers, pad and prefix
+    if (/^\d+$/.test(normalized)) {
+      return `SPM${normalized.padStart(3, "0")}`;
+    }
+    
+    // Default fallback
+    return "SPM001";
   };
 
   const generateBarcode = (value) => {
@@ -959,16 +972,21 @@ const AddProducts = () => {
             
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Product Code (SKU)
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                    Product Code (SKU)
+                  </label>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
+                    Auto-Generated
+                  </span>
+                </div>
                 <input
                   type="text"
                   name="product_code"
                   value={formData.product_code}
-                  onChange={handleFormChange}
-                  placeholder="SKU"
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  readOnly
+                  placeholder="Auto-generated"
+                  className="w-full px-4 py-3 bg-gray-100 rounded-2xl text-sm font-bold text-slate-700 cursor-not-allowed border border-gray-200 focus:outline-none"
                 />
               </div>
               <div className="space-y-2">
