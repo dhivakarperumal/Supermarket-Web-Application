@@ -223,29 +223,7 @@ const AllProducts = () => {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 min-h-screen pb-20">
 
-            {/* ── Page Header ── */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-black text-slate-800 tracking-tight">All Products</h1>
-                    <p className="text-sm text-gray-400 font-medium mt-0.5">Manage your product catalog and inventory</p>
-                </div>
-                <div className="flex items-center gap-2">
-                    <div className="flex bg-gray-100 p-1 rounded-xl">
-                        <button onClick={() => setViewMode("table")} className={`p-2 rounded-lg transition-all text-sm ${viewMode === "table" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-slate-600"}`}>
-                            <FiList size={16}/>
-                        </button>
-                        <button onClick={() => setViewMode("grid")} className={`p-2 rounded-lg transition-all text-sm ${viewMode === "grid" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-slate-600"}`}>
-                            <FiGrid size={16}/>
-                        </button>
-                    </div>
-                    <button
-                        onClick={() => navigate("/admin/products/add")}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-200 active:scale-95"
-                    >
-                        <FiPlus size={14}/> New Product
-                    </button>
-                </div>
-            </div>
+            
 
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-32 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm">
@@ -350,6 +328,22 @@ const AllProducts = () => {
                                 <option>Stock: Low → High</option>
                             </select>
                         </div>
+                         <div className="flex items-center gap-2">
+                    <div className="flex bg-gray-100 p-1 rounded-xl">
+                        <button onClick={() => setViewMode("table")} className={`p-2 rounded-lg transition-all text-sm ${viewMode === "table" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-slate-600"}`}>
+                            <FiList size={16}/>
+                        </button>
+                        <button onClick={() => setViewMode("grid")} className={`p-2 rounded-lg transition-all text-sm ${viewMode === "grid" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-slate-600"}`}>
+                            <FiGrid size={16}/>
+                        </button>
+                    </div>
+                    <button
+                        onClick={() => navigate("/admin/products/add")}
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-200 active:scale-95"
+                    >
+                        <FiPlus size={14}/> New Product
+                    </button>
+                </div>
                     </div>
 
                     {viewMode === "table" ? (
