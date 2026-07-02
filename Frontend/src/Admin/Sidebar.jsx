@@ -123,17 +123,24 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
 
       {/* ========== SIDEBAR ========== */}
       <aside
+        style={{
+          background: "linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 50%, var(--color-secondary-dark) 100%)",
+        }}
         className={`
         fixed top-0 left-0 z-50 h-full overflow-hidden
-        bg-linear-to-br from-slate-950 via-slate-900 to-blue-950
-        border-r border-white/10 shadow-[16px_0_45px_rgba(2,8,23,0.35)] backdrop-blur-xl
+         backdrop-blur-xl
         flex flex-col transition-all duration-300
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0
         ${collapsed ? "w-20" : "w-74"}
       `}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.20),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.28),transparent_45%)] pointer-events-none" />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: "radial-gradient(circle at top left, color-mix(in srgb, var(--color-primary-light) 28%, transparent), transparent 42%), radial-gradient(circle at bottom right, color-mix(in srgb, var(--color-secondary-light) 30%, transparent), transparent 46%)",
+          }}
+        />
         <div className="absolute top-0 left-0 right-0 h-24 bg-linear-to-b from-white/10 to-transparent pointer-events-none" />
 
         {/* ========== LOGO ========== */}
@@ -181,8 +188,8 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                     className={`
                       w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                       ${isMenuOpen
-                        ? "bg-linear-to-r from-cyan-500/20 to-blue-600/20 text-white ring-1 ring-cyan-400/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
-                        : "text-slate-300 hover:bg-white/10 hover:text-white"
+                        ? "text-white ring-1 ring-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] bg-white/12"
+                        : "text-slate-100 hover:bg-white/12 hover:text-white hover:translate-x-1"
                       }
                     `}
                   >
@@ -217,8 +224,8 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                             className={`
                               flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200
                               ${(location.pathname === sub.path || (sub.path !== "/admin" && location.pathname.startsWith(sub.path)))
-                                ? "bg-linear-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-blue-600/25"
-                                : "text-slate-400 hover:text-white hover:bg-white/10"
+                                ? "text-white shadow-lg bg-white/14 ring-1 ring-white/15"
+                                : "text-slate-200 hover:text-white hover:bg-white/12 hover:translate-x-1"
                               }
                             `}
                           >
@@ -248,8 +255,8 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                   ${isActive
-                    ? "bg-linear-to-r from-cyan-500 to-blue-600 text-white shadow-xl shadow-blue-600/25"
-                    : "text-slate-300 hover:bg-white/10 hover:text-white"
+                    ? "text-white shadow-xl bg-white/14 ring-1 ring-white/15"
+                    : "text-slate-100 hover:bg-white/12 hover:text-white hover:translate-x-1"
                   }
                 `}
               >
@@ -263,10 +270,10 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
         {/* ========== FOOTER / PROFILE ========== */}
         {!collapsed && (
           <div className="relative p-4 mx-3 mb-6 rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-            <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-cyan-500/10 to-blue-600/10 pointer-events-none" />
+            <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ background: "linear-gradient(135deg, color-mix(in srgb, var(--color-primary-light) 18%, transparent), color-mix(in srgb, var(--color-secondary-light) 16%, transparent))" }} />
             <p className="relative text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 pl-1">System Identity</p>
             <div className="relative flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-linear-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-blue-600/40">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-lg" style={{ background: "linear-gradient(135deg, var(--color-primary-light), var(--color-secondary-dark))" }}>
                 {profileName?.charAt(0) || "A"}
               </div>
               <div className="overflow-hidden">
