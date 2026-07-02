@@ -124,18 +124,21 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
       {/* ========== SIDEBAR ========== */}
       <aside
         className={`
-        fixed top-0 left-0 z-50 h-full
-        bg-[#0B1120] border-r border-white/5
-        
+        fixed top-0 left-0 z-50 h-full overflow-hidden
+        bg-linear-to-br from-slate-950 via-slate-900 to-blue-950
+        border-r border-white/10 shadow-[16px_0_45px_rgba(2,8,23,0.35)] backdrop-blur-xl
         flex flex-col transition-all duration-300
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0
         ${collapsed ? "w-20" : "w-64"}
       `}
       >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.20),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.28),transparent_45%)] pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-24 bg-linear-to-b from-white/10 to-transparent pointer-events-none" />
+
         {/* ========== LOGO ========== */}
-        <div className="flex items-center gap-3 px-4 py-5 border-b border-white/5 overflow-hidden">
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-lg shadow-blue-600/20 shrink-0 overflow-hidden">
+        <div className="relative flex items-center gap-3 px-4 py-5 border-b border-white/10 overflow-hidden">
+          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-cyan-400 via-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-600/30 shrink-0 overflow-hidden">
             <img
               src="/logo.png"
               alt="Logo"
@@ -176,10 +179,10 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                   <button
                     onClick={() => toggleMenu(item.label)}
                     className={`
-                      w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all
+                      w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                       ${isMenuOpen
-                        ? "bg-blue-600/10 text-white ring-1 ring-blue-500/30"
-                        : "text-white/50 hover:bg-white/5 hover:text-white"
+                        ? "bg-linear-to-r from-cyan-500/20 to-blue-600/20 text-white ring-1 ring-cyan-400/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+                        : "text-slate-300 hover:bg-white/10 hover:text-white"
                       }
                     `}
                   >
@@ -199,7 +202,7 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                   {/* ===== SUB MENU ===== */}
                   {!collapsed && (
                     <div
-                      className={`ml-4 pl-4 border-l border-white/5 space-y-1 overflow-y-auto hide-scrollbar transition-all duration-300
+                      className={`ml-4 pl-4 border-l border-cyan-400/20 space-y-1 overflow-y-auto hide-scrollbar transition-all duration-300
                       ${isMenuOpen ? "max-h-60 opacity-100 py-1" : "max-h-0 opacity-0"}`}
                     >
                       {item.children.map((sub) => {
@@ -212,10 +215,10 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                             to={sub.path}
                             onClick={() => isOpen && onClose()}
                             className={`
-                              flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all
+                              flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200
                               ${(location.pathname === sub.path || (sub.path !== "/admin" && location.pathname.startsWith(sub.path)))
-                                ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                                : "text-white/40 hover:text-white hover:bg-white/5"
+                                ? "bg-linear-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-blue-600/25"
+                                : "text-slate-400 hover:text-white hover:bg-white/10"
                               }
                             `}
                           >
@@ -243,10 +246,10 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                   if (isOpen) onClose();
                 }}
                 className={`
-                  flex items-center gap-3 px-4 py-3 rounded-xl transition-all
+                  flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                   ${isActive
-                    ? "bg-blue-600 text-white shadow-xl shadow-blue-600/20"
-                    : "text-white/50 hover:bg-white/5 hover:text-white"
+                    ? "bg-linear-to-r from-cyan-500 to-blue-600 text-white shadow-xl shadow-blue-600/25"
+                    : "text-slate-300 hover:bg-white/10 hover:text-white"
                   }
                 `}
               >
@@ -259,10 +262,11 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
 
         {/* ========== FOOTER / PROFILE ========== */}
         {!collapsed && (
-          <div className="p-4 mx-3 mb-6 bg-white/5 rounded-2xl border border-white/5">
-            <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 pl-1">System Identity</p>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-blue-600/40">
+          <div className="relative p-4 mx-3 mb-6 rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
+            <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-cyan-500/10 to-blue-600/10 pointer-events-none" />
+            <p className="relative text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 pl-1">System Identity</p>
+            <div className="relative flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-linear-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-blue-600/40">
                 {profileName?.charAt(0) || "A"}
               </div>
               <div className="overflow-hidden">
