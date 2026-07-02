@@ -246,7 +246,7 @@ const Category = () => {
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <Toaster position="top-right" />
             {/* Header Section */}
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mt-10">
+            <div className="bg-white flex items-center justify-between rounded-[2rem] border border-gray-100 shadow-sm p-4 md:p-5 flex flex-col md:flex-row gap-4 items-center">
                 <div>
                     <div className="relative w-full sm:w-64">
                         <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
