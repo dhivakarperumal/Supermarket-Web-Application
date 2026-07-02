@@ -13,6 +13,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api";
 import { toast, Toaster } from "react-hot-toast";
 import imageCompression from "browser-image-compression";
+import Barcode from "react-barcode";
 
 const AddProducts = () => {
   const { id } = useParams();
@@ -109,7 +110,9 @@ const AddProducts = () => {
   };
 
   const renderBarcodeSvg = (value) => {
-    const code = String(value || "").trim().toUpperCase();
+    const code = String(value || "")
+      .trim()
+      .toUpperCase();
     if (!code) {
       return (
         <div className="w-full h-32 rounded-3xl border border-gray-200 bg-gray-50 flex items-center justify-center text-sm text-gray-500">
@@ -118,55 +121,19 @@ const AddProducts = () => {
       );
     }
 
-    const bits = Array.from(code)
-      .flatMap((char) =>
-        char.charCodeAt(0).toString(2).padStart(8, "0").split("")
-      )
-      .map((bit) => Number(bit));
-
-    const scale = 3;
-    let x = 0;
-    const bars = bits.map((bit, index) => {
-      const width = bit === 1 ? scale * 2 : scale;
-      const rect = bit === 1 ? (
-        <rect
-          key={index}
-          x={x}
-          y={12}
-          width={width}
-          height={36}
-          fill="#0f172a"
-        />
-      ) : null;
-      x += width;
-      return rect;
-    });
-
-    const totalWidth = bits.reduce(
-      (sum, bit) => sum + (bit === 1 ? scale * 2 : scale),
-      0,
-    );
-
     return (
-      <svg
-        viewBox={`0 0 ${totalWidth} 80`}
-        className="w-full h-32 rounded-3xl bg-white border border-gray-200"
-        preserveAspectRatio="xMinYMin meet"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <rect width={totalWidth} height={80} fill="#ffffff" rx="24" />
-        <g>{bars}</g>
-        <text
-          x={totalWidth / 2}
-          y="74"
-          textAnchor="middle"
-          fontSize="12"
-          fill="#334155"
-          fontFamily="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-        >
-          {code}
-        </text>
-      </svg>
+      <div className="w-full rounded-3xl border border-gray-200 bg-white p-1">
+        <Barcode
+          value={code}
+          format="CODE128"
+          displayValue={true}
+          width={2}
+          height={80}
+          margin={8}
+          background="#ffffff"
+          lineColor="#0f172a"
+        />
+      </div>
     );
   };
 
@@ -623,7 +590,7 @@ const AddProducts = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                <label className="text-xs w-1/2 font-black text-gray-400 uppercase tracking-widest">
                   Product Code (SKU)
                 </label>
                 <input
@@ -636,7 +603,7 @@ const AddProducts = () => {
                 />
               </div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between gap-3">
+                {/* <div className="flex items-center justify-between gap-3">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                     Barcode
                   </label>
@@ -647,22 +614,23 @@ const AddProducts = () => {
                   >
                     Generate Barcode
                   </button>
-                </div>
-                <input
+                </div> */}
+                {/* <input
                   type="text"
                   name="barcode"
                   value={formData.barcode}
                   onChange={handleFormChange}
                   placeholder="Barcode"
                   className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
-                />
+                /> */}
+                <div className="space-y-1">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                    Generated Barcode Preview
+                  </label>
+                  {renderBarcodeSvg(formData.barcode)}
+                </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Generated Barcode Preview
-                </label>
-                {renderBarcodeSvg(formData.barcode)}
-              </div>
+
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                   Category
@@ -730,39 +698,41 @@ const AddProducts = () => {
           </div>
 
           <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
-           <div className="flex items-center justify-between mb-4">
-  {/* Left Side */}
-  <div className="flex items-center gap-3">
-    <span className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
-      <FaRupeeSign size={20} />
-    </span>
+            <div className="flex items-center justify-between mb-4">
+              {/* Left Side */}
+              <div className="flex items-center gap-3">
+                <span className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
+                  <FaRupeeSign size={20} />
+                </span>
 
-    <div>
-      <h2 className="text-xl font-black text-slate-800">
-        Pricing & Inventory
-      </h2>
-      <p className="text-sm text-slate-500">
-        Add multiple pricing and inventory options
-      </p>
-    </div>
-  </div>
+                <div>
+                  <h2 className="text-xl font-black text-slate-800">
+                    Pricing & Inventory
+                  </h2>
+                  <p className="text-sm text-slate-500">
+                    Add multiple pricing and inventory options
+                  </p>
+                </div>
+              </div>
 
-  {/* Right Side */}
-  <button
-    type="button"
-    onClick={addPricingOption}
-    className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition"
-  >
-    +
-  </button>
-</div>
+              {/* Right Side */}
+              <button
+                type="button"
+                onClick={addPricingOption}
+                className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition"
+              >
+                +
+              </button>
+            </div>
 
             {/* Multiple pricing options */}
             <div className="mt-4">
-             
               <div className="space-y-3">
                 {(formData.pricing_options || []).map((opt, idx) => (
-                  <div key={idx} className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 border border-gray-100 rounded-3xl bg-gray-50">
+                  <div
+                    key={idx}
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 border border-gray-100 rounded-3xl bg-gray-50"
+                  >
                     <div className="space-y-4">
                       <div>
                         <label className="text-xs font-black text-gray-400">
@@ -829,7 +799,7 @@ const AddProducts = () => {
                           className="w-full px-3 py-2 bg-white rounded-2xl text-sm border border-gray-200"
                         />
                       </div>
-                  
+
                       <div>
                         <label className="text-xs font-black text-gray-400">
                           Selling
@@ -865,8 +835,6 @@ const AddProducts = () => {
                     </div>
                   </div>
                 ))}
-
-               
               </div>
             </div>
             <div className="mt-4">
