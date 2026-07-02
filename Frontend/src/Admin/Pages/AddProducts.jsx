@@ -35,11 +35,12 @@ const AddProducts = () => {
         unit: "kg",
         mrp: "",
         selling_price: "",
-        discount_percent: "",
+        offer: "",
+        offer_price: "",
         stock_quantity: "0",
         // pricing options: array of variants / pack sizes with their own price/stock
         pricing_options: [
-            { weight_volume: "1", unit: "kg", mrp: "", selling_price: "", stock_quantity: "0" },
+            { weight_volume: "1", unit: "kg", mrp: "", selling_price: "", offer: "", stock_quantity: "0" },
         ],
         total_stock: "0",
         minimum_stock: "0",
@@ -94,7 +95,8 @@ const AddProducts = () => {
                         unit: p.unit || "kg",
                         mrp: p.mrp?.toString() || "",
                         selling_price: p.selling_price?.toString() || "",
-                        discount_percent: p.discount_percent?.toString() || "",
+                        offer: p.offer?.toString() || "",
+                        offer_price: p.offer_price?.toString() || "",
                         stock_quantity: p.stock_quantity?.toString() || "0",
                         minimum_stock: p.minimum_stock?.toString() || "0",
                         maximum_stock: p.maximum_stock?.toString() || "",
@@ -152,12 +154,12 @@ const AddProducts = () => {
         setFormData((prev) => {
             const updated = { ...prev, [name]: value };
 
-            // derive selling price immediately when mrp or discount changes
-            if (name === "mrp" || name === "discount_percent") {
+            // derive selling price immediately when mrp or offer changes
+            if (name === "mrp" || name === "offer") {
                 const mrpValue = parseFloat(name === "mrp" ? value : updated.mrp) || 0;
-                const discountValue = parseFloat(name === "discount_percent" ? value : updated.discount_percent) || 0;
+                const offerValue = parseFloat(name === "offer" ? value : updated.offer) || 0;
                 if (mrpValue > 0) {
-                    const calculatedPrice = mrpValue - mrpValue * (discountValue / 100);
+                    const calculatedPrice = mrpValue - mrpValue * (offerValue / 100);
                     updated.selling_price = Math.round(calculatedPrice).toString();
                 } else {
                     updated.selling_price = "";
@@ -169,6 +171,21 @@ const AddProducts = () => {
                 updated.subcategory = derivedSubcategories[0] || "";
             }
 
+            // if global offer changed, update each pricing option's selling_price
+            if (name === "offer") {
+                const offerValue = parseFloat(value) || 0;
+                updated.pricing_options = (updated.pricing_options || []).map((opt) => {
+                    const mrpVal = parseFloat(opt.mrp) || 0;
+                    if (mrpVal > 0) {
+                        const calc = mrpVal - mrpVal * (offerValue / 100);
+                        return { ...opt, selling_price: Math.round(calc).toString(), offer: value };
+                    }
+                    return { ...opt, offer: value };
+                });
+                // update total stock (unchanged) but keep consistent
+                updated.total_stock = computeTotalStock(updated.pricing_options).toString();
+            }
+
             return updated;
         });
     };
@@ -178,7 +195,7 @@ const AddProducts = () => {
             ...prev,
             pricing_options: [
                 ...(prev.pricing_options || []),
-                { weight_volume: "", unit: prev.unit || "kg", mrp: "", selling_price: "", stock_quantity: "0" },
+                { weight_volume: "", unit: prev.unit || "kg", mrp: "", selling_price: "", offer: "", stock_quantity: "0" },
             ],
         }));
     };
@@ -196,9 +213,22 @@ const AddProducts = () => {
             const options = Array.isArray(prev.pricing_options) ? [...prev.pricing_options] : [];
             options[index] = { ...options[index], [field]: value };
 
-            // if mrp or discount change in a pricing option, derive its selling_price
-            if (field === "mrp" || field === "selling_price") {
-                // keep as-is (selling price may be manually set)
+            // if mrp or offer changed, auto-calc selling_price for this option using its offer percent or global discount
+            const option = options[index];
+            const mrpVal = parseFloat(option.mrp) || 0;
+            const offerPct = field === "offer" ? parseFloat(value) || 0 : parseFloat(option.offer) || 0;
+            const currentOffer = parseFloat(prev.offer) || 0;
+            if (field === "offer" && offerPct > 0 && mrpVal > 0) {
+                const calc = mrpVal - mrpVal * (offerPct / 100);
+                options[index].selling_price = Math.round(calc).toString();
+            } else if (field === "mrp") {
+                const effectiveOffer = offerPct > 0 ? offerPct : currentOffer;
+                if (mrpVal > 0) {
+                    const calc = mrpVal - mrpVal * (effectiveOffer / 100);
+                    options[index].selling_price = Math.round(calc).toString();
+                } else {
+                    options[index].selling_price = "";
+                }
             }
 
             const total = computeTotalStock(options);
@@ -296,12 +326,13 @@ const AddProducts = () => {
                 const first = finalData.pricing_options[0];
                 finalData.mrp = Number(first.mrp || finalData.mrp || 0);
                 finalData.selling_price = Number(first.selling_price || finalData.selling_price || 0);
+                finalData.offer = Number(first.offer || formData.discount_percent || 0);
+                finalData.offer_price = Number(first.selling_price || finalData.selling_price || 0);
                 finalData.stock_quantity = Number(first.stock_quantity || finalData.stock_quantity || 0);
             } else {
                 finalData.mrp = Number(formData.mrp || 0);
                 finalData.selling_price = Number(formData.selling_price || 0);
-                finalData.stock_quantity = Number(formData.stock_quantity || 0);
-            }
+                    finalData.offer = Number(formData.offer || 0);
 
             // include computed total stock
             finalData.total_stock = Number(formData.total_stock || computeTotalStock(finalData.pricing_options) || 0);
@@ -432,13 +463,10 @@ const AddProducts = () => {
                                 <input type="number" name="selling_price" value={formData.selling_price} onChange={handleFormChange} className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800" />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Discount %</label>
-                                <input type="number" name="discount_percent" value={formData.discount_percent} onChange={handleFormChange} className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800" />
+                                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Offer %</label>
+                                <input type="number" name="offer" value={formData.offer} onChange={handleFormChange} className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800" />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Stock Quantity</label>
-                                <input type="number" name="stock_quantity" value={formData.stock_quantity} onChange={handleFormChange} className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800" />
-                            </div>
+                            {/* Stock Quantity removed: use pricing options and Total Stock instead */}
                             <div className="space-y-2">
                                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Minimum Stock</label>
                                 <input type="number" name="minimum_stock" value={formData.minimum_stock} onChange={handleFormChange} className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800" />
@@ -488,16 +516,14 @@ const AddProducts = () => {
                                             <label className="text-xs font-black text-gray-400">MRP</label>
                                             <input type="number" value={opt.mrp} onChange={(e) => handlePricingChange(idx, 'mrp', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm" />
                                         </div>
-                                        <div className="col-span-2">
-                                            <label className="text-xs font-black text-gray-400">Selling</label>
-                                            <input type="number" value={opt.selling_price} onChange={(e) => handlePricingChange(idx, 'selling_price', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm" />
-                                        </div>
-                                        <div className="col-span-2">
-                                            <label className="text-xs font-black text-gray-400">Stock</label>
-                                            <input type="number" value={opt.stock_quantity} onChange={(e) => handlePricingChange(idx, 'stock_quantity', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm" />
-                                        </div>
-                                        <div className="col-span-1">
-                                            <button type="button" onClick={() => removePricingOption(idx)} className="w-full bg-red-500 text-white py-2 rounded-2xl">Remove</button>
+                        <div className="col-span-2">
+                            <label className="text-xs font-black text-gray-400">Offer %</label>
+                            <input type="number" value={opt.offer} onChange={(e) => handlePricingChange(idx, 'offer', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm" />
+                        </div>
+                        <div className="col-span-2">
+                            <label className="text-xs font-black text-gray-400">Selling</label>
+                            <input type="number" value={opt.selling_price} onChange={(e) => handlePricingChange(idx, 'selling_price', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm" />
+                        </div>
                                         </div>
                                     </div>
                                 ))}
