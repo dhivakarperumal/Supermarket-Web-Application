@@ -37,6 +37,11 @@ const AddProducts = () => {
         selling_price: "",
         discount_percent: "",
         stock_quantity: "0",
+        // pricing options: array of variants / pack sizes with their own price/stock
+        pricing_options: [
+            { weight_volume: "1", unit: "kg", mrp: "", selling_price: "", stock_quantity: "0" },
+        ],
+        total_stock: "0",
         minimum_stock: "0",
         maximum_stock: "",
         expiry_date: "",
@@ -56,6 +61,11 @@ const AddProducts = () => {
         created_at: "",
         updated_at: "",
     });
+
+    const computeTotalStock = (options) => {
+        const opts = Array.isArray(options) ? options : formData.pricing_options || [];
+        return opts.reduce((sum, o) => sum + (Number(o.stock_quantity || 0) || 0), 0);
+    };
 
     // selling price is derived from MRP and Discount when those fields change
 
@@ -102,6 +112,7 @@ const AddProducts = () => {
                         return_available: p.return_available ? "Yes" : "No",
                         rating: p.rating?.toString() || "5",
                         review_count: p.review_count?.toString() || "0",
+                        pricing_options: Array.isArray(p.pricing_options) ? p.pricing_options : prev.pricing_options || [{ weight_volume: "1", unit: "kg", mrp: "", selling_price: "", stock_quantity: "0" }],
                         created_at: p.created_at || "",
                         updated_at: p.updated_at || "",
                     }));
@@ -159,6 +170,39 @@ const AddProducts = () => {
             }
 
             return updated;
+        });
+    };
+
+    const addPricingOption = () => {
+        setFormData((prev) => ({
+            ...prev,
+            pricing_options: [
+                ...(prev.pricing_options || []),
+                { weight_volume: "", unit: prev.unit || "kg", mrp: "", selling_price: "", stock_quantity: "0" },
+            ],
+        }));
+    };
+
+    const removePricingOption = (index) => {
+        setFormData((prev) => ({
+            ...prev,
+            pricing_options: prev.pricing_options.filter((_, i) => i !== index),
+            total_stock: (computeTotalStock(prev.pricing_options.filter((_, i) => i !== index))).toString(),
+        }));
+    };
+
+    const handlePricingChange = (index, field, value) => {
+        setFormData((prev) => {
+            const options = Array.isArray(prev.pricing_options) ? [...prev.pricing_options] : [];
+            options[index] = { ...options[index], [field]: value };
+
+            // if mrp or discount change in a pricing option, derive its selling_price
+            if (field === "mrp" || field === "selling_price") {
+                // keep as-is (selling price may be manually set)
+            }
+
+            const total = computeTotalStock(options);
+            return { ...prev, pricing_options: options, total_stock: total.toString() };
         });
     };
 
@@ -233,11 +277,9 @@ const AddProducts = () => {
             const finalData = {
                 ...formData,
                 category: formData.category || "General",
-                stock_quantity: Number(formData.stock_quantity || 0),
+                pricing_options: Array.isArray(formData.pricing_options) ? formData.pricing_options : [],
                 minimum_stock: Number(formData.minimum_stock || 0),
                 maximum_stock: Number(formData.maximum_stock || 0),
-                mrp: Number(formData.mrp || 0),
-                selling_price: Number(formData.selling_price || 0),
                 discount_percent: Number(formData.discount_percent || 0),
                 rating: Number(formData.rating || 0),
                 review_count: Number(formData.review_count || 0),
@@ -248,6 +290,21 @@ const AddProducts = () => {
                 created_at: formData.created_at || new Date().toISOString(),
                 updated_at: new Date().toISOString(),
             };
+
+            // If pricing options exist, derive top-level mrp/selling/stock from the first option for backward compatibility
+            if (finalData.pricing_options.length > 0) {
+                const first = finalData.pricing_options[0];
+                finalData.mrp = Number(first.mrp || finalData.mrp || 0);
+                finalData.selling_price = Number(first.selling_price || finalData.selling_price || 0);
+                finalData.stock_quantity = Number(first.stock_quantity || finalData.stock_quantity || 0);
+            } else {
+                finalData.mrp = Number(formData.mrp || 0);
+                finalData.selling_price = Number(formData.selling_price || 0);
+                finalData.stock_quantity = Number(formData.stock_quantity || 0);
+            }
+
+            // include computed total stock
+            finalData.total_stock = Number(formData.total_stock || computeTotalStock(finalData.pricing_options) || 0);
 
             if (isEdit) {
                 await api.put(`/products/${id}`, finalData);
@@ -406,6 +463,53 @@ const AddProducts = () => {
                                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Supplier</label>
                                 <input type="text" name="supplier" value={formData.supplier} onChange={handleFormChange} placeholder="Supplier name" className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800" />
                             </div>
+                        </div>
+                        {/* Multiple pricing options */}
+                        <div className="mt-4">
+                            <h3 className="text-sm font-black text-gray-500 uppercase tracking-widest mb-3">Pricing Options (pack sizes)</h3>
+                            <div className="space-y-3">
+                                {(formData.pricing_options || []).map((opt, idx) => (
+                                    <div key={idx} className="grid grid-cols-12 gap-2 items-end">
+                                        <div className="col-span-3">
+                                            <label className="text-xs font-black text-gray-400">Weight</label>
+                                            <input type="text" value={opt.weight_volume} onChange={(e) => handlePricingChange(idx, 'weight_volume', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm" placeholder="e.g. 1" />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <label className="text-xs font-black text-gray-400">Unit</label>
+                                            <select value={opt.unit} onChange={(e) => handlePricingChange(idx, 'unit', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm">
+                                                <option value="kg">kg</option>
+                                                <option value="g">g</option>
+                                                <option value="ml">ml</option>
+                                                <option value="L">L</option>
+                                                <option value="pcs">pcs</option>
+                                            </select>
+                                        </div>
+                                        <div className="col-span-2">
+                                            <label className="text-xs font-black text-gray-400">MRP</label>
+                                            <input type="number" value={opt.mrp} onChange={(e) => handlePricingChange(idx, 'mrp', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm" />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <label className="text-xs font-black text-gray-400">Selling</label>
+                                            <input type="number" value={opt.selling_price} onChange={(e) => handlePricingChange(idx, 'selling_price', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm" />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <label className="text-xs font-black text-gray-400">Stock</label>
+                                            <input type="number" value={opt.stock_quantity} onChange={(e) => handlePricingChange(idx, 'stock_quantity', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm" />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <button type="button" onClick={() => removePricingOption(idx)} className="w-full bg-red-500 text-white py-2 rounded-2xl">Remove</button>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <div>
+                                    <button type="button" onClick={addPricingOption} className="bg-blue-600 text-white px-4 py-2 rounded-2xl">Add pricing option</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mt-4">
+                            <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Total Stock</label>
+                            <input type="number" name="total_stock" value={formData.total_stock} readOnly className="w-full px-4 py-3 bg-gray-100 rounded-2xl text-sm font-semibold text-slate-800" />
                         </div>
                     </div>
                 </div>
