@@ -160,15 +160,15 @@ const Dashboard = () => {
                         <h2 className="text-2xl font-black text-white tracking-tight leading-none uppercase italic">Boutique Rapid Studio</h2>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <button
-                            onClick={() => setIsProdModalOpen(true)}
+                            onClick={() => navigate("/admin/products/add")}
                             className="bg-white hover:bg-blue-50 text-slate-900 px-6 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-xl flex items-center justify-center gap-2 group/btn"
                         >
                             <FiBox className="group-hover:rotate-12 transition-transform" /> Add Product
                         </button>
                         <button
-                            onClick={() => setIsCatModalOpen(true)}
+                            onClick={() => navigate("/admin/products/category")}
                             className="bg-white/10 hover:bg-white/20 text-white px-6 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 border border-white/10 flex items-center justify-center gap-2"
                         >
                             <FiActivity /> New Category
@@ -178,6 +178,12 @@ const Dashboard = () => {
                             className="bg-white/10 hover:bg-white/20 text-white px-6 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 border border-white/10 flex items-center justify-center gap-2"
                         >
                             <FiUsers /> Add User
+                        </button>
+                        <button
+                            onClick={() => navigate("/admin/orders/create")}
+                            className="bg-white/10 hover:bg-white/20 text-white px-6 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 border border-white/10 flex items-center justify-center gap-2"
+                        >
+                            <FiShoppingBag /> Billing
                         </button>
                     </div>
                 </div>
