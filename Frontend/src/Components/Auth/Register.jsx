@@ -1,8 +1,8 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
+import api from "../../api";
 
 function Register() {
   const navigate = useNavigate();
@@ -30,12 +30,16 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     }
 
     try {
-      await axios.post("http://localhost:5000/api/auth/register", {
-        username: form.username,
-        email: form.email,
-        phone: form.phone,
+      const payload = {
+        username: form.username.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
         password: form.password,
-      });
+        role: "user",
+        status: "active",
+      };
+
+      await api.post("/auth/register", payload);
       toast.success("Registration successful! Please login.");
       navigate("/login");
     } catch (error) {

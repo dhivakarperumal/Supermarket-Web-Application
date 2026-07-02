@@ -1,5 +1,5 @@
 const crypto = require("crypto");
-const { getPool } = require("../config/db");
+const mysql = require("mysql2/promise");
 
 const hashPassword = (password) => {
   return crypto.createHash("sha256").update(password).digest("hex");
@@ -39,8 +39,15 @@ const registerUser = async (req, res) => {
       });
     }
 
-    const pool = getPool();
-    const [existing] = await pool.query(
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST || "127.0.0.1",
+      user: process.env.DB_USER || "root",
+      password: process.env.DB_PASSWORD || "",
+      database: process.env.DB_NAME || "supermarket_db",
+      port: Number(process.env.DB_PORT || 3306),
+    });
+
+    const [existing] = await connection.query(
       "SELECT id FROM users WHERE email = ? OR phone = ?",
       [email, phone]
     );
@@ -57,11 +64,15 @@ const registerUser = async (req, res) => {
     const nowUpdatedBy = updated_by || userId;
     const hashedPassword = hashPassword(password);
 
-    await pool.query(
+    const [insertResult] = await connection.query(
       `INSERT INTO users (user_id, username, email, phone, password, status, role, created_by, updated_by)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [userId, username, email, phone, hashedPassword, status, role, nowCreatedBy, nowUpdatedBy]
     );
+
+    await connection.end();
+
+    console.log("registration-inserted", insertResult.insertId);
 
     return res.status(201).json({
       success: true,
