@@ -11,7 +11,9 @@ import {
     FiSearch,
     FiSave,
     FiPlus,
-    FiX
+    FiX,
+    FiGrid,
+    FiList
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
@@ -22,6 +24,11 @@ const StockDetails = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+    
+    // UI states
+    const [viewMode, setViewMode] = useState("table");
+    const [showLowStockOnly, setShowLowStockOnly] = useState(false);
+    const [sortBy, setSortBy] = useState("newest");
 
     const currentCacheKey = JSON.stringify({
         page: currentPage,
@@ -110,8 +117,41 @@ const StockDetails = () => {
         return "In Stock";
     };
 
+    const getProductImage = (product) => {
+        let imgUrl = null;
+        try {
+            const processUrl = (url) => {
+                if (!url || typeof url !== 'string') return null;
+                if (url.startsWith('http') || url.startsWith('data:')) return url;
+                const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+                const cleanPath = url.startsWith('/') ? url : `/${url}`;
+                return `${backendUrl}${cleanPath}`;
+            };
+            if (product.thumbnail_image) {
+                imgUrl = product.thumbnail_image;
+            }
+            if (!imgUrl && product.product_images) {
+                const imgs = typeof product.product_images === 'string' ? JSON.parse(product.product_images) : product.product_images;
+                if (Array.isArray(imgs) && imgs.length > 0) imgUrl = imgs[0];
+            }
+            const finalUrl = processUrl(imgUrl);
+            if (finalUrl) return finalUrl;
+        } catch (e) {
+            console.error("Error getting product image:", e);
+        }
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(product.name || 'P')}&background=random`;
+    };
+
     const totalPages = pagination.totalPages;
-    const currentItems = products;
+    let currentItems = products;
+    if (showLowStockOnly) {
+        currentItems = currentItems.filter(p => getStockLevel(p) < 10);
+    }
+    if (sortBy === "stockAsc") {
+        currentItems = [...currentItems].sort((a, b) => getStockLevel(a) - getStockLevel(b));
+    } else if (sortBy === "stockDesc") {
+        currentItems = [...currentItems].sort((a, b) => getStockLevel(b) - getStockLevel(a));
+    }
 
     // Reset page 1 on search
     useEffect(() => {
@@ -261,25 +301,104 @@ const StockDetails = () => {
                 </div>
             </div>
 
-            {/* Inventory Table */}
-            <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden text-slate-800">
-                <div className="p-8 border-b border-gray-50 flex items-center justify-between">
-                    <h3 className="text-xl font-bold text-slate-800">Stock Levels</h3>
-                    <div className="flex items-center gap-3">
-                        <div className="relative hidden md:block">
-                            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search sku or name..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-12 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition-all text-sm w-64 text-slate-800"
-                            />
-                        </div>
-
-                    </div>
+            {/* Controls */}
+            <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-4 md:p-6 flex flex-col md:flex-row gap-4 items-center">
+                <div className="relative flex-1 w-full md:max-w-md group">
+                    <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
+                    <input
+                        type="text"
+                        placeholder="Search sku or name..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all text-xs font-bold text-slate-800"
+                    />
                 </div>
+                <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 hide-scrollbar justify-end">
+                    <div className="flex bg-gray-100 p-1 rounded-xl border border-gray-200 shadow-inner">
+                        <button
+                            onClick={() => setViewMode("table")}
+                            className={`p-2 rounded-lg transition-all ${viewMode === "table" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-slate-600"}`}
+                        >
+                            <FiList size={18} />
+                        </button>
+                        <button
+                            onClick={() => setViewMode("grid")}
+                            className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-slate-600"}`}
+                        >
+                            <FiGrid size={18} />
+                        </button>
+                    </div>
 
+                    <button
+                        onClick={() => setShowLowStockOnly(!showLowStockOnly)}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${showLowStockOnly ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-gray-50 border-gray-100 text-gray-400 hover:text-slate-800 hover:bg-white'}`}
+                    >
+                        <FiFilter /> {showLowStockOnly ? "Showing Low Stock" : "All Inventory"}
+                    </button>
+                    <select 
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="px-6 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-400 outline-none hover:bg-white transition-all cursor-pointer whitespace-nowrap"
+                    >
+                        <option value="newest">Newest First</option>
+                        <option value="stockAsc">Sort: Stock Low to High</option>
+                        <option value="stockDesc">Sort: Stock High to Low</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Inventory Listing */}
+            {viewMode === "grid" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {loading ? (
+                        <div className="col-span-full flex flex-col items-center justify-center py-20 bg-white rounded-[2rem] border border-gray-100 shadow-sm">
+                            <div className="w-8 h-8 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+                            <p className="text-gray-500 font-bold text-sm">Loading stock details...</p>
+                        </div>
+                    ) : currentItems.length === 0 ? (
+                        <div className="col-span-full py-20 text-center bg-white rounded-[2rem] border border-gray-100 shadow-sm">
+                            <FiPackage className="mx-auto text-4xl text-gray-200 mb-3" />
+                            <p className="text-gray-400 font-bold text-sm">No stock data found.</p>
+                        </div>
+                    ) : (
+                        currentItems.map((item) => {
+                            const stock = getStockLevel(item);
+                            const status = item.status && item.status !== "Active" ? item.status : deriveStatus(stock);
+                            return (
+                                <div key={item.id} className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden group hover:shadow-xl transition-all flex flex-col">
+                                    <div className="aspect-square relative overflow-hidden bg-gray-50 group-hover:scale-[1.02] transition-transform duration-500">
+                                        <img
+                                            src={getProductImage(item)}
+                                            alt={item.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <div className="absolute top-4 left-4">
+                                            <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-1.5 shadow-sm backdrop-blur-md border border-white/20 ${getStatusStyle(status)}`}>
+                                                {status}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="p-6 space-y-4 flex-1 flex flex-col">
+                                        <div className="flex-1">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-blue-500 mb-1 leading-none">{item.product_code || `#SKU-${1000 + item.id}`}</p>
+                                            <h4 className="text-sm font-black text-slate-800 leading-tight mt-1 line-clamp-2">{item.name}</h4>
+                                        </div>
+                                        <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] font-black uppercase tracking-tighter text-slate-500">Stock: {stock}</span>
+                                            </div>
+                                            <button onClick={() => openUpdateModal(item)} className="text-[10px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
+                                                Quick Update
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            ) : (
+            <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden text-slate-800">
                 <div className="overflow-x-auto text-slate-800">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-20">
@@ -312,7 +431,7 @@ const StockDetails = () => {
                                                         <div className="flex items-center gap-4 text-left w-full min-w-0">
                                                             <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden shrink-0 shadow-sm">
                                                                 <img
-                                                                    src={(item.variants && item.variants.length > 0 && item.variants[0].images?.length > 0) ? item.variants[0].images[0] : (item.images && item.images.length > 0) ? item.images[0] : `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=random`}
+                                                                    src={getProductImage(item)}
                                                                     alt={item.name}
                                                                     className="w-full h-full object-cover"
                                                                 />
@@ -385,10 +504,13 @@ const StockDetails = () => {
                         </table>
                     )}
                 </div>
+            </div>
+            )}
 
-                {/* Pagination UI */}
-                {totalPages > 1 && (
-                    <div className="p-8 border-t border-gray-50 flex items-center justify-between bg-gray-50/30">
+            {/* Pagination UI */}
+            {totalPages > 1 && (
+                <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden text-slate-800">
+                    <div className="p-8 flex items-center justify-between bg-gray-50/30">
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                             Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, pagination.total)} of {pagination.total} Stock Records
                         </p>
@@ -420,8 +542,8 @@ const StockDetails = () => {
                             </button>
                         </div>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
 
             {/* Quick Stock Update Modal */}
             {isModalOpen && selectedProduct && (
