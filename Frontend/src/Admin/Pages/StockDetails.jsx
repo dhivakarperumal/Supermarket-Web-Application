@@ -257,18 +257,7 @@ const StockDetails = () => {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <Toaster position="top-right" />
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-
-                </div>
-                <button
-                    onClick={() => navigate('/admin/products/stock/add')}
-                    className="flex items-center justify-center gap-2 bg-slate-900 border-2 border-slate-900 hover:bg-slate-800 text-white px-6 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95"
-                >
-                    <FiPlus /> Boutique Stock Inward
-                </button>
-            </div>
+          
 
             {/* Stock Alerts Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -345,6 +334,12 @@ const StockDetails = () => {
                         <option value="stockDesc">Sort: Stock High to Low</option>
                     </select>
                 </div>
+                <button
+                    onClick={() => navigate('/admin/products/stock/add')}
+                    className="flex items-center justify-center gap-2 bg-slate-900 border-2 border-slate-900 hover:bg-slate-800 text-white px-6 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95"
+                >
+                    <FiPlus /> Add Stock
+                </button>
             </div>
 
             {/* Inventory Listing */}
