@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import api from "../../api";
 import {
@@ -11,11 +11,12 @@ import {
     FiUserX,
     FiX,
     FiEdit2,
-    FiRefreshCw,
     FiUsers,
     FiShield,
     FiStar,
-    FiClock
+    FiClock,
+    FiList,
+    FiGrid
 } from "react-icons/fi";
 import { toast, Toaster } from "react-hot-toast";
 
@@ -26,15 +27,11 @@ const Users = ({ initialTab = "All" }) => {
     const [selectedTab, setSelectedTab] = useState(initialTab);
     const [selectedRole, setSelectedRole] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
+    const [viewMode, setViewMode] = useState("table");
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
-
-    // Update tab when initialTab prop changes
-    useEffect(() => {
-        setSelectedTab(initialTab);
-    }, [initialTab]);
 
     // ---- Modal State for Registering/Editing User ----
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -229,15 +226,24 @@ const Users = ({ initialTab = "All" }) => {
     const newUsersCount = users.filter(u => isToday(u.rawCreated_at)).length;
 
     // Pagination Logic
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+    const totalPages = Math.max(1, Math.ceil(filteredUsers.length / itemsPerPage));
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+    const pageStart = filteredUsers.length === 0 ? 0 : indexOfFirstItem + 1;
+    const pageEnd = filteredUsers.length === 0 ? 0 : Math.min(indexOfLastItem, filteredUsers.length);
 
     // Reset to page 1 when filters change
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm, selectedTab, selectedRole]);
+
+    // Clamp current page when filter results change
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -341,20 +347,38 @@ const Users = ({ initialTab = "All" }) => {
                                 <option value="user">user</option>
                             </select>
                         </div>
-                         <div className="flex items-center gap-3">
-                
-                    <button
-                        onClick={() => { setIsEditing(false); setFormData({ username: "", name: "", email: "", phone: "", role: "user", password: "" }); setIsModalOpen(true); }}
-                        className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
-                    >
-                        <FiUserPlus /> Add New User
-                    </button>
-                </div>
+                        <div className="flex items-center gap-2 ml-auto">
+                            <div className="flex bg-gray-100 p-1 rounded-xl">
+                                <button
+                                    type="button"
+                                    onClick={() => setViewMode("table")}
+                                    className={`p-2 rounded-xl transition-all ${viewMode === "table" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-slate-600"}`}
+                                    title="Table view"
+                                >
+                                    <FiList size={16} />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setViewMode("grid")}
+                                    className={`p-2 rounded-xl transition-all ${viewMode === "grid" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-slate-600"}`}
+                                    title="Card view"
+                                >
+                                    <FiGrid size={16} />
+                                </button>
+                            </div>
+                            <button
+                                onClick={() => { setIsEditing(false); setFormData({ username: "", name: "", email: "", phone: "", role: "user", password: "" }); setIsModalOpen(true); }}
+                                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
+                            >
+                                <FiUserPlus /> Add New User
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse block md:table">
+                    {viewMode === "table" ? (
+                        <table className="w-full text-left border-collapse block md:table">
                         <thead className="hidden md:table-header-group">
                             <tr className="bg-gray-50/50">
                                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">User</th>
@@ -489,13 +513,67 @@ const Users = ({ initialTab = "All" }) => {
                             )}
                         </tbody>
                     </table>
+                    ) : (
+                        <div className="p-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                            {currentItems.map((user) => (
+                                <div key={user.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 transition-all hover:shadow-md">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-14 h-14 rounded-2xl bg-gray-100 overflow-hidden shrink-0">
+                                            <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-sm font-bold text-slate-900 truncate">{user.name}</p>
+                                            <p className="text-[10px] uppercase tracking-[0.24em] text-gray-400 mt-1">ID: {user.id}</p>
+                                            <div className="mt-3 space-y-2 text-sm text-slate-600">
+                                                <div className="flex items-center gap-2">
+                                                    <FiMail size={14} className="text-gray-400 shrink-0" />
+                                                    <span className="truncate">{user.email || '—'}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <FiPhone size={14} className="text-gray-400 shrink-0" />
+                                                    <span>{user.phone || '—'}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.24em] ${getRoleStyle(user.role)}`}>{user.role}</span>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onDoubleClick={() => handleToggleStatus(user)}
+                                                    className="flex items-center gap-2 text-sm font-bold text-slate-700"
+                                                    title="Double-click to toggle active/inactive"
+                                                >
+                                                    <span className={`w-2 h-2 rounded-full ${user.status === 'Active' ? 'bg-emerald-500 shadow-sm shadow-emerald-300' : 'bg-gray-300'}`} />
+                                                    {user.status}
+                                                </button>
+                                                <div className="text-xs uppercase tracking-[0.2em] text-gray-400">Joined {user.joined}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-5 flex items-center justify-between gap-2">
+                                        <button
+                                            onClick={() => openEditModal(user)}
+                                            className="w-full py-2 rounded-2xl border border-gray-200 text-gray-500 hover:bg-emerald-500 hover:text-white transition-all"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteUser(user.id)}
+                                            className="w-full py-2 rounded-2xl border border-gray-200 text-gray-500 hover:bg-red-500 hover:text-white transition-all"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Pagination UI */}
                 {totalPages > 1 && (
                     <div className="p-6 border-t border-gray-50 flex items-center justify-between bg-gray-50/30">
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                            Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredUsers.length)} of {filteredUsers.length} Users
+                            Showing {pageStart} to {pageEnd} of {filteredUsers.length} Users
                         </p>
                         <div className="flex items-center gap-2">
                             <button
