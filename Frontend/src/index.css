@@ -7,33 +7,42 @@ body {
 /* Theme variables */
 @theme {
 
-  /* Brand Colors */
-  --color-primary: #240046;
-  --color-primary-light: #3c096c;
-  --color-primary-dark: #10002b;
+/* ===========================
+   Modern Supermarket Theme
+=========================== */
 
-  /* Secondary */
-  --color-secondary: #7b2cbf;
-  --color-secondary-light: #9d4edd;
-  --color-secondary-dark: #5a189a;
+/* Primary */
+--color-primary: #0f766e;
+--color-primary-light: #14b8a6;
+--color-primary-dark: #115e59;
 
-  /* Accent */
-  --color-accent: #ff8500;
+/* Secondary */
+--color-secondary: #2563eb;
+--color-secondary-light: #60a5fa;
+--color-secondary-dark: #1d4ed8;
 
-  /* Success / Green */
-  --color-success: #16a34a;
+/* Accent */
+--color-accent: #f97316;
 
-  /* Warning / Yellow */
-  --color-warning: #facc15;
+/* Success */
+--color-success: #22c55e;
 
-  /* Danger / Error */
-  --color-danger: #dc2626;
+/* Warning */
+--color-warning: #facc15;
 
-  /* Neutral Colors */
-  --color-background: #f8f9fa;
-  --color-surface: #ffffff;
-  --color-border: #e5e7eb;
-  --color-muted: #6b7280;
+/* Danger */
+--color-danger: #ef4444;
+
+/* Neutral */
+--color-background: #f8fafc;
+--color-surface: #ffffff;
+--color-border: #e2e8f0;
+--color-muted: #64748b;
+
+/* Extra */
+--color-text: #0f172a;
+--color-text-light: #475569;
+--color-hover: #0d9488;
 }
 
 @layer utilities {
