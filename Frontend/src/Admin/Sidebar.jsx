@@ -188,7 +188,7 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                     className={`
                       w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                       ${isMenuOpen
-                        ? "text-white ring-1 ring-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] bg-white/12"
+                        ? "text-white ring-1 ring-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] bg-white/16"
                         : "text-slate-100 hover:bg-white/12 hover:text-white hover:translate-x-1"
                       }
                     `}
@@ -209,8 +209,8 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                   {/* ===== SUB MENU ===== */}
                   {!collapsed && (
                     <div
-                      className={`ml-4 pl-4 border-l border-cyan-400/20 space-y-1 overflow-y-auto hide-scrollbar transition-all duration-300
-                      ${isMenuOpen ? "max-h-60 opacity-100 py-1" : "max-h-0 opacity-0"}`}
+                      className={`ml-4 pl-4  space-y-1 overflow-y-auto hide-scrollbar transition-all duration-300
+                      ${isMenuOpen ? "max-h-60 opacity-100 py-2" : "max-h-0 opacity-0"}`}
                     >
                       {item.children.map((sub) => {
                         const SubIcon = sub.icon;
@@ -224,7 +224,7 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                             className={`
                               flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200
                               ${(location.pathname === sub.path || (sub.path !== "/admin" && location.pathname.startsWith(sub.path)))
-                                ? "text-white shadow-lg bg-white/14 ring-1 ring-white/15"
+                                ? "text-white shadow-lg bg-white/18 ring-1 ring-white/20"
                                 : "text-slate-200 hover:text-white hover:bg-white/12 hover:translate-x-1"
                               }
                             `}
@@ -255,7 +255,7 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                   ${isActive
-                    ? "text-white shadow-xl bg-white/14 ring-1 ring-white/15"
+                    ? "text-white shadow-xl bg-white/18 ring-1 ring-white/20"
                     : "text-slate-100 hover:bg-white/12 hover:text-white hover:translate-x-1"
                   }
                 `}
