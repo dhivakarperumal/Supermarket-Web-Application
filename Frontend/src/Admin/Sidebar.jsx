@@ -123,12 +123,9 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
 
       {/* ========== SIDEBAR ========== */}
       <aside
-        style={{
-          background: "linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 50%, var(--color-secondary-dark) 100%)",
-        }}
         className={`
+        bg-slate-950 border-r border-slate-800
         fixed top-0 left-0 z-50 h-full overflow-hidden
-         backdrop-blur-xl
         flex flex-col transition-all duration-300
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0
@@ -138,10 +135,10 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: "radial-gradient(circle at top left, color-mix(in srgb, var(--color-primary-light) 28%, transparent), transparent 42%), radial-gradient(circle at bottom right, color-mix(in srgb, var(--color-secondary-light) 30%, transparent), transparent 46%)",
+            background: "radial-gradient(circle at top left, rgba(255,255,255,0.03) 0%, transparent 40%), radial-gradient(circle at bottom right, rgba(255,255,255,0.03) 0%, transparent 40%)",
           }}
         />
-        <div className="absolute top-0 left-0 right-0 h-24 bg-linear-to-b from-white/10 to-transparent pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-24 bg-linear-to-b from-white/5 to-transparent pointer-events-none" />
 
         {/* ========== LOGO ========== */}
         <div className="relative flex items-center gap-3 px-4 py-5 border-b border-white/10 overflow-hidden">
@@ -156,9 +153,9 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
 
           {!collapsed && (
             <div className="overflow-hidden">
-              <h1 className="text-md font-black text-white tracking-tighter uppercase leading-none">Palace</h1>
+              <h1 className="text-md font-black text-white tracking-tighter uppercase leading-none">Priyam</h1>
               <p className="text-[9px] text-blue-400 font-bold tracking-widest uppercase opacity-70 mt-1">
-                Artisan Admin
+                Super Market
               </p>
             </div>
           )}
@@ -269,11 +266,11 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
 
         {/* ========== FOOTER / PROFILE ========== */}
         {!collapsed && (
-          <div className="relative p-4 mx-3 mb-6 rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-            <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ background: "linear-gradient(135deg, color-mix(in srgb, var(--color-primary-light) 18%, transparent), color-mix(in srgb, var(--color-secondary-light) 16%, transparent))" }} />
+          <div className="relative p-4 mx-3 mb-6 rounded-2xl border border-white/5 bg-white/5 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
+            <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%)" }} />
             <p className="relative text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 pl-1">System Identity</p>
             <div className="relative flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-lg" style={{ background: "linear-gradient(135deg, var(--color-primary-light), var(--color-secondary-dark))" }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-lg bg-slate-800 border border-slate-700">
                 {profileName?.charAt(0) || "A"}
               </div>
               <div className="overflow-hidden">

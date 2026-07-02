@@ -5,6 +5,7 @@ const { initDatabase } = require("./src/config/db");
 const authRouter = require("./src/routers/authRouter");
 const categoriesRouter = require("./src/routers/categoriesRouter");
 const productsRouter = require("./src/routers/productsRouter");
+const dashboardRouter = require("./src/routers/dashboardRouter");
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/products", productsRouter);
+app.use("/api/dashboard", dashboardRouter);
 
 // Port
 const PORT = process.env.PORT || 5000;
