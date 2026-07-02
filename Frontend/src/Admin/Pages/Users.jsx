@@ -284,24 +284,7 @@ const Users = ({ initialTab = "All" }) => {
             </div>
 
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex flex-col" />
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={fetchUsers}
-                        className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-4 py-3 rounded-xl font-bold transition-all shadow-sm active:scale-95"
-                        title="Refresh users"
-                    >
-                        <FiRefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-                    </button>
-                    <button
-                        onClick={() => { setIsEditing(false); setFormData({ username: "", name: "", email: "", phone: "", role: "user", password: "" }); setIsModalOpen(true); }}
-                        className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
-                    >
-                        <FiUserPlus /> Add New User
-                    </button>
-                </div>
-            </div>
+      
 
             {/* Tabs */}
             <div className="flex items-center gap-6 border-b border-gray-100 px-2 mt-2">
@@ -358,6 +341,15 @@ const Users = ({ initialTab = "All" }) => {
                                 <option value="user">user</option>
                             </select>
                         </div>
+                         <div className="flex items-center gap-3">
+                
+                    <button
+                        onClick={() => { setIsEditing(false); setFormData({ username: "", name: "", email: "", phone: "", role: "user", password: "" }); setIsModalOpen(true); }}
+                        className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
+                    >
+                        <FiUserPlus /> Add New User
+                    </button>
+                </div>
                     </div>
                 </div>
 
