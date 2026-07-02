@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import api from "../../api";
 import {
     FiPlus,
@@ -253,8 +254,8 @@ const BannerManagement = () => {
             )}
 
             {/* Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/60  animate-in fade-in duration-300 px-4">
+            {isModalOpen && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300 px-4">
                     <div
                         className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[95vh] overflow-y-auto hide-scrollbar"
                         onClick={(e) => e.stopPropagation()}
@@ -448,7 +449,7 @@ const BannerManagement = () => {
                         </form>
                     </div>
                 </div>
-            )}
+            , document.body)}
         </div>
     );
 };

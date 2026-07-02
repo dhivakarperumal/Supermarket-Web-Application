@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import { createPortal } from "react-dom";
 import { useAdmin } from "../../PrivateRouter/AdminContext";
 import api from "../../api";
 import {
@@ -245,8 +246,8 @@ const VideoManagement = () => {
             )}
 
             {/* Modal - Perfectly Centered */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/80  animate-in fade-in duration-300 px-4">
+            {isModalOpen && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300 px-4">
                     <div
                         className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto hide-scrollbar"
                         onClick={(e) => e.stopPropagation()}
@@ -402,7 +403,7 @@ const VideoManagement = () => {
                         </form>
                     </div>
                 </div>
-            )}
+            , document.body)}
         </div>
     );
 };
