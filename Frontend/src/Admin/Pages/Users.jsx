@@ -164,6 +164,25 @@ const Users = ({ initialTab = "All" }) => {
         }
     };
 
+    const handleToggleStatus = async (user) => {
+        try {
+            const newStatus = user.status?.toLowerCase() === "active" ? "inactive" : "active";
+            const payload = {
+                username: user.username || user.name,
+                name: user.name,
+                email: user.email,
+                phone: user.phone || "",
+                role: user.role,
+                status: newStatus
+            };
+            await api.put(`/auth/users/${user.id}`, payload);
+            toast.success(`User status changed to ${newStatus}`);
+            fetchUsers();
+        } catch (error) {
+            toast.error("Failed to update status");
+        }
+    };
+
     const openEditModal = (user) => {
         setFormData({
             username: user.username || user.name,
@@ -427,10 +446,15 @@ const Users = ({ initialTab = "All" }) => {
                                         <td className="px-3 py-4 md:px-6 md:py-4 block md:table-cell border-b border-gray-50 md:border-b-0">
                                             <div className="flex md:block items-center justify-between w-full">
                                                 <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</span>
-                                                <div className="flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    onDoubleClick={() => handleToggleStatus(user)}
+                                                    className="flex items-center gap-2 text-left w-full"
+                                                    title="Double click to toggle active/inactive"
+                                                >
                                                     <div className={`w-2 h-2 rounded-full ${user.status === 'Active' ? 'bg-emerald-500 shadow-sm shadow-emerald-300' : 'bg-gray-300'}`} />
                                                     <span className="text-sm font-bold text-slate-700">{user.status}</span>
-                                                </div>
+                                                </button>
                                             </div>
                                         </td>
                                         {/* Joined */}
