@@ -29,9 +29,23 @@ const Users = ({ initialTab = "All" }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [viewMode, setViewMode] = useState("table");
 
-    // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+
+    const handleSearchChange = (value) => {
+        setSearchTerm(value);
+        setCurrentPage(1);
+    };
+
+    const handleRoleChange = (value) => {
+        setSelectedRole(value);
+        setCurrentPage(1);
+    };
+
+    const handleTabChange = (tab) => {
+        setSelectedTab(tab);
+        setCurrentPage(1);
+    };
 
     // ---- Modal State for Registering/Editing User ----
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -227,23 +241,13 @@ const Users = ({ initialTab = "All" }) => {
 
     // Pagination Logic
     const totalPages = Math.max(1, Math.ceil(filteredUsers.length / itemsPerPage));
-    const indexOfLastItem = currentPage * itemsPerPage;
+    const safeCurrentPage = Math.min(currentPage, totalPages);
+    const indexOfLastItem = safeCurrentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
     const pageStart = filteredUsers.length === 0 ? 0 : indexOfFirstItem + 1;
     const pageEnd = filteredUsers.length === 0 ? 0 : Math.min(indexOfLastItem, filteredUsers.length);
 
-    // Reset to page 1 when filters change
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchTerm, selectedTab, selectedRole]);
-
-    // Clamp current page when filter results change
-    useEffect(() => {
-        if (currentPage > totalPages) {
-            setCurrentPage(totalPages);
-        }
-    }, [currentPage, totalPages]);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -295,7 +299,7 @@ const Users = ({ initialTab = "All" }) => {
             {/* Tabs */}
             <div className="flex items-center gap-6 border-b border-gray-100 px-2 mt-2">
                 <button
-                    onClick={() => setSelectedTab("All")}
+                    onClick={() => handleTabChange("All")}
                     className={`pb-4 text-sm font-bold transition-all relative flex items-center gap-2 ${selectedTab === "All" ? "text-blue-600" : "text-gray-400 hover:text-gray-600"}`}
                 >
                     All Users
@@ -305,7 +309,7 @@ const Users = ({ initialTab = "All" }) => {
                     {selectedTab === "All" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />}
                 </button>
                 <button
-                    onClick={() => setSelectedTab("New")}
+                    onClick={() => handleTabChange("New")}
                     className={`pb-4 text-sm font-bold transition-all relative flex items-center gap-2 ${selectedTab === "New" ? "text-blue-600" : "text-gray-400 hover:text-gray-600"}`}
                 >
                     New Users
@@ -328,7 +332,7 @@ const Users = ({ initialTab = "All" }) => {
                             type="text"
                             placeholder="Find by name or email..."
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => handleSearchChange(e.target.value)}
                             className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition-all text-sm"
                         />
                     </div>
@@ -337,7 +341,7 @@ const Users = ({ initialTab = "All" }) => {
                             <FiFilter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                             <select
                                 value={selectedRole}
-                                onChange={(e) => setSelectedRole(e.target.value)}
+                                onChange={(e) => handleRoleChange(e.target.value)}
                                 className="pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition-all text-sm font-bold text-gray-600 cursor-pointer appearance-none min-w-35"
                             >
                                 <option value="all">all roles</option>
