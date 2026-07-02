@@ -130,7 +130,7 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
         flex flex-col transition-all duration-300
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0
-        ${collapsed ? "w-20" : "w-64"}
+        ${collapsed ? "w-20" : "w-74"}
       `}
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.20),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.28),transparent_45%)] pointer-events-none" />
