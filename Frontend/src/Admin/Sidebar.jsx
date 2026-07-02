@@ -129,7 +129,7 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
         flex flex-col transition-all duration-300
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0
-        ${collapsed ? "w-20" : "w-74"}
+        ${collapsed ? "w-20" : "w-76"}
       `}
       >
         <div

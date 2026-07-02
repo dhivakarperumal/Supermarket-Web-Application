@@ -45,7 +45,7 @@ const Dashboard = () => {
         try {
             await api.post("/products", { 
                 ...rapidProd, 
-                category: "Saree", // Default for rapid add
+                category: "Groceries", // Default for rapid add
                 total_stock: "0",
                 variants: []
             });
@@ -157,7 +157,7 @@ const Dashboard = () => {
 
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="space-y-1">
-                        <h2 className="text-2xl font-black text-white tracking-tight leading-none uppercase italic">Boutique Rapid Studio</h2>
+                        <h2 className="text-2xl font-black text-white tracking-tight leading-none uppercase italic">Supermarket Rapid Studio</h2>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -353,8 +353,8 @@ const Dashboard = () => {
                 <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm space-y-8">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Category Analytics</h3>
-                            <p className="text-xs text-blue-500 font-bold uppercase tracking-widest mt-1">Revenue by Saree Type</p>
+                            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Revenue Breakdown</h3>
+                            <p className="text-xs text-blue-500 font-bold uppercase tracking-widest mt-1">Revenue by Category</p>
                         </div>
                         <div className="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center">
                             <FiActivity />
@@ -558,7 +558,7 @@ const Dashboard = () => {
                                         autoFocus
                                         type="text"
                                         className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-500/20 rounded-2xl outline-none font-bold text-slate-800 transition-all"
-                                        placeholder="e.g. Silk Saree"
+                                        placeholder="e.g. Fresh Apples"
                                         value={rapidProd.name}
                                         onChange={(e) => setRapidProd({ ...rapidProd, name: e.target.value })}
                                         required

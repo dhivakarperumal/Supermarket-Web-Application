@@ -47,9 +47,9 @@ const Settings = () => {
 
                             <div className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black uppercase text-gray-400 tracking-widest pl-1">Store Name</label>
-                                        <input type="text" defaultValue="eMart Saree Collections" className="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition-all font-semibold text-slate-700 shadow-inner" />
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Store Name</label>
+                                        <input type="text" defaultValue="Priyam Super Market" className="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition-all font-semibold text-slate-700 shadow-inner" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-xs font-black uppercase text-gray-400 tracking-widest pl-1">Store Email</label>

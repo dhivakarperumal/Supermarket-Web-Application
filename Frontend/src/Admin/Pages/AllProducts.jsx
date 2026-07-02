@@ -62,7 +62,7 @@ const AllProducts = () => {
         try {
             await api.post("/products", {
                 ...rapidProd,
-                category: "Saree",
+                category: "Groceries",
                 total_stock: "0",
                 variants: []
             });

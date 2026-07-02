@@ -133,8 +133,8 @@ const Reports = () => {
                 </div>
 
                 <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
-                    <h3 className="text-xl font-bold text-slate-800 mb-2">Category Distribution</h3>
-                    <p className="text-sm text-gray-400 font-medium mb-8">Sales percentage by saree types</p>
+                    <h2 className="text-xl font-bold text-slate-800">Category Insights</h2>
+                    <p className="text-sm text-gray-400 font-medium mb-8">Sales percentage by categories</p>
 
                     <div className="space-y-6">
                         {reportsData?.categoryDistribution?.map((cat, i) => (

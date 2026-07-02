@@ -16,7 +16,7 @@ import {
     FiCreditCard,
     FiXCircle
 } from "react-icons/fi";
-import logo from "/assets/sareelogo.png";
+const logo = "/logo.png";
 import api from "../../api";
 import { toast, Toaster } from "react-hot-toast";
 

@@ -25,10 +25,10 @@ const Dealers = () => {
     const [showHistory, setShowHistory] = useState(false);
 
     // Mock history data
-    const mockHistory = [
-        { id: "#INV-2024-001", date: "2024-03-01", items: "Wedding Silk Saree x 5", amount: "₹45,000", status: "Paid" },
-        { id: "#INV-2024-042", date: "2024-02-15", items: "Cotton Saree x 12", amount: "₹18,000", status: "Paid" },
-        { id: "#INV-2023-118", date: "2024-01-20", items: "Linen Saree x 2", amount: "₹4,200", status: "Pending" },
+    const recentOrders = [
+        { id: "#INV-2024-001", date: "2024-03-01", items: "Basmati Rice 5kg x 5", amount: "₹45,000", status: "Paid" },
+        { id: "#INV-2024-042", date: "2024-02-15", items: "Sunflower Oil 1L x 12", amount: "₹18,000", status: "Paid" },
+        { id: "#INV-2023-118", date: "2024-01-20", items: "Aashirvaad Atta 10kg x 2", amount: "₹4,200", status: "Pending" },
     ];
 
     useEffect(() => {
