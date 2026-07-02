@@ -101,6 +101,13 @@ const AddProducts = () => {
       : cleaned.padEnd(12, "0");
   };
 
+  const handleGenerateBarcode = () => {
+    setFormData((prev) => ({
+      ...prev,
+      barcode: generateBarcode(prev.product_code),
+    }));
+  };
+
   const renderBarcodeSvg = (value) => {
     const code = String(value || "").trim().toUpperCase();
     if (!code) {
@@ -629,9 +636,18 @@ const AddProducts = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Barcode
-                </label>
+                <div className="flex items-center justify-between gap-3">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                    Barcode
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleGenerateBarcode}
+                    className="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-all"
+                  >
+                    Generate Barcode
+                  </button>
+                </div>
                 <input
                   type="text"
                   name="barcode"
@@ -640,6 +656,12 @@ const AddProducts = () => {
                   placeholder="Barcode"
                   className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800"
                 />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                  Generated Barcode Preview
+                </label>
+                {renderBarcodeSvg(formData.barcode)}
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
@@ -1010,7 +1032,9 @@ const AddProducts = () => {
                   className="h-32 w-full object-contain rounded-2xl"
                 />
               ) : (
-                renderBarcodeSvg(formData.barcode)
+                <div className="h-32 w-full rounded-2xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-sm text-gray-500">
+                  Upload a barcode image to preview it here.
+                </div>
               )}
             </div>
           </div>
