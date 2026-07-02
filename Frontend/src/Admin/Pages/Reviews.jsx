@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from "react";
+import { createPortal } from "react-dom";
 import { useAdmin } from "../../PrivateRouter/AdminContext";
 import {
   Star,
@@ -460,9 +461,8 @@ const Reviews = () => {
       )}
 
       {/* ADD REVIEW MODAL */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 italic">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}></div>
+      {showAddModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={(e) => e.target === e.currentTarget && setShowAddModal(false)}>
 
           <div className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
             {/* Header */}
@@ -609,7 +609,7 @@ const Reviews = () => {
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
     </div>
   );
 };
