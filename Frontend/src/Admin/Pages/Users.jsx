@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import api from "../../api";
 import {
     FiSearch,
@@ -52,13 +53,13 @@ const Users = ({ initialTab = "All" }) => {
                 // Transform data if needed for UI
                 const fetchedUsers = response.data.map(u => ({
                     id: u.id || u.user_id,
-                    name: u.name || u.username,
-                    email: u.email,
+                    name: u.username || u.name || u.user_id,
+                    email: u.email || "",
                     role: u.role ? u.role.toLowerCase() : 'user',
-                    status: 'Active', // Mocking status since it's not in db yet
-                    joined: u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A',
+                    status: u.status ? u.status.charAt(0).toUpperCase() + u.status.slice(1).toLowerCase() : 'Active',
+                    joined: u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A',
                     rawCreated_at: u.created_at,
-                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || u.username)}&background=random`
+                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username || u.name || 'User')}&background=random`
                 }));
                 setUsers(fetchedUsers);
             } catch (error) {
@@ -76,13 +77,13 @@ const Users = ({ initialTab = "All" }) => {
             const response = await api.get("/auth/users");
             const fetchedUsers = response.data.map(u => ({
                 id: u.id || u.user_id,
-                name: u.name || u.username,
-                email: u.email,
+                name: u.username || u.name || u.user_id,
+                email: u.email || "",
                 role: u.role ? u.role.toLowerCase() : 'user',
-                status: 'Active',
-                joined: u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A',
+                status: u.status ? u.status.charAt(0).toUpperCase() + u.status.slice(1).toLowerCase() : 'Active',
+                joined: u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A',
                 rawCreated_at: u.created_at,
-                avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || u.username)}&background=random`
+                avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username || u.name || 'User')}&background=random`
             }));
             setUsers(fetchedUsers);
         } catch (error) {
@@ -265,7 +266,7 @@ const Users = ({ initialTab = "All" }) => {
                             <select
                                 value={selectedRole}
                                 onChange={(e) => setSelectedRole(e.target.value)}
-                                className="pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition-all text-sm font-bold text-gray-600 cursor-pointer appearance-none min-w-[140px]"
+                                className="pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition-all text-sm font-bold text-gray-600 cursor-pointer appearance-none min-w-35"
                             >
                                 <option value="all">all roles</option>
                                 <option value="admin">admin</option>
@@ -422,9 +423,9 @@ const Users = ({ initialTab = "All" }) => {
             </div>
 
             {/* Add User Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
+            {isModalOpen && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-4xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
                         <div className="flex items-center justify-between p-6 border-b border-gray-100 shrink-0">
                             <div>
                                 <h2 className="text-xl font-bold text-slate-800">{isEditing ? 'Modify Domain Privileges' : 'Register New User'}</h2>
@@ -518,7 +519,7 @@ const Users = ({ initialTab = "All" }) => {
                         </div>
                     </div>
                 </div>
-            )}
+            , document.body)}
         </div>
     );
 };
