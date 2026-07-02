@@ -5,10 +5,13 @@ const {
   updateUser,
   deleteUser,
 } = require("../controllers/authController");
+const { loginUser, googleLogin } = require("../controllers/loginController");
 
 const router = express.Router();
 
 router.post("/register", registerUser);
+router.post("/login", loginUser);
+router.post("/google-login", googleLogin);
 router.get("/users", getUsers);
 router.put("/users/:id", updateUser);
 router.delete("/users/:id", deleteUser);

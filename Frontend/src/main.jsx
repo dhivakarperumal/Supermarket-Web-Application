@@ -125,7 +125,7 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")).render(
-  <GoogleOAuthProvider clientId="92181265196-n9a9p26qe601hg7lar8acq6s4f1cknq7.apps.googleusercontent.com">
+  <GoogleOAuthProvider clientId="198773825099-qjq27fgfarmhjgck6r049f9og64iqsug.apps.googleusercontent.com">
     <AuthProvider>
       <StoreProvider>
         <Toaster position="top-left" reverseOrder={false} />

@@ -3,6 +3,8 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const { initDatabase } = require("./src/config/db");
 const authRouter = require("./src/routers/authRouter");
+const categoriesRouter = require("./src/routers/categoriesRouter");
+const productsRouter = require("./src/routers/productsRouter");
 
 dotenv.config();
 
@@ -31,22 +33,9 @@ app.get("/", (req, res) => {
   });
 });
 
-// Example API
-app.get("/api", (req, res) => {
-  res.json({
-    message: "Welcome to the API",
-  });
-});
 
-// Auth Routes
 app.use("/api/auth", authRouter);
-
-// Category Routes
-const categoriesRouter = require("./src/routers/categoriesRouter");
 app.use("/api/categories", categoriesRouter);
-
-// Product Routes
-const productsRouter = require("./src/routers/productsRouter");
 app.use("/api/products", productsRouter);
 
 // Port
