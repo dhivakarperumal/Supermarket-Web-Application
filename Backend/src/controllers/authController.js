@@ -127,12 +127,14 @@ const updateUser = async (req, res) => {
     const { id } = req.params;
     const { username, email, phone, role, status, password } = req.body || {};
 
-    if (!username || !email || !phone || !role) {
+    if (!username || !email || !role) {
       return res.status(400).json({
         success: false,
-        message: "username, email, phone and role are required",
+        message: "username, email and role are required",
       });
     }
+    
+    const phoneValue = phone || "";
 
     if (!allowedRoles.includes(role.toLowerCase())) {
       return res.status(400).json({
@@ -166,7 +168,7 @@ const updateUser = async (req, res) => {
       "role = ?",
       "updated_at = CURRENT_TIMESTAMP",
     ];
-    const updateValues = [username, email, phone, role.toLowerCase()];
+    const updateValues = [username, email, phoneValue, role.toLowerCase()];
 
     if (status) {
       updateFields.splice(4, 0, "status = ?");
