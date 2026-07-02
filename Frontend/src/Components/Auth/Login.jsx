@@ -26,14 +26,16 @@ function Login() {
     e.preventDefault();
     try {
       const res = await api.post("/auth/login", form);
+      const userData = res.data.user || res.data;
+      const role = String(userData?.role || "user").toLowerCase();
 
-      login(res.data.user, res.data.token);
+      login(userData, res.data.token);
       toast.success("Login successful!");
 
-      if (res.data.user.role === "admin") {
-        navigate("/admin");
+      if (role === "admin") {
+        navigate("/admin", { replace: true });
       } else {
-        navigate("/");
+        navigate("/", { replace: true });
       }
     } catch (error) {
       console.error("Login Error:", error);
@@ -58,14 +60,17 @@ function Login() {
         googleUser
       );
 
-      login(res.data.user, res.data.token);
+      const userData = res.data.user || res.data;
+      const role = String(userData?.role || "user").toLowerCase();
+
+      login(userData, res.data.token);
 
       toast.success("Google Login Successful!");
 
-      if (res.data.user.role === "admin") {
-        navigate("/admin");
+      if (role === "admin") {
+        navigate("/admin", { replace: true });
       } else {
-        navigate("/");
+        navigate("/", { replace: true });
       }
 
     } catch (error) {
