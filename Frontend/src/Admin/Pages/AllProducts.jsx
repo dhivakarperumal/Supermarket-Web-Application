@@ -187,16 +187,14 @@ const AllProducts = () => {
                 return `${backendUrl}${cleanPath}`;
             };
 
-            // 1. Try variants first
-            if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
-                const firstVar = product.variants[0];
-                const vImgs = typeof firstVar.images === 'string' ? JSON.parse(firstVar.images) : firstVar.images;
-                if (Array.isArray(vImgs) && vImgs.length > 0) imgUrl = vImgs[0];
+            // 1. Try thumbnail first
+            if (product.thumbnail_image) {
+                imgUrl = product.thumbnail_image;
             }
 
-            // 2. Try main images column
-            if (!imgUrl && product.images) {
-                const imgs = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+            // 2. Try product_images array
+            if (!imgUrl && product.product_images) {
+                const imgs = typeof product.product_images === 'string' ? JSON.parse(product.product_images) : product.product_images;
                 if (Array.isArray(imgs) && imgs.length > 0) imgUrl = imgs[0];
             }
 
