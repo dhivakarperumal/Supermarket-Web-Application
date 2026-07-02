@@ -37,6 +37,7 @@ const AddProducts = () => {
     mrp: "",
     selling_price: "",
     offer: "",
+    price_plus: "",
     offer_price: "",
     stock_quantity: "0",
     // pricing options: array of variants / pack sizes with their own price/stock
@@ -100,6 +101,78 @@ const AddProducts = () => {
       : cleaned.padEnd(12, "0");
   };
 
+  const CODE128_PATTERNS = [
+    "212222","222122","222221","121223","121322","131222","122213","122312","132212","221213",
+    "221312","231212","112232","122132","122231","113222","123122","123221","223211","221132",
+    "221231","213212","223112","312131","311222","321122","321221","312212","322112","322211",
+    "212123","212321","232121","111323","131123","131321","112313","132113","132311","211313",
+    "231113","231311","112133","112331","132131","113123","113321","133121","313121","211331",
+    "231131","213113","213311","213131","311123","311321","331121","312113","312311","332111","314111",
+    "221411","431111","111224","111422","121124","121421","141122","141221","112214","112412",
+    "122114","122411","142112","142211","241211","221114","413111","241112","134111","111242",
+    "121142","121241","114212","124112","124211","411212","421112","421211","212141","214121","412121",
+    "111143","111341","131141","114113","114311","411113","411311","113141","114131","311141",
+    "411131","211412","211214","211232","23311120",
+  ];
+
+  const renderBarcodeSvg = (value) => {
+    const code = String(value || "").replace(/[^A-Z0-9]/g, "").toUpperCase();
+    if (!code) return null;
+
+    const values = [104, ...Array.from(code).map((ch) => ch.charCodeAt(0) - 32)];
+    const checksum = values.slice(1).reduce(
+      (sum, v, index) => sum + v * (index + 1),
+      values[0],
+    ) % 103;
+    values.push(checksum, 106);
+
+    const modules = values.flatMap((value) =>
+      CODE128_PATTERNS[value].split("").map(Number),
+    );
+
+    const scale = 1.8;
+    let x = 0;
+    const bars = modules.map((width, index) => {
+      const w = width * scale;
+      const isBar = index % 2 === 0;
+      const rect = isBar ? (
+        <rect
+          key={index}
+          x={x}
+          y={0}
+          width={w}
+          height={52}
+          fill="#0f172a"
+        />
+      ) : null;
+      x += w;
+      return rect;
+    });
+
+    const totalWidth = modules.reduce((sum, width) => sum + width * scale, 0);
+    return (
+      <svg
+        viewBox={`0 0 ${totalWidth} 80`}
+        className="w-full h-28 rounded-3xl bg-white border border-gray-200"
+        preserveAspectRatio="xMidYMid meet"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect width={totalWidth} height={80} fill="#ffffff" rx="24" />
+        <g>{bars}</g>
+        <text
+          x={totalWidth / 2}
+          y="74"
+          textAnchor="middle"
+          fontSize="10"
+          fill="#334155"
+          fontFamily="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        >
+          {code}
+        </text>
+      </svg>
+    );
+  };
+
   // selling price is derived from MRP and Discount when those fields change
 
   useEffect(() => {
@@ -129,6 +202,7 @@ const AddProducts = () => {
             mrp: p.mrp?.toString() || "",
             selling_price: p.selling_price?.toString() || "",
             offer: p.offer?.toString() || "",
+            price_plus: p.price_plus?.toString() || "",
             offer_price: p.offer_price?.toString() || "",
             stock_quantity: p.stock_quantity?.toString() || "0",
             minimum_stock: p.minimum_stock?.toString() || "0",
@@ -164,19 +238,25 @@ const AddProducts = () => {
             updated_at: p.updated_at || "",
           }));
         } else {
-          const [catRes, codeRes] = await Promise.all([
-            api.get("/categories"),
-            api.get("/products/latest-code"),
-          ]);
+          const [catRes] = await Promise.all([api.get("/categories")]);
+          const categoriesData = Array.isArray(catRes.data) ? catRes.data : [];
+          const defaultCategory = categoriesData[0]?.name || "";
 
-          const initialSku = generateProductCode(codeRes.data?.latestCode);
-          setCategories(Array.isArray(catRes.data) ? catRes.data : []);
+          let initialSku = generateProductCode("");
+          try {
+            const codeRes = await api.get("/products/latest-code");
+            initialSku = generateProductCode(codeRes.data?.latestCode);
+          } catch (skuError) {
+            console.warn(
+              "Unable to fetch latest SKU, falling back to default:",
+              skuError,
+            );
+          }
+
+          setCategories(categoriesData);
           setFormData((prev) => ({
             ...prev,
-            category:
-              Array.isArray(catRes.data) && catRes.data[0]?.name
-                ? catRes.data[0].name
-                : "",
+            category: defaultCategory,
             product_code: initialSku,
             barcode: generateBarcode(initialSku),
           }));
@@ -184,6 +264,15 @@ const AddProducts = () => {
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("Unable to load product form data.");
+
+        if (!isEdit) {
+          const fallbackSku = generateProductCode("");
+          setFormData((prev) => ({
+            ...prev,
+            product_code: fallbackSku,
+            barcode: generateBarcode(fallbackSku),
+          }));
+        }
       } finally {
         setFetching(false);
       }
@@ -416,6 +505,7 @@ const AddProducts = () => {
         minimum_stock: Number(formData.minimum_stock || 0),
         maximum_stock: Number(formData.maximum_stock || 0),
         offer: Number(formData.offer || 0),
+        price_plus: Number(formData.price_plus || 0),
         offer_price: Number(formData.offer_price || 0),
         rating: Number(formData.rating || 0),
         review_count: Number(formData.review_count || 0),
@@ -628,129 +718,143 @@ const AddProducts = () => {
           </div>
 
           <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
-            <div className="flex items-center gap-3">
-              <span className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
-                <FaRupeeSign size={20} />
-              </span>
-              <h2 className="text-xl font-black text-slate-800">
-                Pricing & Inventory
-              </h2>
-            </div>
+           <div className="flex items-center justify-between mb-4">
+  {/* Left Side */}
+  <div className="flex items-center gap-3">
+    <span className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
+      <FaRupeeSign size={20} />
+    </span>
+
+    <div>
+      <h2 className="text-xl font-black text-slate-800">
+        Pricing & Inventory
+      </h2>
+      <p className="text-sm text-slate-500">
+        Add multiple pricing and inventory options
+      </p>
+    </div>
+  </div>
+
+  {/* Right Side */}
+  <button
+    type="button"
+    onClick={addPricingOption}
+    className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition"
+  >
+    +
+  </button>
+</div>
 
             {/* Multiple pricing options */}
             <div className="mt-4">
-              <h3 className="text-sm font-black text-gray-500 uppercase tracking-widest mb-3">
-                Pricing Options (pack sizes)
-              </h3>
+             
               <div className="space-y-3">
                 {(formData.pricing_options || []).map((opt, idx) => (
-                  <div key={idx} className="grid grid-cols-12 gap-2 items-end">
-                    <div className="col-span-3">
-                      <label className="text-xs font-black text-gray-400">
-                        Weight
-                      </label>
-                      <input
-                        type="text"
-                        value={opt.weight_volume}
-                        onChange={(e) =>
-                          handlePricingChange(
-                            idx,
-                            "weight_volume",
-                            e.target.value,
-                          )
-                        }
-                        className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm"
-                        placeholder="e.g. 1"
-                      />
+                  <div key={idx} className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 border border-gray-100 rounded-3xl bg-gray-50">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs font-black text-gray-400">
+                          Weight
+                        </label>
+                        <input
+                          type="text"
+                          value={opt.weight_volume}
+                          onChange={(e) =>
+                            handlePricingChange(
+                              idx,
+                              "weight_volume",
+                              e.target.value,
+                            )
+                          }
+                          className="w-full px-3 py-2 bg-white rounded-2xl text-sm border border-gray-200"
+                          placeholder="e.g. 1"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-black text-gray-400">
+                          Unit
+                        </label>
+                        <select
+                          value={opt.unit}
+                          onChange={(e) =>
+                            handlePricingChange(idx, "unit", e.target.value)
+                          }
+                          className="w-full px-3 py-2 bg-white rounded-2xl text-sm border border-gray-200"
+                        >
+                          <option value="kg">kg</option>
+                          <option value="g">g</option>
+                          <option value="ml">ml</option>
+                          <option value="L">L</option>
+                          <option value="pcs">pcs</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-black text-gray-400">
+                          MRP
+                        </label>
+                        <input
+                          type="number"
+                          value={opt.mrp}
+                          onChange={(e) =>
+                            handlePricingChange(idx, "mrp", e.target.value)
+                          }
+                          className="w-full px-3 py-2 bg-white rounded-2xl text-sm border border-gray-200"
+                        />
+                      </div>
                     </div>
-                    <div className="col-span-2">
-                      <label className="text-xs font-black text-gray-400">
-                        Unit
-                      </label>
-                      <select
-                        value={opt.unit}
-                        onChange={(e) =>
-                          handlePricingChange(idx, "unit", e.target.value)
-                        }
-                        className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm"
-                      >
-                        <option value="kg">kg</option>
-                        <option value="g">g</option>
-                        <option value="ml">ml</option>
-                        <option value="L">L</option>
-                        <option value="pcs">pcs</option>
-                      </select>
-                    </div>
-                    <div className="col-span-2">
-                      <label className="text-xs font-black text-gray-400">
-                        MRP
-                      </label>
-                      <input
-                        type="number"
-                        value={opt.mrp}
-                        onChange={(e) =>
-                          handlePricingChange(idx, "mrp", e.target.value)
-                        }
-                        className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <label className="text-xs font-black text-gray-400">
-                        Offer %
-                      </label>
-                      <input
-                        type="number"
-                        value={opt.offer}
-                        onChange={(e) =>
-                          handlePricingChange(idx, "offer", e.target.value)
-                        }
-                        className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <label className="text-xs font-black text-gray-400">
-                        Selling
-                      </label>
-                      <input
-                        type="number"
-                        value={opt.selling_price}
-                        onChange={(e) =>
-                          handlePricingChange(
-                            idx,
-                            "selling_price",
-                            e.target.value,
-                          )
-                        }
-                        className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm"
-                      />
-                    </div>
-                    <div className="col-span-1 flex items-end">
-                      <button
-                        type="button"
-                        onClick={() => removePricingOption(idx)}
-                        className="w-full h-11 rounded-2xl bg-red-600 text-white flex items-center justify-center hover:bg-red-700 transition-all"
-                        disabled={formData.pricing_options.length === 1}
-                        title={
-                          formData.pricing_options.length === 1
-                            ? "Keep at least one pricing option"
-                            : "Remove option"
-                        }
-                      >
-                        <FiTrash2 size={16} />
-                      </button>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs font-black text-gray-400">
+                          Offer %
+                        </label>
+                        <input
+                          type="number"
+                          value={opt.offer}
+                          onChange={(e) =>
+                            handlePricingChange(idx, "offer", e.target.value)
+                          }
+                          className="w-full px-3 py-2 bg-white rounded-2xl text-sm border border-gray-200"
+                        />
+                      </div>
+                  
+                      <div>
+                        <label className="text-xs font-black text-gray-400">
+                          Selling
+                        </label>
+                        <input
+                          type="number"
+                          value={opt.selling_price}
+                          onChange={(e) =>
+                            handlePricingChange(
+                              idx,
+                              "selling_price",
+                              e.target.value,
+                            )
+                          }
+                          className="w-full px-3 py-2 bg-white rounded-2xl text-sm border border-gray-200"
+                        />
+                      </div>
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => removePricingOption(idx)}
+                          className="w-full h-11 rounded-2xl bg-red-600 text-white flex items-center justify-center hover:bg-red-700 transition-all"
+                          disabled={formData.pricing_options.length === 1}
+                          title={
+                            formData.pricing_options.length === 1
+                              ? "Keep at least one pricing option"
+                              : "Remove option"
+                          }
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
 
-                <div>
-                  <button
-                    type="button"
-                    onClick={addPricingOption}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-2xl"
-                  >
-                    Add pricing option
-                  </button>
-                </div>
+               
               </div>
             </div>
             <div className="mt-4">
@@ -909,12 +1013,14 @@ const AddProducts = () => {
                   onChange={handleBarcodeUpload}
                 />
               </label>
-              {formData.barcode_image && (
+              {formData.barcode_image ? (
                 <img
                   src={formData.barcode_image}
                   alt="Barcode"
                   className="h-32 w-full object-contain rounded-2xl"
                 />
+              ) : (
+                renderBarcodeSvg(formData.barcode)
               )}
             </div>
           </div>
