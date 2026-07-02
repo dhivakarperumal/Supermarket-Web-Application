@@ -313,19 +313,38 @@ const ProductDetail = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {pricingOptions.map((opt, i) => (
-                                            <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                                                <td className="px-4 py-4 font-black text-slate-700 text-sm">{opt.label || opt.variant || opt.weight || `Option ${i + 1}`}</td>
-                                                <td className="px-4 py-4 text-sm font-bold text-gray-500">₹{parseFloat(opt.mrp || 0).toLocaleString()}</td>
-                                                <td className="px-4 py-4">
-                                                    {opt.offer_percent > 0 ? (
-                                                        <span className="bg-rose-50 text-rose-600 text-[10px] font-black px-2 py-1 rounded-lg border border-rose-100">{opt.offer_percent}%</span>
-                                                    ) : <span className="text-gray-300 text-sm">—</span>}
-                                                </td>
-                                                <td className="px-4 py-4 text-sm font-black text-blue-600">₹{parseFloat(opt.selling_price || opt.price || 0).toLocaleString()}</td>
-                                                <td className="px-4 py-4 text-sm font-bold text-slate-600">{opt.stock ?? "—"}</td>
-                                            </tr>
-                                        ))}
+                                        {pricingOptions.map((opt, i) => {
+                                            // Build the variant label from weight_volume + unit
+                                            const variantLabel =
+                                                opt.weight_volume && opt.unit
+                                                    ? `${opt.weight_volume} ${opt.unit}`
+                                                    : opt.weight_volume || opt.label || opt.variant || opt.weight || `Option ${i + 1}`;
+
+                                            const offerVal = parseFloat(opt.offer || opt.offer_percent || 0);
+                                            const mrpVal   = parseFloat(opt.mrp || 0);
+                                            const spVal    = parseFloat(opt.selling_price || opt.price || 0);
+                                            const stockVal = opt.stock_quantity ?? opt.stock ?? null;
+
+                                            return (
+                                                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                                    <td className="px-4 py-4 font-black text-slate-700 text-sm">{variantLabel}</td>
+                                                    <td className="px-4 py-4 text-sm font-bold text-gray-500">
+                                                        {mrpVal > 0 ? `₹${mrpVal.toLocaleString()}` : <span className="text-gray-300">—</span>}
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        {offerVal > 0 ? (
+                                                            <span className="bg-rose-50 text-rose-600 text-[10px] font-black px-2 py-1 rounded-lg border border-rose-100">{offerVal}%</span>
+                                                        ) : <span className="text-gray-300 text-sm">—</span>}
+                                                    </td>
+                                                    <td className="px-4 py-4 text-sm font-black text-blue-600">
+                                                        {spVal > 0 ? `₹${spVal.toLocaleString()}` : <span className="text-gray-300">—</span>}
+                                                    </td>
+                                                    <td className="px-4 py-4 text-sm font-bold text-slate-600">
+                                                        {stockVal !== null ? `${stockVal} units` : <span className="text-gray-300">—</span>}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
