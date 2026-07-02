@@ -1,0 +1,324 @@
+const { getPool } = require("../config/db");
+const { createProductTable } = require("../config/initProductDatabase");
+
+const parseJsonField = (value) => {
+  if (!value) return [];
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return [];
+  }
+};
+
+const createProduct = async (req, res) => {
+  try {
+    const data = req.body || {};
+
+    if (!data.name || !data.category) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and Category are required.",
+      });
+    }
+
+    const pool = getPool();
+    const connection = await pool.getConnection();
+
+    try {
+      await createProductTable();
+
+      const [result] = await connection.execute(
+        `INSERT INTO products (
+          name, product_code, barcode, barcode_image, category, subcategory, brand, description,
+          mrp, selling_price, offer, offer_price, stock_quantity, pricing_options, total_stock,
+          expiry_date, manufacturing_date, country_of_origin, supplier, product_images, thumbnail_image,
+          status, featured_product, best_seller, todays_deal, delivery_time, return_available, rating, review_count
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          data.name,
+          data.product_code || "",
+          data.barcode || "",
+          data.barcode_image || "",
+          data.category || "",
+          data.subcategory || "",
+          data.brand || "",
+          data.description || "",
+          data.mrp || 0,
+          data.selling_price || 0,
+          data.offer || 0,
+          data.offer_price || 0,
+          data.stock_quantity || 0,
+          JSON.stringify(Array.isArray(data.pricing_options) ? data.pricing_options : []),
+          data.total_stock || 0,
+          data.expiry_date || "",
+          data.manufacturing_date || "",
+          data.country_of_origin || "",
+          data.supplier || "",
+          JSON.stringify(Array.isArray(data.product_images) ? data.product_images : []),
+          data.thumbnail_image || "",
+          data.status || 'Active',
+          data.featured_product || false,
+          data.best_seller || false,
+          data.todays_deal || false,
+          data.delivery_time || "",
+          data.return_available || false,
+          data.rating || 5,
+          data.review_count || 0
+        ]
+      );
+
+      return res.status(201).json({
+        success: true,
+        message: "Product created successfully.",
+        id: result.insertId,
+      });
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error("Create product failed:", error);
+    if (error.code === 'ER_NET_PACKET_TOO_LARGE' || error.sqlMessage?.includes('max_allowed_packet')) {
+      return res.status(413).json({
+        success: false,
+        message: "Images are too large. Please use smaller images.",
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to create product.",
+    });
+  }
+};
+
+const getProducts = async (req, res) => {
+  try {
+    const pool = getPool();
+    const connection = await pool.getConnection();
+
+    try {
+      await createProductTable();
+      const [rows] = await connection.execute(
+        "SELECT * FROM products ORDER BY created_at DESC"
+      );
+
+      const products = rows.map((row) => ({
+        ...row,
+        pricing_options: parseJsonField(row.pricing_options),
+        product_images: parseJsonField(row.product_images),
+        featured_product: !!row.featured_product,
+        best_seller: !!row.best_seller,
+        todays_deal: !!row.todays_deal,
+        return_available: !!row.return_available
+      }));
+
+      return res.status(200).json(products);
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error("Fetch products failed:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch products.",
+    });
+  }
+};
+
+const getLatestCode = async (req, res) => {
+  try {
+    const pool = getPool();
+    const connection = await pool.getConnection();
+
+    try {
+      await createProductTable();
+      const [rows] = await connection.execute(
+        "SELECT product_code FROM products ORDER BY id DESC LIMIT 1"
+      );
+
+      let latestCode = "SPM000";
+      if (rows.length > 0 && rows[0].product_code) {
+        latestCode = rows[0].product_code;
+      }
+
+      return res.status(200).json({ latestCode });
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error("Fetch latest code failed:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch latest code.",
+    });
+  }
+};
+
+const getProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const pool = getPool();
+    const connection = await pool.getConnection();
+
+    try {
+      await createProductTable();
+      const [rows] = await connection.execute(
+        "SELECT * FROM products WHERE id = ?",
+        [id]
+      );
+
+      if (rows.length === 0) {
+        return res.status(404).json({ success: false, message: "Product not found." });
+      }
+
+      const product = rows[0];
+      product.pricing_options = parseJsonField(product.pricing_options);
+      product.product_images = parseJsonField(product.product_images);
+      product.featured_product = !!product.featured_product;
+      product.best_seller = !!product.best_seller;
+      product.todays_deal = !!product.todays_deal;
+      product.return_available = !!product.return_available;
+
+      return res.status(200).json(product);
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error("Fetch product failed:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch product.",
+    });
+  }
+};
+
+const updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = req.body || {};
+
+    if (!data.name || !data.category) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and Category are required.",
+      });
+    }
+
+    const pool = getPool();
+    const connection = await pool.getConnection();
+
+    try {
+      await createProductTable();
+      const [existingRows] = await connection.execute(
+        "SELECT * FROM products WHERE id = ?",
+        [id]
+      );
+
+      if (existingRows.length === 0) {
+        return res.status(404).json({ success: false, message: "Product not found." });
+      }
+
+      await connection.execute(
+        `UPDATE products SET 
+          name = ?, product_code = ?, barcode = ?, barcode_image = ?, category = ?, subcategory = ?, brand = ?, description = ?,
+          mrp = ?, selling_price = ?, offer = ?, offer_price = ?, stock_quantity = ?, pricing_options = ?, total_stock = ?,
+          expiry_date = ?, manufacturing_date = ?, country_of_origin = ?, supplier = ?, product_images = ?, thumbnail_image = ?,
+          status = ?, featured_product = ?, best_seller = ?, todays_deal = ?, delivery_time = ?, return_available = ?, rating = ?, review_count = ?,
+          updated_at = NOW() 
+        WHERE id = ?`,
+        [
+          data.name,
+          data.product_code || "",
+          data.barcode || "",
+          data.barcode_image || existingRows[0].barcode_image,
+          data.category || "",
+          data.subcategory || "",
+          data.brand || "",
+          data.description || "",
+          data.mrp || 0,
+          data.selling_price || 0,
+          data.offer || 0,
+          data.offer_price || 0,
+          data.stock_quantity || 0,
+          JSON.stringify(Array.isArray(data.pricing_options) ? data.pricing_options : parseJsonField(existingRows[0].pricing_options)),
+          data.total_stock || 0,
+          data.expiry_date || "",
+          data.manufacturing_date || "",
+          data.country_of_origin || "",
+          data.supplier || "",
+          JSON.stringify(Array.isArray(data.product_images) ? data.product_images : parseJsonField(existingRows[0].product_images)),
+          data.thumbnail_image || existingRows[0].thumbnail_image,
+          data.status || 'Active',
+          data.featured_product || false,
+          data.best_seller || false,
+          data.todays_deal || false,
+          data.delivery_time || "",
+          data.return_available || false,
+          data.rating || 5,
+          data.review_count || 0,
+          id
+        ]
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Product updated successfully.",
+      });
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error("Update product failed:", error);
+    if (error.code === 'ER_NET_PACKET_TOO_LARGE' || error.sqlMessage?.includes('max_allowed_packet')) {
+      return res.status(413).json({
+        success: false,
+        message: "Images are too large. Please use smaller images.",
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update product.",
+    });
+  }
+};
+
+const deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const pool = getPool();
+    const connection = await pool.getConnection();
+
+    try {
+      await createProductTable();
+      const [result] = await connection.execute(
+        "DELETE FROM products WHERE id = ?",
+        [id]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ success: false, message: "Product not found." });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Product deleted successfully.",
+      });
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error("Delete product failed:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete product.",
+    });
+  }
+};
+
+module.exports = {
+  createProduct,
+  getProducts,
+  getProduct,
+  updateProduct,
+  deleteProduct,
+  getLatestCode
+};

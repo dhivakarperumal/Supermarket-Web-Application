@@ -383,8 +383,8 @@ const AddProducts = () => {
       const imagesArray = await Promise.all(
         files.map(async (file) => {
           const options = {
-            maxSizeMB: 0.5,
-            maxWidthOrHeight: 1200,
+            maxSizeMB: 0.1,
+            maxWidthOrHeight: 800,
             useWebWorker: true,
           };
           const compressed = await imageCompression(file, options);
@@ -408,8 +408,8 @@ const AddProducts = () => {
       const file = e.target.files?.[0];
       if (!file) return;
       const options = {
-        maxSizeMB: 0.5,
-        maxWidthOrHeight: 1000,
+        maxSizeMB: 0.1,
+        maxWidthOrHeight: 800,
         useWebWorker: true,
       };
       const compressed = await imageCompression(file, options);
@@ -427,8 +427,8 @@ const AddProducts = () => {
       const file = e.target.files?.[0];
       if (!file) return;
       const options = {
-        maxSizeMB: 0.5,
-        maxWidthOrHeight: 1000,
+        maxSizeMB: 0.1,
+        maxWidthOrHeight: 800,
         useWebWorker: true,
       };
       const compressed = await imageCompression(file, options);
@@ -453,8 +453,11 @@ const AddProducts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.category || !formData.mrp) {
-      toast.error("Please fill in the required product details.");
+    const hasCategory = formData.category && formData.category.trim() !== "";
+    const hasMrp = formData.mrp || (formData.pricing_options && formData.pricing_options.length > 0 && formData.pricing_options[0].mrp);
+
+    if (!formData.name || !hasCategory || !hasMrp) {
+      toast.error("Please fill in the required product details (Name, Category, and at least one MRP).");
       return;
     }
 
