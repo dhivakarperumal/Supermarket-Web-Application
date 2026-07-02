@@ -57,8 +57,10 @@ const Users = ({ initialTab = "All" }) => {
                 // Transform data if needed for UI
                 const fetchedUsers = response.data.map(u => ({
                     id: u.id || u.user_id,
+                    username: u.username || u.name || u.user_id,
                     name: u.username || u.name || u.user_id,
                     email: u.email || "",
+                    phone: u.phone || "",
                     role: u.role ? u.role.toLowerCase() : 'user',
                     status: u.status ? u.status.charAt(0).toUpperCase() + u.status.slice(1).toLowerCase() : 'Active',
                     joined: u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A',
@@ -81,8 +83,10 @@ const Users = ({ initialTab = "All" }) => {
             const response = await api.get("/auth/users");
             const fetchedUsers = response.data.map(u => ({
                 id: u.id || u.user_id,
+                username: u.username || u.name || u.user_id,
                 name: u.username || u.name || u.user_id,
                 email: u.email || "",
+                phone: u.phone || "",
                 role: u.role ? u.role.toLowerCase() : 'user',
                 status: u.status ? u.status.charAt(0).toUpperCase() + u.status.slice(1).toLowerCase() : 'Active',
                 joined: u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A',
@@ -102,8 +106,14 @@ const Users = ({ initialTab = "All" }) => {
     };
 
     const handleSaveUser = async () => {
-        if (!formData.username || !formData.email) return;
-        if (!isEditing && !formData.password) return;
+        if (!formData.username || !formData.email || !formData.phone) {
+            toast.error("Username, email, and phone are required.");
+            return;
+        }
+        if (!isEditing && !formData.password) {
+            toast.error("Password is required for new user registration.");
+            return;
+        }
 
         setSubmitLoading(true);
         try {
@@ -591,7 +601,7 @@ const Users = ({ initialTab = "All" }) => {
                             </button>
                             <button
                                 onClick={handleSaveUser}
-                                disabled={submitLoading || !formData.username || !formData.email || (!isEditing && !formData.password)}
+                                disabled={submitLoading || !formData.username || !formData.email || !formData.phone || (!isEditing && !formData.password)}
                                 className="px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-blue-200 active:scale-95 flex items-center gap-2"
                             >
                                 {submitLoading ? "Processing..." : isEditing ? "Update Credentials" : "Register User"}

@@ -39,12 +39,18 @@ const createUsersTable = async () => {
         phone VARCHAR(20) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
         status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
-        role ENUM('admin', 'user') NOT NULL DEFAULT 'user',
+        role ENUM('admin', 'user', 'manager', 'dealer') NOT NULL DEFAULT 'user',
         created_by CHAR(36) NOT NULL,
         updated_by CHAR(36) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
+    `);
+
+    await connection.query(`
+      ALTER TABLE users
+      MODIFY COLUMN role ENUM('admin', 'user', 'manager', 'dealer') NOT NULL DEFAULT 'user',
+      MODIFY COLUMN status ENUM('active', 'inactive') NOT NULL DEFAULT 'active'
     `);
   } finally {
     connection.release();
