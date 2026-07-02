@@ -310,7 +310,8 @@ const AddProducts = () => {
                 pricing_options: Array.isArray(formData.pricing_options) ? formData.pricing_options : [],
                 minimum_stock: Number(formData.minimum_stock || 0),
                 maximum_stock: Number(formData.maximum_stock || 0),
-                discount_percent: Number(formData.discount_percent || 0),
+                offer: Number(formData.offer || 0),
+                offer_price: Number(formData.offer_price || 0),
                 rating: Number(formData.rating || 0),
                 review_count: Number(formData.review_count || 0),
                 featured_product: formData.featured_product === "Yes",
@@ -326,13 +327,16 @@ const AddProducts = () => {
                 const first = finalData.pricing_options[0];
                 finalData.mrp = Number(first.mrp || finalData.mrp || 0);
                 finalData.selling_price = Number(first.selling_price || finalData.selling_price || 0);
-                finalData.offer = Number(first.offer || formData.discount_percent || 0);
+                finalData.offer = Number(first.offer || formData.offer || 0);
                 finalData.offer_price = Number(first.selling_price || finalData.selling_price || 0);
                 finalData.stock_quantity = Number(first.stock_quantity || finalData.stock_quantity || 0);
             } else {
                 finalData.mrp = Number(formData.mrp || 0);
                 finalData.selling_price = Number(formData.selling_price || 0);
-                    finalData.offer = Number(formData.offer || 0);
+                finalData.offer = Number(formData.offer || 0);
+                finalData.offer_price = Number(formData.offer_price || formData.selling_price || 0);
+                finalData.stock_quantity = Number(formData.stock_quantity || 0);
+            }
 
             // include computed total stock
             finalData.total_stock = Number(formData.total_stock || computeTotalStock(finalData.pricing_options) || 0);
@@ -516,14 +520,13 @@ const AddProducts = () => {
                                             <label className="text-xs font-black text-gray-400">MRP</label>
                                             <input type="number" value={opt.mrp} onChange={(e) => handlePricingChange(idx, 'mrp', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm" />
                                         </div>
-                        <div className="col-span-2">
-                            <label className="text-xs font-black text-gray-400">Offer %</label>
-                            <input type="number" value={opt.offer} onChange={(e) => handlePricingChange(idx, 'offer', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm" />
-                        </div>
-                        <div className="col-span-2">
-                            <label className="text-xs font-black text-gray-400">Selling</label>
-                            <input type="number" value={opt.selling_price} onChange={(e) => handlePricingChange(idx, 'selling_price', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm" />
-                        </div>
+                                        <div className="col-span-2">
+                                            <label className="text-xs font-black text-gray-400">Offer %</label>
+                                            <input type="number" value={opt.offer} onChange={(e) => handlePricingChange(idx, 'offer', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm" />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <label className="text-xs font-black text-gray-400">Selling</label>
+                                            <input type="number" value={opt.selling_price} onChange={(e) => handlePricingChange(idx, 'selling_price', e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-2xl text-sm" />
                                         </div>
                                     </div>
                                 ))}
