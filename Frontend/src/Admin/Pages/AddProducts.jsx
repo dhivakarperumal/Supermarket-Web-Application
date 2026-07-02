@@ -182,6 +182,14 @@ const AddProducts = () => {
             price_plus: p.price_plus?.toString() || "",
             offer_price: p.offer_price?.toString() || "",
             stock_quantity: p.stock_quantity?.toString() || "0",
+            total_stock:
+              p.total_stock?.toString() ||
+              (Array.isArray(p.pricing_options)
+                ? p.pricing_options.reduce(
+                    (sum, opt) => sum + (Number(opt.stock_quantity) || 0),
+                    0,
+                  ).toString()
+                : p.stock_quantity?.toString() || "0"),
             minimum_stock: p.minimum_stock?.toString() || "0",
             maximum_stock: p.maximum_stock?.toString() || "",
             expiry_date: p.expiry_date || "",
@@ -310,10 +318,6 @@ const AddProducts = () => {
           }
           return { ...opt, offer: value };
         });
-        // update total stock (unchanged) but keep consistent
-        updated.total_stock = computeTotalStock(
-          updated.pricing_options,
-        ).toString();
       }
 
       return updated;
@@ -341,9 +345,6 @@ const AddProducts = () => {
     setFormData((prev) => ({
       ...prev,
       pricing_options: prev.pricing_options.filter((_, i) => i !== index),
-      total_stock: computeTotalStock(
-        prev.pricing_options.filter((_, i) => i !== index),
-      ).toString(),
     }));
   };
 
@@ -375,11 +376,9 @@ const AddProducts = () => {
         }
       }
 
-      const total = computeTotalStock(options);
       return {
         ...prev,
         pricing_options: options,
-        total_stock: total.toString(),
       };
     });
   };
@@ -521,12 +520,8 @@ const AddProducts = () => {
         finalData.stock_quantity = Number(formData.stock_quantity || 0);
       }
 
-      // include computed total stock
-      finalData.total_stock = Number(
-        formData.total_stock ||
-          computeTotalStock(finalData.pricing_options) ||
-          0,
-      );
+      // explicitly use the edited total stock value
+      finalData.total_stock = Number(formData.total_stock || 0);
 
       if (isEdit) {
         await api.put(`/products/${id}`, finalData);
@@ -777,15 +772,18 @@ const AddProducts = () => {
               ))}
             </div>
             
-            <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
-              <div>
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest block mb-1">
-                  Total Stock Across Variants
-                </label>
-                <div className="text-2xl font-black text-slate-800">
-                  {formData.total_stock}
-                </div>
-              </div>
+            <div className="pt-4 border-t border-gray-100">
+              <label className="text-xs font-black text-gray-400 uppercase tracking-widest block mb-1">
+                Total Stock Across Variants
+              </label>
+              <input
+                type="number"
+                name="total_stock"
+                value={formData.total_stock}
+                onChange={handleFormChange}
+                placeholder="Enter total stock"
+                className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
             </div>
           </div>
 
