@@ -299,8 +299,8 @@ const Header = ({ onMenuClick }) => {
               text-slate-800 tracking-tight truncate leading-none">
               {getPageTitle()}
             </h1>
-            <p className="hidden sm:block text-[10px] text-blue-600 font-bold uppercase tracking-[0.2em] mt-1 opacity-70">
-              Palace Artisan Admin
+            <p className="hidden sm:block text-[10px] text-emerald-600 font-black uppercase tracking-[0.2em] mt-1">
+              PRIYAM SUPER MARKET
             </p>
           </div>
         </div>
@@ -382,8 +382,8 @@ const Header = ({ onMenuClick }) => {
             </div>
             <button
               onClick={() => { setShowSearch(p => !p); if (showSearch) clearSearch(); }}
-              className={`p-2 rounded-xl transition-all active:scale-95 border
-              ${showSearch ? 'text-blue-600 bg-white border-blue-100 shadow-md shadow-blue-500/10' : 'bg-white text-slate-500 hover:bg-slate-50 border-slate-200 shadow-sm'}`}
+              className={`p-2.5 rounded-full transition-all duration-300 active:scale-95 
+              ${showSearch ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'bg-blue-50/80 text-blue-600 hover:bg-blue-100 hover:scale-105'}`}
             >
               <Search className="w-5 h-5" />
             </button>
@@ -393,8 +393,8 @@ const Header = ({ onMenuClick }) => {
           <div className="relative" ref={lowStockRef}>
             <button
               onClick={() => { setShowLowStock(p => !p); setShowNotifications(false); }}
-              className={`relative p-2 rounded-xl transition-all active:scale-95 border
-              ${showLowStock ? 'bg-amber-50 text-amber-600 border-amber-200 shadow-md' : 'bg-white text-slate-500 hover:bg-amber-50 hover:text-amber-500 border-slate-200 shadow-sm'}`}
+              className={`relative p-2.5 rounded-full transition-all duration-300 active:scale-95 
+              ${showLowStock ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30' : 'bg-amber-50/80 text-amber-600 hover:bg-amber-100 hover:scale-105'}`}
               title="Low Stock Alerts"
             >
               <AlertTriangle className="w-5 h-5" />
@@ -474,12 +474,12 @@ const Header = ({ onMenuClick }) => {
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setShowNotifications(p => !p)}
-              className={`relative p-2 rounded-xl transition-all active:scale-95 border
-              ${showNotifications ? 'bg-white text-blue-600 border-blue-100 shadow-md shadow-blue-500/10' : 'bg-white text-slate-500 hover:bg-slate-50 border-slate-200 shadow-sm'}`}
+              className={`relative p-2.5 rounded-full transition-all duration-300 active:scale-95 
+              ${showNotifications ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'bg-indigo-50/80 text-indigo-600 hover:bg-indigo-100 hover:scale-105'}`}
             >
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white shadow-sm">
                   {unreadCount}
                 </span>
               )}
@@ -605,26 +605,25 @@ const Header = ({ onMenuClick }) => {
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setShowDropdown(p => !p)}
-              className={`flex items-center gap-3 px-2 py-1.5 sm:px-3 rounded-2xl transition-all active:scale-95 border
-              ${showDropdown ? 'bg-blue-50 border-blue-100' : 'bg-slate-50 border-slate-100 hover:bg-slate-100'}`}
+              className={`flex items-center gap-3 pl-1.5 pr-4 py-1.5 rounded-full transition-all duration-300 active:scale-95 
+              ${showDropdown ? 'bg-slate-800 text-white shadow-xl shadow-slate-900/20' : 'bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 shadow-sm hover:shadow hover:scale-105'}`}
             >
-              <div className="w-8 h-8 rounded-xl 
-                bg-slate-900 flex items-center justify-center text-white text-xs font-black shadow-lg">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-inner transition-colors duration-300 ${showDropdown ? 'bg-white/20 text-white' : 'bg-gradient-to-tr from-blue-600 to-indigo-600 text-white'}`}>
                 {userName.charAt(0).toUpperCase()}
               </div>
 
               <div className="hidden md:block text-left leading-tight">
-                <p className="text-xs font-black text-slate-800">
+                <p className={`text-xs font-black transition-colors ${showDropdown ? 'text-white' : 'text-slate-800'}`}>
                   {userName}
                 </p>
-                <p className="text-[9px] text-blue-600 font-bold uppercase tracking-widest opacity-70">
+                <p className={`text-[9px] font-bold uppercase tracking-widest opacity-80 transition-colors ${showDropdown ? 'text-blue-200' : 'text-blue-600'}`}>
                   {userRole}
                 </p>
               </div>
 
               <ChevronDown
-                className={`hidden sm:block w-3.5 h-3.5 text-slate-400 transition-transform duration-300
-                ${showDropdown ? "rotate-180" : ""}`}
+                className={`hidden sm:block w-3.5 h-3.5 transition-transform duration-300
+                ${showDropdown ? "rotate-180 text-white/50" : "text-slate-400"}`}
               />
             </button>
 
