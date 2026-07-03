@@ -106,40 +106,41 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
         className={`
           fixed top-0 left-0 z-50 h-full
           flex flex-col
-          bg-white
+          bg-[#042f1a] border-r border-[#042f1a]
           transition-all duration-300
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0
           ${collapsed ? "w-20" : "w-76"}
-          shadow-[4px_0_20px_rgba(0,0,0,0.06)]
+          shadow-[4px_0_20px_rgba(0,0,0,0.2)]
         `}
       >
         {/* ===== LOGO ===== */}
-        <div className={`flex items-center gap-2.5 border-b border-gray-100 ${collapsed ? "px-3 py-5 justify-center" : "px-4 py-4"}`}>
-          <div className="w-9 h-9 rounded-xl bg-[#3a8b28] flex items-center justify-center shrink-0 shadow-md">
-            <ShoppingCart className="w-5 h-5 text-white" strokeWidth={2.5} />
+        <div className={`flex items-center gap-2.5 border-b border-white/10 ${collapsed ? "px-3 py-5 justify-center" : "px-4 py-6"}`}>
+          <div className="w-10 h-10 flex items-center justify-center shrink-0 text-white">
+             {/* Using an icon that looks like the cart in the image */}
+            <ShoppingCart className="w-8 h-8" strokeWidth={2} />
           </div>
 
           {!collapsed && (
             <div className="leading-tight overflow-hidden">
-              <h1 className="text-base font-black text-gray-900 leading-none">
-                <span className="text-[#3a8b28]">Priyam</span>
+              <h1 className="text-xl font-black text-white leading-none uppercase">
+                <span className="text-[#59c33f]">Priyam</span>
               </h1>
-              <p className="text-[9px] text-gray-400 font-bold tracking-[0.2em] uppercase mt-0.5">Supermarket</p>
+              <p className="text-[9px] text-gray-400 font-bold tracking-[0.2em] uppercase mt-1">Super Market</p>
             </div>
           )}
 
           {/* Mobile close button */}
           <button
             onClick={onClose}
-            className="ml-auto p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 lg:hidden"
+            className="ml-auto p-1.5 rounded-lg text-gray-400 hover:bg-white/10 lg:hidden"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* ===== NAVIGATION ===== */}
-        <nav className="flex-1 px-2.5 py-4 space-y-1.5 overflow-y-auto hide-scrollbar">
+        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto hide-scrollbar">
           {navItems.map((item) => {
             const Icon = item.icon;
 
@@ -155,19 +156,19 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                     title={collapsed ? item.label : undefined}
                     className={`
                       w-full flex items-center gap-3 rounded-xl transition-all duration-200
-                      ${collapsed ? "px-0 py-3 justify-center" : "px-3 py-2.5"}
+                      ${collapsed ? "px-0 py-3 justify-center" : "px-4 py-3"}
                       ${isAnyChildActive
-                        ? "text-[#3a8b28] bg-[#f0faf0]"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                        ? "bg-[#3a8b28] text-white"
+                        : "text-gray-300 hover:text-white hover:bg-white/5"
                       }
                     `}
                   >
-                    <Icon className={`w-5 h-5 shrink-0 ${isAnyChildActive ? "text-[#3a8b28]" : "text-gray-500"}`} />
+                    <Icon className={`w-5 h-5 shrink-0 ${isAnyChildActive ? "text-white" : "text-gray-400"}`} />
                     {!collapsed && (
                       <>
                         <span className={`flex-1 text-left text-sm font-bold`}>{item.label}</span>
                         <ChevronDown
-                          className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isMenuOpen ? "rotate-180" : ""}`}
+                          className={`w-4 h-4 transition-transform duration-200 ${isMenuOpen ? "rotate-180" : ""} ${isAnyChildActive ? "text-white" : "text-gray-400"}`}
                         />
                       </>
                     )}
@@ -175,8 +176,8 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
 
                   {/* Sub Menu */}
                   {!collapsed && (
-                    <div className={`overflow-hidden transition-all duration-300 ${isMenuOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"}`}>
-                      <div className="ml-4 pl-3  space-y-1 py-1.5">
+                    <div className={`overflow-hidden transition-all duration-300 ${isMenuOpen ? "max-h-60 opacity-100 mt-1" : "max-h-0 opacity-0"}`}>
+                      <div className="ml-5 pl-4 border-l border-white/10 space-y-1 py-1.5">
                         {item.children.map((sub) => {
                           const isActive = location.pathname === sub.path || (sub.path !== "/admin" && location.pathname.startsWith(sub.path + "/"));
                           return (
@@ -185,14 +186,14 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                               to={sub.path}
                               onClick={() => isOpen && onClose()}
                               className={`
-                                flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-bold transition-all duration-200
+                                flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-bold transition-all duration-200
                                 ${isActive
-                                  ? "text-[#3a8b28] bg-[#f0faf0]"
-                                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+                                  ? "text-white bg-white/10"
+                                  : "text-gray-400 hover:text-white hover:bg-white/5"
                                 }
                               `}
                             >
-                              <div className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-[#3a8b28]" : "bg-gray-300"}`} />
+                              <div className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-white" : "bg-gray-500"}`} />
                               <span>{sub.label}</span>
                             </NavLink>
                           );
@@ -218,16 +219,23 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                   if (isOpen) onClose();
                 }}
                 className={`
-                  flex items-center gap-3 rounded-xl transition-all duration-200
-                  ${collapsed ? "px-0 py-3 justify-center" : "px-3 py-2.5"}
+                  flex items-center justify-between rounded-xl transition-all duration-200
+                  ${collapsed ? "px-0 py-3 justify-center" : "px-4 py-3"}
                   ${isActive
-                    ? "text-[#3a8b28] bg-[#f0faf0] font-bold"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    ? "bg-[#1b7f29] text-white shadow-lg"
+                    : "text-gray-300 hover:text-white hover:bg-white/5"
                   }
                 `}
               >
-                <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-[#3a8b28]" : "text-gray-500"}`} />
-                {!collapsed && <span className="text-sm font-bold">{item.label}</span>}
+                <div className="flex items-center gap-3">
+                    <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-white" : "text-gray-400"}`} />
+                    {!collapsed && <span className="text-sm font-bold">{item.label}</span>}
+                </div>
+                {!collapsed && item.label === "Orders" && (
+                    <span className="bg-[#249533] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        32
+                    </span>
+                )}
               </NavLink>
             );
           })}
@@ -235,42 +243,33 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
 
         {/* ===== BOOST SALES CARD ===== */}
         {!collapsed && (
-          <div className="mx-4 mb-4 rounded-xl bg-[#eaf7e3] p-4 flex gap-3 relative overflow-hidden">
-            {/* Left side: Illustration */}
-            <div className="w-14 shrink-0 flex items-center justify-center relative">
-              <div className="text-4xl relative z-10 drop-shadow-sm">🛍️</div>
-              <div className="absolute inset-0 bg-[#68c93a]/20 blur-xl rounded-full"></div>
-            </div>
-            
-            {/* Right side: Content */}
-            <div className="flex-1 flex flex-col justify-center">
-              <h3 className="text-sm font-bold text-gray-800">Boost Your Sales!</h3>
-              <p className="text-[10px] text-gray-500 leading-snug mt-1 mb-3">
-                Add new offers and<br/>attract more customers
-              </p>
-              <button className="w-full py-2 rounded-lg bg-[#3a8b28] text-white text-xs font-bold hover:bg-[#2d731d] transition-colors shadow-sm shadow-[#3a8b28]/20">
-                Create Offer
-              </button>
+          <div className="mx-4 mb-6 rounded-2xl bg-[#eaf7e3] p-4 flex flex-col relative overflow-hidden shadow-lg">
+            <h3 className="text-xs font-bold text-gray-800 flex items-center gap-1 mb-1">
+                Boost Your Sales! 🚀
+            </h3>
+            <p className="text-[10px] text-gray-600 leading-snug mb-3 pr-2">
+              Create exciting offers &<br/>discounts to attract<br/>more customers.
+            </p>
+            <div className="flex justify-between items-end relative z-10">
+                <div className="w-16 h-16 shrink-0 relative flex items-center justify-center translate-y-2 -translate-x-1">
+                    <div className="text-5xl drop-shadow-md">🛒</div>
+                </div>
+                <button className="px-4 py-1.5 rounded-lg bg-[#249533] text-white text-[10px] font-bold hover:bg-[#1d7828] transition-colors shadow-sm">
+                    Create Offer
+                </button>
             </div>
           </div>
         )}
 
         {/* ===== USER PROFILE CARD ===== */}
         {!collapsed && (
-          <div className="mx-4 mb-6 p-3 rounded-xl border border-gray-100 flex items-center gap-3 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.03)] cursor-pointer hover:border-[#3a8b28]/30 transition-all">
-            <div className="w-10 h-10 rounded-full bg-[#f0faf0] flex items-center justify-center shrink-0">
-              <ShoppingCart className="w-5 h-5 text-[#3a8b28]" />
+          <div className="mx-4 mb-6 p-2 rounded-xl border border-transparent flex items-center gap-3 bg-transparent cursor-pointer hover:bg-white/5 transition-all">
+            <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center shrink-0 overflow-hidden border-2 border-[#1b7f29]">
+                <img src="https://ui-avatars.com/api/?name=Super+Admin&background=f0faf0&color=3a8b28" alt="Super Admin" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 overflow-hidden">
-              <h4 className="text-sm font-bold text-gray-800 truncate">GreenMart</h4>
-              <div className="flex items-center gap-1 mt-0.5">
-                <span className="text-[11px] text-gray-500 truncate">Super Admin</span>
-                <div className="w-3.5 h-3.5 rounded-full bg-[#3a8b28] flex items-center justify-center shrink-0">
-                  <svg className="w-2 h-2 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                </div>
-              </div>
+              <h4 className="text-sm font-bold text-white truncate">Super Admin</h4>
+              <p className="text-[10px] text-gray-400 truncate mt-0.5">superadmin@gmail.com</p>
             </div>
             <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
           </div>
@@ -279,7 +278,7 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
         {/* ===== COLLAPSE TOGGLE ===== */}
         <button
           onClick={onToggleCollapse}
-          className="hidden lg:flex absolute -right-3 top-16 w-6 h-6 rounded-full bg-white border border-gray-200 shadow-md items-center justify-center text-gray-500 hover:text-[#3a8b28] hover:border-[#3a8b28] transition-all z-50"
+          className="hidden lg:flex absolute -right-3 top-16 w-6 h-6 rounded-full bg-[#042f1a] border border-white/20 shadow-md items-center justify-center text-gray-400 hover:text-white transition-all z-50"
         >
           <ChevronRight className={`w-3.5 h-3.5 transition-transform ${collapsed ? "" : "rotate-180"}`} />
         </button>
