@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../api";
 import {
     FiDownload,
     FiFilter,
@@ -14,17 +15,29 @@ import { FaRupeeSign } from "react-icons/fa";
 
 const Billing = () => {
     const navigate = useNavigate();
-    const invoices = [
-        { id: "#INV-8821", date: "2024-03-05", customer: "John Doe", amount: 245.00, status: "Paid", method: "Visa •••• 4242" },
-        { id: "#INV-8822", date: "2024-03-04", customer: "Jane Smith", amount: 85.00, status: "Pending", method: "PayPal" },
-        { id: "#INV-8823", date: "2024-03-03", customer: "Michael Brown", amount: 110.00, status: "Paid", method: "MasterCard •••• 5555" },
-        { id: "#INV-8824", date: "2024-03-02", customer: "Emma Wilson", amount: 540.00, status: "Overdue", method: "Bank Transfer" },
-        { id: "#INV-8825", date: "2024-03-01", customer: "Sarah Williams", amount: 65.00, status: "Paid", method: "Cash" },
-    ];
+    const [invoices, setInvoices] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const res = await api.get("/orders");
+                // Only show shop bills
+                const shopOrders = (res.data || []).filter(order => !order.order_type || order.order_type === 'Shop');
+                setInvoices(shopOrders);
+            } catch (error) {
+                console.error("Failed to fetch orders:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchOrders();
+    }, []);
 
     const getStatusStyle = (status) => {
         switch (status) {
             case "Paid": return "bg-emerald-100 text-emerald-700";
+            case "Delivered": return "bg-blue-100 text-blue-700";
             case "Pending": return "bg-amber-100 text-amber-700";
             case "Overdue": return "bg-red-100 text-red-700";
             default: return "bg-gray-100 text-gray-700";
@@ -36,8 +49,8 @@ const Billing = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Billing & Invoices</h1>
-                    <p className="text-sm text-gray-500 font-medium mt-1">Track payments and manage customer accounts</p>
+                    <h1 className="text-2xl font-bold text-slate-800">Shop Bills</h1>
+                    <p className="text-sm text-gray-500 font-medium mt-1">Manage all bills created in-store</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-100 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all shadow-sm">
@@ -113,22 +126,26 @@ const Billing = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                            {invoices.map((inv) => (
+                            {loading ? (
+                                <tr><td colSpan={7} className="text-center py-10 font-bold text-gray-400">Loading bills...</td></tr>
+                            ) : invoices.length === 0 ? (
+                                <tr><td colSpan={7} className="text-center py-10 font-bold text-gray-400">No shop bills found</td></tr>
+                            ) : invoices.map((inv) => (
                                 <tr key={inv.id} className="hover:bg-blue-50/20 transition-colors group">
-                                    <td className="px-8 py-6 font-bold text-slate-800">{inv.id}</td>
-                                    <td className="px-8 py-6 text-sm text-gray-500">{inv.date}</td>
-                                    <td className="px-8 py-6 font-bold text-slate-700">{inv.customer}</td>
+                                    <td className="px-8 py-6 font-bold text-slate-800">{inv.order_id}</td>
+                                    <td className="px-8 py-6 text-sm text-gray-500">{new Date(inv.created_at).toLocaleDateString()}</td>
+                                    <td className="px-8 py-6 font-bold text-slate-700">{inv.customer_name}</td>
                                     <td className="px-8 py-6">
                                         <div className="flex items-center gap-2 text-xs font-bold text-gray-400">
-                                            <FiCreditCard /> {inv.method}
+                                            <FiCreditCard /> {inv.payment_method || 'Cash'}
                                         </div>
                                     </td>
                                     <td className="px-8 py-6">
                                         <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusStyle(inv.status)}`}>
-                                            {inv.status}
+                                            {inv.status || 'Paid'}
                                         </span>
                                     </td>
-                                    <td className="px-8 py-6 font-bold text-slate-800">₹{inv.amount.toFixed(2)}</td>
+                                    <td className="px-8 py-6 font-bold text-slate-800">₹{parseFloat(inv.total_amount).toFixed(2)}</td>
                                     <td className="px-8 py-6">
                                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button className="p-2 text-blue-500 hover:bg-blue-100 rounded-lg transition-all" title="Download">
