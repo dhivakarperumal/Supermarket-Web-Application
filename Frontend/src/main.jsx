@@ -113,6 +113,11 @@ const router = createBrowserRouter([
       // Finance
       { path: "billing", element: <Billing /> },
       { path: "billing/create", element: <CreateBilling /> },
+      // Dealers
+      { path: "dealer/all", element: <Dealers /> },
+      { path: "dealer/add", element: <AddDealer /> },
+      { path: "dealer/orders", element: <Orders statusFilter="All" /> },
+      // Legacy routes (keep to avoid broken links)
       { path: "dealers", element: <Dealers /> },
       { path: "dealers/add", element: <AddDealer /> },
       { path: "invoices/add", element: <AddInvoice /> },

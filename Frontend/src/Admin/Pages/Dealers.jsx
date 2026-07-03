@@ -123,7 +123,7 @@ const Dealers = () => {
                     </button>
 
                     <button
-                        onClick={() => navigate("/admin/dealers/add")}
+                        onClick={() => navigate("/admin/dealer/add")}
                         className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-100 active:scale-95"
                     >
                         <FiPlus /> New Partnership
@@ -242,7 +242,7 @@ const Dealers = () => {
                     <h3 className="text-xl font-bold mb-2">Expand Your Network</h3>
                     <p className="text-white/70 text-sm mb-8 px-4">Invite more dealers and manage all collections in one place.</p>
                     <button
-                        onClick={() => navigate("/admin/dealers/add")}
+                        onClick={() => navigate("/admin/dealer/add")}
                         className="w-full py-3.5 bg-white text-blue-600 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg hover:shadow-2xl active:scale-95 transition-all"
                     >
                         Invite Partner

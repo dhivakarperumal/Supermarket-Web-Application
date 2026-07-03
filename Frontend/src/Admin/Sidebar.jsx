@@ -63,6 +63,17 @@ const navItems = [
   { path: "/admin/users/all", label: "Customers", icon: Users },
 
   { path: "/admin/billing", label: "Billing", icon: CreditCard },
+
+  {
+    label: "Dealer",
+    icon: Handshake,
+    children: [
+      { path: "/admin/dealer/all", label: "All Dealers", icon: List },
+      { path: "/admin/dealer/add", label: "Add Dealer", icon: PlusCircle },
+      { path: "/admin/dealer/orders", label: "Dealer Orders", icon: Archive },
+    ],
+  },
+
   { path: "/admin/banners", label: "Offers & Discounts", icon: Gift },
   { path: "/admin/reports", label: "Reports", icon: BarChart3 },
   // { path: "/admin/banners", label: "Banners", icon: Image },
