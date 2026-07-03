@@ -7,6 +7,7 @@ import {
   FiTrash2,
   FiInfo,
   FiImage,
+  FiPackage,
 } from "react-icons/fi";
 import { FaRupeeSign } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
@@ -128,14 +129,14 @@ const AddProducts = () => {
       .toUpperCase();
     if (!code) {
       return (
-        <div className="w-full h-32 rounded-3xl border border-gray-200 bg-gray-50 flex items-center justify-center text-sm text-gray-500">
+        <div className="w-full h-32 rounded-3xl border border-teal-100 bg-teal-50/30 flex items-center justify-center text-sm text-teal-400">
           No barcode available
         </div>
       );
     }
 
     return (
-      <div className="w-full rounded-3xl border border-gray-200 bg-white p-1">
+      <div className="w-full rounded-3xl border border-teal-100 bg-white p-1">
         <Barcode
           value={code}
           format="CODE128"
@@ -539,10 +540,20 @@ const AddProducts = () => {
     }
   };
 
+  /* ─── shared input class ─── */
+  const inputCls =
+    "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 focus:bg-white transition-all placeholder:text-gray-400";
+
+  const selectCls =
+    "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 focus:bg-white transition-all";
+
+  const cardCls =
+    "bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6";
+
   if (fetching) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+        <div className="w-12 h-12 border-4 border-teal-500/20 border-t-teal-600 rounded-full animate-spin mb-4"></div>
         <p className="text-gray-500 font-bold">Fetching product details...</p>
       </div>
     );
@@ -550,12 +561,14 @@ const AddProducts = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+
+      {/* ── Page Header ── */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-blue-600 transition-all shadow-sm"
+            className="p-3 bg-white border border-gray-200 rounded-2xl text-gray-400 hover:text-teal-600 hover:border-teal-300 transition-all shadow-sm"
           >
             <FiArrowLeft size={20} />
           </button>
@@ -563,11 +576,12 @@ const AddProducts = () => {
             <h1 className="text-2xl font-black text-slate-800">
               {isEdit ? "Edit Product" : "Add Product"}
             </h1>
-            <p className="text-sm text-gray-500">
-              Manage the product details, inventory, media, and status.
+            <p className="text-sm text-gray-400">
+              Manage product details, inventory, media, and status.
             </p>
           </div>
         </div>
+
         <div className="flex items-center gap-3">
           {!isEdit && (
             <button
@@ -592,34 +606,40 @@ const AddProducts = () => {
                   total_stock: "50"
                 }));
               }}
-              className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-600 hover:bg-emerald-100 transition-colors"
+              className="rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm font-semibold text-teal-700 hover:bg-teal-100 transition-colors"
             >
               Fill Test Data
             </button>
           )}
-          <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600">
+          <div className="rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm font-bold text-teal-700">
             SKU: {formData.product_code || "Generating..."}
           </div>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Main Content - Left Side */}
+
+        {/* ════════════════════════════════════
+            Main Content — Left Side
+        ════════════════════════════════════ */}
         <div className="xl:col-span-2 space-y-8">
-          {/* Basic Information */}
-          <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
+
+          {/* ── Basic Information ── */}
+          <div className={cardCls}>
             <div className="flex items-center gap-3">
-              <span className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+              <span className="p-2.5 bg-teal-50 text-teal-600 rounded-xl">
                 <FiLayers size={20} />
               </span>
-              <h2 className="text-xl font-black text-slate-800">
-                Basic Information
-              </h2>
+              <div>
+                <h2 className="text-xl font-black text-slate-800">Basic Information</h2>
+                <p className="text-xs text-gray-400">Core product identity and description</p>
+              </div>
             </div>
+
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Product Name *
+                  Product Name <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
@@ -627,7 +647,7 @@ const AddProducts = () => {
                   value={formData.name}
                   onChange={handleFormChange}
                   placeholder="Enter product name"
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all"
+                  className={inputCls}
                   required
                 />
               </div>
@@ -641,35 +661,31 @@ const AddProducts = () => {
                   onChange={handleFormChange}
                   rows="5"
                   placeholder="Describe the product details..."
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all"
+                  className={`${inputCls} resize-none`}
                 />
               </div>
             </div>
           </div>
 
-          {/* Pricing & Inventory */}
-          <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
-            <div className="flex items-center justify-between mb-2">
+          {/* ── Pricing & Inventory ── */}
+          <div className={cardCls}>
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <span className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
                   <FaRupeeSign size={20} />
                 </span>
                 <div>
-                  <h2 className="text-xl font-black text-slate-800">
-                    Pricing & Inventory
-                  </h2>
-                  <p className="text-sm text-slate-500">
-                    Manage pricing variants and stock levels
-                  </p>
+                  <h2 className="text-xl font-black text-slate-800">Pricing & Inventory</h2>
+                  <p className="text-xs text-gray-400">Manage pricing variants and stock levels</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={addPricingOption}
-                className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-600 text-white shadow-sm hover:bg-blue-700 hover:shadow transition-all"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 text-white text-sm font-bold shadow-sm hover:bg-teal-700 hover:shadow-md transition-all"
                 title="Add Pricing Option"
               >
-                +
+                + Add Variant
               </button>
             </div>
 
@@ -677,8 +693,15 @@ const AddProducts = () => {
               {(formData.pricing_options || []).map((opt, idx) => (
                 <div
                   key={idx}
-                  className="grid grid-cols-1 md:grid-cols-12 gap-4 p-5 border border-gray-100 rounded-3xl bg-gray-50/50 hover:bg-gray-50 transition-colors"
+                  className="grid grid-cols-1 md:grid-cols-12 gap-4 p-5 border border-teal-100 rounded-2xl bg-teal-50/30 hover:bg-teal-50/60 transition-colors"
                 >
+                  {/* Variant badge */}
+                  <div className="md:col-span-12 flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-teal-600 bg-teal-100 px-2.5 py-1 rounded-full">
+                      Variant {idx + 1}
+                    </span>
+                  </div>
+
                   <div className="md:col-span-2 space-y-2">
                     <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                       Weight
@@ -689,7 +712,7 @@ const AddProducts = () => {
                       onChange={(e) =>
                         handlePricingChange(idx, "weight_volume", e.target.value)
                       }
-                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/30 transition-all"
                       placeholder="e.g. 1"
                     />
                   </div>
@@ -702,7 +725,7 @@ const AddProducts = () => {
                       onChange={(e) =>
                         handlePricingChange(idx, "unit", e.target.value)
                       }
-                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/30 transition-all"
                     >
                       <option value="kg">kg</option>
                       <option value="g">g</option>
@@ -713,7 +736,7 @@ const AddProducts = () => {
                   </div>
                   <div className="md:col-span-2 space-y-2">
                     <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                      MRP
+                      MRP (₹)
                     </label>
                     <input
                       type="number"
@@ -722,7 +745,7 @@ const AddProducts = () => {
                         handlePricingChange(idx, "mrp", e.target.value)
                       }
                       placeholder="e.g. 100"
-                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/30 transition-all"
                     />
                   </div>
                   <div className="md:col-span-2 space-y-2">
@@ -736,12 +759,12 @@ const AddProducts = () => {
                         handlePricingChange(idx, "offer", e.target.value)
                       }
                       placeholder="e.g. 10"
-                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/30 transition-all"
                     />
                   </div>
                   <div className="md:col-span-2 space-y-2">
                     <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                      Selling
+                      Selling (₹)
                     </label>
                     <input
                       type="number"
@@ -749,15 +772,15 @@ const AddProducts = () => {
                       onChange={(e) =>
                         handlePricingChange(idx, "selling_price", e.target.value)
                       }
-                      placeholder="e.g. 90"
-                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                      placeholder="Auto"
+                      className="w-full px-3 py-2.5 bg-white rounded-xl text-sm font-semibold text-teal-700 border border-teal-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/30 transition-all"
                     />
                   </div>
                   <div className="md:col-span-2 flex items-end justify-end">
                     <button
                       type="button"
                       onClick={() => removePricingOption(idx)}
-                      className="w-full sm:w-auto px-4 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-red-50 disabled:hover:text-red-600"
+                      className="w-full sm:w-auto px-4 h-11 rounded-xl bg-red-50 text-red-500 flex items-center justify-center gap-2 hover:bg-red-500 hover:text-white transition-all disabled:opacity-40 disabled:pointer-events-none text-sm font-semibold"
                       disabled={formData.pricing_options.length === 1}
                       title={
                         formData.pricing_options.length === 1
@@ -765,15 +788,16 @@ const AddProducts = () => {
                           : "Remove option"
                       }
                     >
-                      <FiTrash2 size={16} />
+                      <FiTrash2 size={14} />
+                      Remove
                     </button>
                   </div>
                 </div>
               ))}
             </div>
-            
+
             <div className="pt-4 border-t border-gray-100">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest block mb-1">
+              <label className="text-xs font-black text-gray-400 uppercase tracking-widest block mb-2">
                 Total Stock Across Variants
               </label>
               <input
@@ -782,29 +806,33 @@ const AddProducts = () => {
                 value={formData.total_stock}
                 onChange={handleFormChange}
                 placeholder="Enter total stock"
-                className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className={inputCls}
               />
             </div>
           </div>
 
-          {/* Media */}
-          <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
+          {/* ── Media ── */}
+          <div className={cardCls}>
             <div className="flex items-center gap-3">
-              <span className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
+              <span className="p-2.5 bg-violet-50 text-violet-600 rounded-xl">
                 <FiImage size={20} />
               </span>
-              <h2 className="text-xl font-black text-slate-800">Media</h2>
+              <div>
+                <h2 className="text-xl font-black text-slate-800">Media</h2>
+                <p className="text-xs text-gray-400">Product images and barcode</p>
+              </div>
             </div>
 
             <div className="space-y-4">
               <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                 Product Images
               </label>
-              <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-3xl py-8 cursor-pointer hover:border-purple-500 hover:bg-purple-50/50 transition-colors">
-                <FiUploadCloud size={28} className="text-gray-400" />
+              <label className="flex flex-col items-center justify-center border-2 border-dashed border-violet-200 rounded-2xl py-8 cursor-pointer hover:border-violet-400 hover:bg-violet-50/40 transition-colors group">
+                <FiUploadCloud size={28} className="text-violet-400 group-hover:text-violet-600 transition-colors" />
                 <span className="mt-3 text-sm font-semibold text-slate-600">
-                  Click to upload product images (Max 8)
+                  Click to upload product images
                 </span>
+                <span className="text-xs text-gray-400 mt-1">Max 8 images · JPG, PNG, WEBP</span>
                 <input
                   type="file"
                   multiple
@@ -834,14 +862,15 @@ const AddProducts = () => {
                 </div>
               )}
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
+              {/* Thumbnail */}
               <div className="space-y-3">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                   Thumbnail Image
                 </label>
-                <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-3xl h-32 cursor-pointer hover:border-purple-500 hover:bg-purple-50/50 transition-colors">
-                  <FiUploadCloud size={20} className="text-gray-400" />
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-teal-200 rounded-2xl h-32 cursor-pointer hover:border-teal-400 hover:bg-teal-50/40 transition-colors group">
+                  <FiUploadCloud size={20} className="text-teal-400 group-hover:text-teal-600 transition-colors" />
                   <span className="mt-2 text-xs font-semibold text-slate-600">
                     Upload thumbnail
                   </span>
@@ -869,13 +898,14 @@ const AddProducts = () => {
                   </div>
                 )}
               </div>
-              
+
+              {/* Barcode Image */}
               <div className="space-y-3">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                   Barcode Image (Optional)
                 </label>
-                <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-3xl h-32 cursor-pointer hover:border-purple-500 hover:bg-purple-50/50 transition-colors">
-                  <FiUploadCloud size={20} className="text-gray-400" />
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-amber-200 rounded-2xl h-32 cursor-pointer hover:border-amber-400 hover:bg-amber-50/40 transition-colors group">
+                  <FiUploadCloud size={20} className="text-amber-400 group-hover:text-amber-600 transition-colors" />
                   <span className="mt-2 text-xs font-semibold text-slate-600">
                     Upload barcode
                   </span>
@@ -907,22 +937,30 @@ const AddProducts = () => {
           </div>
         </div>
 
-        {/* Sidebar - Right Side */}
-        <div className="space-y-8">
-          {/* Organization */}
-          <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
-            <h3 className="text-lg font-black text-slate-800">Organization</h3>
-            
+        {/* ════════════════════════════════════
+            Sidebar — Right Side
+        ════════════════════════════════════ */}
+        <div className="space-y-6">
+
+          {/* ── Organization ── */}
+          <div className={cardCls}>
+            <div className="flex items-center gap-3">
+              <span className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+                <FiPackage size={18} />
+              </span>
+              <h3 className="text-lg font-black text-slate-800">Organization</h3>
+            </div>
+
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Category
+                  Category <span className="text-red-400">*</span>
                 </label>
                 <select
                   name="category"
                   value={formData.category}
                   onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className={selectCls}
                 >
                   <option value="">Select category</option>
                   {categories.map((cat) => (
@@ -932,6 +970,7 @@ const AddProducts = () => {
                   ))}
                 </select>
               </div>
+
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                   Subcategory
@@ -940,7 +979,7 @@ const AddProducts = () => {
                   name="subcategory"
                   value={formData.subcategory}
                   onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className={selectCls}
                   disabled={derivedSubcategories.length === 0}
                 >
                   <option value="">Select subcategory</option>
@@ -951,6 +990,7 @@ const AddProducts = () => {
                   ))}
                 </select>
               </div>
+
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                   Brand
@@ -961,20 +1001,20 @@ const AddProducts = () => {
                   value={formData.brand}
                   onChange={handleFormChange}
                   placeholder="Brand name"
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className={inputCls}
                 />
               </div>
             </div>
-            
+
             <hr className="border-gray-100" />
-            
+
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                     Product Code (SKU)
                   </label>
-                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
+                  <span className="text-[10px] font-bold text-teal-700 bg-teal-100 px-2 py-1 rounded-lg">
                     Auto-Generated
                   </span>
                 </div>
@@ -984,23 +1024,30 @@ const AddProducts = () => {
                   value={formData.product_code}
                   readOnly
                   placeholder="Auto-generated"
-                  className="w-full px-4 py-3 bg-gray-100 rounded-2xl text-sm font-bold text-slate-700 cursor-not-allowed border border-gray-200 focus:outline-none"
+                  className="w-full px-4 py-3 bg-teal-50/50 border border-teal-100 rounded-2xl text-sm font-bold text-teal-800 cursor-not-allowed focus:outline-none"
                 />
               </div>
+
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                   Generated Barcode Preview
                 </label>
-                <div className="bg-gray-50 p-2 rounded-3xl">
+                <div className="bg-gray-50 p-2 rounded-2xl border border-gray-100">
                   {renderBarcodeSvg(formData.barcode)}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Sourcing & Dates */}
-          <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
-            <h3 className="text-lg font-black text-slate-800">Sourcing & Dates</h3>
+          {/* ── Sourcing & Dates ── */}
+          <div className={cardCls}>
+            <div className="flex items-center gap-3">
+              <span className="p-2.5 bg-orange-50 text-orange-500 rounded-xl">
+                <FiInfo size={18} />
+              </span>
+              <h3 className="text-lg font-black text-slate-800">Sourcing & Dates</h3>
+            </div>
+
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
@@ -1012,7 +1059,7 @@ const AddProducts = () => {
                   value={formData.supplier}
                   onChange={handleFormChange}
                   placeholder="Supplier name"
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className={inputCls}
                 />
               </div>
               <div className="space-y-2">
@@ -1025,7 +1072,7 @@ const AddProducts = () => {
                   value={formData.country_of_origin}
                   onChange={handleFormChange}
                   placeholder="e.g. India"
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className={inputCls}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -1038,7 +1085,7 @@ const AddProducts = () => {
                     name="manufacturing_date"
                     value={formData.manufacturing_date}
                     onChange={handleFormChange}
-                    className="w-full px-3 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className={inputCls}
                   />
                 </div>
                 <div className="space-y-2">
@@ -1050,16 +1097,22 @@ const AddProducts = () => {
                     name="expiry_date"
                     value={formData.expiry_date}
                     onChange={handleFormChange}
-                    className="w-full px-3 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className={inputCls}
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Visibility & Badges */}
-          <div className="bg-white p-6 sm:p-8 rounded-4xl border border-gray-100 shadow-sm space-y-6">
-            <h3 className="text-lg font-black text-slate-800">Visibility & Badges</h3>
+          {/* ── Visibility & Badges ── */}
+          <div className={cardCls}>
+            <div className="flex items-center gap-3">
+              <span className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
+                <FiLayers size={18} />
+              </span>
+              <h3 className="text-lg font-black text-slate-800">Visibility & Badges</h3>
+            </div>
+
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
@@ -1069,12 +1122,13 @@ const AddProducts = () => {
                   name="status"
                   value={formData.status}
                   onChange={handleFormChange}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className={selectCls}
                 >
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
                 </select>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
@@ -1084,7 +1138,7 @@ const AddProducts = () => {
                     name="featured_product"
                     value={formData.featured_product}
                     onChange={handleFormChange}
-                    className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className={selectCls}
                   >
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
@@ -1098,7 +1152,7 @@ const AddProducts = () => {
                     name="best_seller"
                     value={formData.best_seller}
                     onChange={handleFormChange}
-                    className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className={selectCls}
                   >
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
@@ -1112,7 +1166,7 @@ const AddProducts = () => {
                     name="todays_deal"
                     value={formData.todays_deal}
                     onChange={handleFormChange}
-                    className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className={selectCls}
                   >
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
@@ -1126,13 +1180,14 @@ const AddProducts = () => {
                     name="return_available"
                     value={formData.return_available}
                     onChange={handleFormChange}
-                    className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className={selectCls}
                   >
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
                   </select>
                 </div>
               </div>
+
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                   Delivery Time
@@ -1143,20 +1198,26 @@ const AddProducts = () => {
                   value={formData.delivery_time}
                   onChange={handleFormChange}
                   placeholder="e.g. 2-3 Days"
-                  className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className={inputCls}
                 />
               </div>
             </div>
           </div>
-          
+
+          {/* ── Save Button ── */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-slate-900 text-white py-4 px-8 rounded-3xl text-lg font-black shadow-lg shadow-slate-900/20 hover:bg-black hover:shadow-xl hover:-translate-y-1 transition-all disabled:bg-slate-400 disabled:hover:translate-y-0"
+            className="w-full flex items-center justify-center gap-3 text-white py-4 px-8 rounded-3xl text-base font-black shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:pointer-events-none"
+            style={{
+              background: loading
+                ? "#94a3b8"
+                : "linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%)",
+            }}
           >
             {loading ? (
               <div className="flex items-center gap-3">
-                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 <span>Saving...</span>
               </div>
             ) : (
