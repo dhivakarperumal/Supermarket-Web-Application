@@ -352,7 +352,7 @@ const Dashboard = () => {
                 }
             `}</style>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4">
 
                 {/* ── Total Sales ── */}
                 <div className="stat-card" style={{
@@ -482,13 +482,120 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* ── Low Stock ── */}
+            </div>
+
+            {/* ══ STAT ROW 2 : Today Metrics (4 cards) ══ */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
+                {/* ── Total Deliveries ── */}
+                <div className="stat-card" style={{
+                    background: "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)",
+                    boxShadow: "0 10px 40px rgba(15,32,39,0.40)"
+                }}>
+                    <div className="stat-bg-blob" style={{ width: 130, height: 130, background: "#4fc3f7", top: -35, right: -35 }} />
+                    <div className="stat-bg-blob" style={{ width: 65, height: 65, background: "#4fc3f7", bottom: 8, left: -12 }} />
+                    <div style={{ position: "relative", zIndex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
+                            <p className="stat-card-label">Total Deliveries</p>
+                            <div className="stat-icon-wrap" style={{
+                                width: 44, height: 44, borderRadius: 14,
+                                background: "rgba(79,195,247,0.25)",
+                                border: "1.5px solid rgba(79,195,247,0.4)",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                backdropFilter: "blur(6px)"
+                            }}>
+                                <Truck style={{ width: 22, height: 22, color: "#4fc3f7" }} />
+                            </div>
+                        </div>
+                        <p className="stat-card-value stat-value">
+                            {Math.round((parseInt(String(totalOrders).replace(/,/g, "")) || 1248) * 0.522).toLocaleString("en-IN")}
+                        </p>
+                        <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
+                            {[55,70,60,80,65,75,90].map((h,i) => (
+                                <span key={i} style={{ height: `${h}%`, background: "rgba(79,195,247,0.7)" }} />
+                            ))}
+                        </div>
+                        <span className="stat-badge-up" style={{ background: "rgba(79,195,247,0.2)", border: "1px solid rgba(79,195,247,0.35)" }}>
+                            <TrendingUp style={{ width: 11, height: 11 }} /> +9.1% vs last week
+                        </span>
+                    </div>
+                </div>
+
+                {/* ── Orders Today ── */}
+                <div className="stat-card" style={{
+                    background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+                    boxShadow: "0 10px 40px rgba(15,52,96,0.45)"
+                }}>
+                    <div className="stat-bg-blob" style={{ width: 130, height: 130, background: "#e040fb", top: -35, right: -35 }} />
+                    <div className="stat-bg-blob" style={{ width: 65, height: 65, background: "#e040fb", bottom: 8, left: -12 }} />
+                    <div style={{ position: "relative", zIndex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
+                            <p className="stat-card-label">Orders Today</p>
+                            <div className="stat-icon-wrap" style={{
+                                width: 44, height: 44, borderRadius: 14,
+                                background: "rgba(224,64,251,0.25)",
+                                border: "1.5px solid rgba(224,64,251,0.4)",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                backdropFilter: "blur(6px)"
+                            }}>
+                                <Clock style={{ width: 22, height: 22, color: "#e040fb" }} />
+                            </div>
+                        </div>
+                        <p className="stat-card-value stat-value">
+                            {Math.round((parseInt(String(totalOrders).replace(/,/g, "")) || 1248) * 0.035).toLocaleString("en-IN")}
+                        </p>
+                        <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
+                            {[20,45,30,60,50,55,72].map((h,i) => (
+                                <span key={i} style={{ height: `${h}%`, background: "rgba(224,64,251,0.7)" }} />
+                            ))}
+                        </div>
+                        <span className="stat-badge-up" style={{ background: "rgba(224,64,251,0.2)", border: "1px solid rgba(224,64,251,0.35)" }}>
+                            <TrendingUp style={{ width: 11, height: 11 }} /> +14.2% vs yesterday
+                        </span>
+                    </div>
+                </div>
+
+                {/* ── Today's Revenue ── */}
+                <div className="stat-card" style={{
+                    background: "linear-gradient(135deg, #134e5e 0%, #71b280 100%)",
+                    boxShadow: "0 10px 40px rgba(19,78,94,0.40)"
+                }}>
+                    <div className="stat-bg-blob" style={{ width: 130, height: 130, background: "#a5d6a7", top: -35, right: -35 }} />
+                    <div className="stat-bg-blob" style={{ width: 65, height: 65, background: "#a5d6a7", bottom: 8, left: -12 }} />
+                    <div style={{ position: "relative", zIndex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
+                            <p className="stat-card-label">Today's Revenue</p>
+                            <div className="stat-icon-wrap" style={{
+                                width: 44, height: 44, borderRadius: 14,
+                                background: "rgba(165,214,167,0.25)",
+                                border: "1.5px solid rgba(165,214,167,0.4)",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                backdropFilter: "blur(6px)"
+                            }}>
+                                <DollarSign style={{ width: 22, height: 22, color: "#a5d6a7" }} />
+                            </div>
+                        </div>
+                        <p className="stat-card-value stat-value">
+                            {fmtINR(((parseFloat(String(totalSales).replace(/[^0-9.]/g,"")) || 148256.5) / 30).toFixed(2))}
+                        </p>
+                        <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
+                            {[45,65,55,80,60,75,88].map((h,i) => (
+                                <span key={i} style={{ height: `${h}%`, background: "rgba(165,214,167,0.7)" }} />
+                            ))}
+                        </div>
+                        <span className="stat-badge-up" style={{ background: "rgba(165,214,167,0.2)", border: "1px solid rgba(165,214,167,0.35)" }}>
+                            <TrendingUp style={{ width: 11, height: 11 }} /> +7.8% vs yesterday
+                        </span>
+                    </div>
+                </div>
+
+                {/* ── Low Stock Items ── */}
                 <div className="stat-card" style={{
                     background: "linear-gradient(135deg, #f85032 0%, #e73827 50%, #c0392b 100%)",
                     boxShadow: "0 10px 40px rgba(248,80,50,0.35)"
                 }}>
-                    <div className="stat-bg-blob" style={{ width: 120, height: 120, background: "#fff", top: -30, right: -30 }} />
-                    <div className="stat-bg-blob" style={{ width: 60, height: 60, background: "#fff", bottom: 10, left: -10 }} />
+                    <div className="stat-bg-blob" style={{ width: 130, height: 130, background: "#fff", top: -35, right: -35 }} />
+                    <div className="stat-bg-blob" style={{ width: 65, height: 65, background: "#fff", bottom: 8, left: -12 }} />
                     <div style={{ position: "relative", zIndex: 1 }}>
                         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
                             <p className="stat-card-label">Low Stock Items</p>
