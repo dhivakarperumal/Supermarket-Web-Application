@@ -3,6 +3,26 @@ import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import imageCompression from "browser-image-compression";
 import { FaArrowLeft } from "react-icons/fa";
+import {
+  User,
+  Mail,
+  Phone,
+  Lock,
+  Briefcase,
+  Calendar,
+  Wallet,
+  MapPin,
+  Clock,
+  Users,
+  Shield,
+  Droplets,
+  Badge,
+  CreditCard,
+  Home,
+  FileText,
+  BadgeCheck,
+  FileBadge2,
+} from "lucide-react";
 
 /* ---------------- CONSTANTS ---------------- */
 
@@ -17,20 +37,23 @@ import api from "../../api";
 /* ---------------- COMPONENT ---------------- */
 const inputClass = `
 w-full
-mt-2
-px-4
-py-3
+h-[52px]
+pl-12
+pr-4
 rounded-xl
 border
-border-[#dce9df]
-bg-[#fafcfb]
-text-[#123524]
-placeholder:text-gray-400
-focus:outline-none
-focus:ring-2
-focus:ring-[#1b7f29]
-focus:border-[#1b7f29]
+border-[#e4e7ec]
+bg-white
+text-[#1f2937]
+text-[15px]
+placeholder:text-[#98a2b3]
+shadow-sm
 transition-all
+duration-200
+outline-none
+focus:border-[#22c55e]
+focus:ring-4
+focus:ring-[#22c55e]/10
 `;
 
 const AddEditStaff = () => {
@@ -403,6 +426,34 @@ const AddEditStaff = () => {
     }
   };
 
+  const InputBox = ({ label, required, icon, children }) => (
+    <div>
+
+      <label className="block text-[15px] font-semibold text-[#344054] mb-2">
+
+        {label}
+
+        {required && (
+          <span className="text-red-500 ml-1">*</span>
+        )}
+
+      </label>
+
+      <div className="relative">
+
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#ecfdf3] flex items-center justify-center text-[#22c55e]">
+
+          {icon}
+
+        </div>
+
+        {children}
+
+      </div>
+
+    </div>
+  );
+
 
   /* ---------------- UI ---------------- */
 
@@ -521,7 +572,7 @@ const AddEditStaff = () => {
               <div className="px-6 py-4 border-b border-[#edf3ee] bg-gradient-to-r from-[#eef8ef] to-white">
 
                 <h2 className="text-lg font-bold text-[#123524]">
-                  👤 Basic Information
+                  Basic Information
                 </h2>
 
                 <p className="text-sm text-gray-500 mt-1">
@@ -531,392 +582,456 @@ const AddEditStaff = () => {
               </div>
 
               <div className="p-6 grid md:grid-cols-2 gap-5">
-                <div>
-                  <label className="text-sm font-medium">Name *</label>
-                  <input name="name" placeholder="Enter Name" value={form.name} onChange={handleChange}
-                    className={`${inputClass} ${errors.name ? "border-red-500 focus:ring-red-500" : ""}`} />
-                  <ErrorText field="name" />
-                </div>
+                <InputBox
+                  label="Full Name"
+                  required
+                  icon={<User size={16} />}
+                >
+
+                  <input
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    placeholder="Enter employee name"
+                    className={`${inputClass} ${errors.name
+                      ? "border-red-500"
+                      : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="name" />
                 {/* USERNAME */}
-                <div>
-                  <label className="text-sm font-medium">Username (Auto from Email)</label>
+                <InputBox
+                  label="Username"
+                  required
+                  icon={<Users size={16} />}
+                >
+
                   <input
                     name="username"
-                    placeholder="Username"
                     value={form.username}
                     onChange={handleChange}
-                    className={`${inputClass} ${errors.username ? "border-red-500 focus:ring-red-500" : ""}`}
+                    placeholder="Enter username"
+                    className={`${inputClass} ${errors.username ? "border-red-500" : ""
+                      }`}
                   />
-                  <ErrorText field="username" />
-                </div>
+
+                </InputBox>
+
+                <ErrorText field="username" />
 
                 {/* EMAIL */}
-                <div>
-                  <label className="text-sm font-medium">Email *</label>
-                  <input name="email" placeholder="Enter Email Address" value={form.email} onChange={handleChange}
-                    className={`${inputClass} ${errors.email ? "border-red-500 focus:ring-red-500" : ""}`} />
-                  <ErrorText field="email" />
-                </div>
+                <InputBox
+                  label="Email"
+                  required
+                  icon={<Mail size={16} />}
+                >
+
+                  <input
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    placeholder="Enter email address"
+                    className={`${inputClass} ${errors.email
+                      ? "border-red-500"
+                      : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="email" />
 
                 {/* PASSWORD (ADD ONLY) */}
                 {!isEdit && (
                   <div>
-                    <label className="text-sm font-medium">
-                      Login Password <span className="text-xs text-gray-300">(defaults to mobile number)</span>
-                    </label>
-                    <div className="relative">
+
+                    <InputBox
+                      label="Password"
+                      required
+                      icon={<Lock size={16} />}
+                    >
+
                       <input
                         type="text"
                         name="password"
                         value={form.password}
                         onChange={handleChange}
-                        placeholder="Enter password"
-                        className={`${inputClass} ${errors.password ? "border-red-500 focus:ring-red-500" : ""}`}
+                        placeholder="Password"
+                        className={`${inputClass} ${errors.password ? "border-red-500" : ""
+                          }`}
                       />
-                    </div>
-                    <p className="text-xs text-gray-400 mt-1">This will be the password for the staff account.</p>
+
+                    </InputBox>
+
                     <ErrorText field="password" />
                   </div>
                 )}
 
                 {/* MOBILE */}
-                <div>
-                  <label className="text-sm font-medium">Mobile Number *</label>
-                  <input name="phone" placeholder="Enter Mobile Number" value={form.phone} onChange={handleChange}
-                    className={`${inputClass} ${errors.phone ? "border-red-500 focus:ring-red-500" : ""}`} />
-                  <ErrorText field="phone" />
-                </div>
+                <InputBox
+                  label="Mobile Number"
+                  required
+                  icon={<Phone size={16} />}
+                >
+
+                  <input
+                    name="phone"
+                    value={form.phone}
+                    onChange={handleChange}
+                    placeholder="Enter mobile number"
+                    className={`${inputClass} ${errors.phone
+                      ? "border-red-500"
+                      : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="phone" />
 
 
-                {/* NAME */}
-                <div>
-                  <label className="text-sm font-medium">Salary *</label>
-                  <input name="salary" placeholder="Enter Salary" value={form.salary} onChange={handleChange}
-                    className={`${inputClass} ${errors.salary ? "border-red-500 focus:ring-red-500" : ""}`} />
-                  <ErrorText field="salary" />
-                </div>
+
+                <InputBox
+                  label="Salary"
+                  required
+                  icon={<Wallet size={16} />}
+                >
+
+                  <input
+                    name="salary"
+                    value={form.salary}
+                    onChange={handleChange}
+                    placeholder="Enter salary"
+                    className={`${inputClass} ${errors.salary ? "border-red-500" : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="salary" />
 
                 {/* SHIFT */}
-                <div>
-                  <label className="text-sm font-medium">Shift *</label>
-                  <input name="shift" placeholder="Enter Shift" value={form.shift} onChange={handleChange}
-                    className={`${inputClass} ${errors.shift ? "border-red-500 focus:ring-red-500" : ""}`} />
-                  <ErrorText field="shift" />
-                </div>
+                <InputBox
+                  label="Shift"
+                  required
+                  icon={<Clock size={16} />}
+                >
+
+                  <input
+                    name="shift"
+                    value={form.shift}
+                    onChange={handleChange}
+                    placeholder="Morning / Evening"
+                    className={`${inputClass} ${errors.shift ? "border-red-500" : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="shift" />
 
                 {/* EMPLOYEE ID */}
-                <div>
-                  <label className="text-sm font-medium">Employee ID * (Auto-generated on submit)</label>
-                  <input name="employeeId" value={form.employeeId} onChange={handleChange}
-                    placeholder="Will be generated when adding"
-                    className={`${inputClass} ${errors.employeeId ? "border-red-500 focus:ring-red-500" : ""}`} disabled readOnly />
-                  <ErrorText field="employeeId" />
-                </div>
+                <InputBox
+                  label="Employee ID"
+                  icon={<Badge size={16} />}
+                >
+
+                  <input
+                    value={form.employeeId}
+                    readOnly
+                    disabled
+                    placeholder="Auto Generated"
+                    className={inputClass}
+                  />
+
+                </InputBox>
 
                 {/* ROLE */}
-                <div>
-                  <label className="text-sm text-white/70 mb-1 block">
-                    Role *
-                  </label>
+                <InputBox
+                  label="Role"
+                  required
+                  icon={<Briefcase size={16} />}
+                >
 
                   <select
                     name="role"
                     value={form.role}
                     onChange={handleChange}
-                    className={`${inputClass} text-white ${errors.role ? "border-red-500 focus:ring-red-500" : ""}`}
+                    className={`${inputClass} appearance-none ${errors.role ? "border-red-500" : ""
+                      }`}
                   >
-                    <option value="" className="text-gray-400 bg-[#0f172a]">
-                      Select role
-                    </option>
 
-                    <option value="trainer" className="text-black bg-white">
-                      Trainer
-                    </option>
-                    <option value="personal_trainer" className="text-black bg-white">
+                    <option value="">Select Role</option>
+
+                    <option value="trainer">Trainer</option>
+
+                    <option value="personal_trainer">
                       Personal Trainer
                     </option>
-                    <option value="gym_manager" className="text-black bg-white">
+
+                    <option value="gym_manager">
                       Gym Manager
                     </option>
-                    <option value="receptionist" className="text-black bg-white">
+
+                    <option value="receptionist">
                       Receptionist
                     </option>
-                    <option value="nutritionist" className="text-black bg-white">
+
+                    <option value="nutritionist">
                       Nutritionist
                     </option>
-                    <option value="security" className="text-black bg-white">
+
+                    <option value="security">
                       Security
                     </option>
+
                   </select>
 
-                  <ErrorText field="role" />
-                </div>
+                </InputBox>
+
+                <ErrorText field="role" />
 
                 {/* GENDER */}
-                <div>
-                  <label className="text-sm font-medium">Gender *</label>
-                  <select name="gender" value={form.gender} onChange={handleChange}
-                    className={`${inputClass} text-white ${errors.gender ? "border-red-500 focus:ring-red-500" : ""}`}>
-                    <option className="text-gray-400 bg-[#0f172a]" value="">Select gender</option>
-                    <option className="text-gray-400 bg-[#0f172a]" >Male</option>
-                    <option className="text-gray-400 bg-[#0f172a]" >Female</option>
-                    <option className="text-gray-400 bg-[#0f172a]" >Other</option>
+                <InputBox
+                  label="Gender"
+                  required
+                  icon={<Users size={16} />}
+                >
+
+                  <select
+                    name="gender"
+                    value={form.gender}
+                    onChange={handleChange}
+                    className={`${inputClass} appearance-none ${errors.gender ? "border-red-500" : ""
+                      }`}
+                  >
+
+                    <option value="">Select Gender</option>
+
+                    <option>Male</option>
+
+                    <option>Female</option>
+
+                    <option>Other</option>
+
                   </select>
-                  <ErrorText field="gender" />
-                </div>
+
+                </InputBox>
+
+                <ErrorText field="gender" />
 
                 {/* BLOOD GROUP */}
-                <div>
-                  <label className="text-sm text-white/70 mb-1 block">
-                    Blood Group *
-                  </label>
+                <InputBox
+                  label="Blood Group"
+                  required
+                  icon={<Droplets size={16} />}
+                >
 
                   <select
                     name="bloodGroup"
                     value={form.bloodGroup}
                     onChange={handleChange}
-                    className={`${inputClass} text-white ${errors.bloodGroup ? "border-red-500 focus:ring-red-500" : ""
+                    className={`${inputClass} appearance-none ${errors.bloodGroup ? "border-red-500" : ""
                       }`}
                   >
-                    {/* Placeholder */}
-                    <option value="" className="text-gray-400 bg-[#0f172a]">
-                      Select blood group
+
+                    <option value="">
+                      Select Blood Group
                     </option>
 
-                    {/* Options */}
-                    {bloodGroups.map((bg) => (
+                    {bloodGroups.map(bg => (
                       <option
                         key={bg}
                         value={bg}
-                        className="text-black bg-white"
                       >
                         {bg}
                       </option>
                     ))}
+
                   </select>
 
-                  <ErrorText field="bloodGroup" />
-                </div>
+                </InputBox>
+
+                <ErrorText field="bloodGroup" />
 
 
                 {/* DOB */}
-                <div>
-                  <label className="text-sm font-medium">Date of Birth *</label>
-                  <input type="date" name="dob" value={form.dob} onChange={handleChange}
-                    className={`${inputClass} ${errors.dob ? "border-red-500 focus:ring-red-500" : ""}`} />
-                  <ErrorText field="dob" />
-                </div>
+                <InputBox
+                  label="Date of Birth"
+                  required
+                  icon={<Calendar size={16} />}
+                >
+
+                  <input
+                    type="date"
+                    name="dob"
+                    value={form.dob}
+                    onChange={handleChange}
+                    className={`${inputClass} ${errors.dob ? "border-red-500" : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="dob" />
 
                 {/* JOINING DATE */}
-                <div>
-                  <label className="text-sm font-medium">Joining Date *</label>
-                  <input type="date" name="joiningDate" value={form.joiningDate} onChange={handleChange}
-                    className={`${inputClass} ${errors.joiningDate ? "border-red-500 focus:ring-red-500" : ""}`} />
-                  <ErrorText field="joiningDate" />
-                </div>
+                <InputBox
+                  label="Joining Date"
+                  required
+                  icon={<Calendar size={16} />}
+                >
+
+                  <input
+                    type="date"
+                    name="joiningDate"
+                    value={form.joiningDate}
+                    onChange={handleChange}
+                    className={`${inputClass} ${errors.joiningDate ? "border-red-500" : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="joiningDate" />
 
                 {/* TIME IN */}
-                <div>
-                  <label className="text-sm font-medium">Time In (HH:MM) *</label>
-                  <input type="time" name="timeIn" value={form.timeIn} onChange={handleChange}
-                    className={`${inputClass} ${errors.timeIn ? "border-red-500 focus:ring-red-500" : ""}`} />
-                  <ErrorText field="timeIn" />
-                </div>
+                <InputBox
+                  label="Time In"
+                  required
+                  icon={<Clock size={16} />}
+                >
+
+                  <input
+                    type="time"
+                    name="timeIn"
+                    value={form.timeIn}
+                    onChange={handleChange}
+                    className={`${inputClass} ${errors.timeIn ? "border-red-500" : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="timeIn" />
 
                 {/* TIME OUT */}
-                <div>
-                  <label className="text-sm font-medium">Time Out (HH:MM) *</label>
-                  <input type="time" name="timeOut" value={form.timeOut} onChange={handleChange}
-                    className={`${inputClass} ${errors.timeOut ? "border-red-500 focus:ring-red-500" : ""}`} />
-                  <ErrorText field="timeOut" />
-                </div>
+                <InputBox
+                  label="Time Out"
+                  required
+                  icon={<Clock size={16} />}
+                >
 
-                {/* ADDRESS */}
-                <div className="col-span-2">
-                  <label className="text-sm font-medium">Address *</label>
-                  <textarea name="address" placeholder="Enter Address" value={form.address} onChange={handleChange}
-                    className={`${inputClass} ${errors.address ? "border-red-500 focus:ring-red-500" : ""}`} />
-                  <ErrorText field="address" />
-                </div>
+                  <input
+                    type="time"
+                    name="timeOut"
+                    value={form.timeOut}
+                    onChange={handleChange}
+                    className={`${inputClass} ${errors.timeOut ? "border-red-500" : ""
+                      }`}
+                  />
 
-                {/* PHOTO */}
-                <div className="relative">
-                  <label className="text-sm font-medium">Photo</label>
-                  <div className="relative group">
-                    <input type="file" accept="image/*"
-                      key={`photo-${form.photo ? 'filled' : 'empty'}`}
-                      onChange={(e) => handleFileUpload(e, "photo")}
-                      className={inputClass} />
+                </InputBox>
 
-                    {form.photo && (
-                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-black/40 backdrop-blur-md p-1.5 rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {form.photo.startsWith('data:image') ? (
-                          <img src={form.photo} alt="Preview" className="h-10 w-10 rounded object-cover border border-white/20" />
-                        ) : (
-                          <div className="h-10 w-10 flex items-center justify-center bg-white/5 rounded border border-white/10 text-[8px] text-gray-400">DOC</div>
-                        )}
-                        <div className="flex flex-col gap-1">
-                          <button type="button" onClick={() => openPreview(form.photo, "photo.jpg")}
-                            className="px-2 py-0.5 bg-blue-500/80 text-white rounded text-[10px] hover:bg-blue-600">
-                            View
-                          </button>
-                          <button type="button" onClick={() => handleDeleteFile("photo")}
-                            className="px-2 py-0.5 bg-red-500/80 text-white rounded text-[10px] hover:bg-red-600">
-                            Del
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                <ErrorText field="timeOut" />
 
-                    {/* Persistent Thumbnail when not hovering */}
-                    {form.photo && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none group-hover:hidden transition-all">
-                        {form.photo.startsWith('data:image') ? (
-                          <img src={form.photo} alt="Preview" className="h-8 w-8 rounded-full object-cover border-2 border-orange-500/50 shadow-lg" />
-                        ) : (
-                          <div className="h-8 w-8 flex items-center justify-center bg-orange-500/20 rounded-full border border-orange-500/50 text-[8px] text-orange-200">📄</div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* AADHAR */}
-                <div className="relative">
-                  <label className="text-sm font-medium">Aadhar (Image/PDF)</label>
-                  <div className="relative group">
-                    <input type="file" accept="image/*,.pdf,.doc,.docx"
-                      key={`aadhar-${form.aadharDoc ? 'filled' : 'empty'}`}
-                      onChange={(e) => handleFileUpload(e, "aadharDoc")}
-                      className={inputClass} />
-
-                    {form.aadharDoc && (
-                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-black/40 backdrop-blur-md p-1.5 rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {form.aadharDoc.startsWith('data:image') ? (
-                          <img src={form.aadharDoc} alt="Preview" className="h-10 w-10 rounded object-cover border border-white/20" />
-                        ) : (
-                          <div className="h-10 w-10 flex items-center justify-center bg-white/5 rounded border border-white/10 text-[8px] text-gray-400">PDF</div>
-                        )}
-                        <div className="flex flex-col gap-1">
-                          <button type="button" onClick={() => openPreview(form.aadharDoc, "aadhar")}
-                            className="px-2 py-0.5 bg-blue-500/80 text-white rounded text-[10px] hover:bg-blue-600">
-                            View
-                          </button>
-                          <button type="button" onClick={() => handleDeleteFile("aadharDoc")}
-                            className="px-2 py-0.5 bg-red-500/80 text-white rounded text-[10px] hover:bg-red-600">
-                            Del
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Persistent Thumbnail */}
-                    {form.aadharDoc && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none group-hover:hidden transition-all">
-                        {form.aadharDoc.startsWith('data:image') ? (
-                          <img src={form.aadharDoc} alt="Preview" className="h-8 w-8 rounded-full object-cover border-2 border-orange-500/50 shadow-lg" />
-                        ) : (
-                          <div className="h-8 w-8 flex items-center justify-center bg-orange-500/20 rounded-full border border-orange-500/50 text-[8px] text-orange-200">📄</div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* ID */}
-                <div className="relative">
-                  <label className="text-sm font-medium">ID Proof (Image/PDF)</label>
-                  <div className="relative group">
-                    <input type="file" accept="image/*,.pdf,.doc,.docx"
-                      key={`idDoc-${form.idDoc ? 'filled' : 'empty'}`}
-                      onChange={(e) => handleFileUpload(e, "idDoc")}
-                      className={inputClass} />
-
-                    {form.idDoc && (
-                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-black/40 backdrop-blur-md p-1.5 rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {form.idDoc.startsWith('data:image') ? (
-                          <img src={form.idDoc} alt="Preview" className="h-10 w-10 rounded object-cover border border-white/20" />
-                        ) : (
-                          <div className="h-10 w-10 flex items-center justify-center bg-white/5 rounded border border-white/10 text-[8px] text-gray-400">ID</div>
-                        )}
-                        <div className="flex flex-col gap-1">
-                          <button type="button" onClick={() => openPreview(form.idDoc, "idproof")}
-                            className="px-2 py-0.5 bg-blue-500/80 text-white rounded text-[10px] hover:bg-blue-600">
-                            View
-                          </button>
-                          <button type="button" onClick={() => handleDeleteFile("idDoc")}
-                            className="px-2 py-0.5 bg-red-500/80 text-white rounded text-[10px] hover:bg-red-600">
-                            Del
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Persistent Thumbnail */}
-                    {form.idDoc && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none group-hover:hidden transition-all">
-                        {form.idDoc.startsWith('data:image') ? (
-                          <img src={form.idDoc} alt="Preview" className="h-8 w-8 rounded-full object-cover border-2 border-orange-500/50 shadow-lg" />
-                        ) : (
-                          <div className="h-8 w-8 flex items-center justify-center bg-orange-500/20 rounded-full border border-orange-500/50 text-[8px] text-orange-200">📄</div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* CERTIFICATE */}
-                <div className="relative">
-                  <label className="text-sm font-medium">Certificate (Image/PDF)</label>
-                  <div className="relative group">
-                    <input type="file" accept="image/*,.pdf,.doc,.docx"
-                      key={`cert-${form.certificateDoc ? 'filled' : 'empty'}`}
-                      onChange={(e) => handleFileUpload(e, "certificateDoc")}
-                      className={inputClass} />
-
-                    {form.certificateDoc && (
-                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-black/40 backdrop-blur-md p-1.5 rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {form.certificateDoc.startsWith('data:image') ? (
-                          <img src={form.certificateDoc} alt="Preview" className="h-10 w-10 rounded object-cover border border-white/20" />
-                        ) : (
-                          <div className="h-10 w-10 flex items-center justify-center bg-white/5 rounded border border-white/10 text-[8px] text-gray-400">CERT</div>
-                        )}
-                        <div className="flex flex-col gap-1">
-                          <button type="button" onClick={() => openPreview(form.certificateDoc, "certificate")}
-                            className="px-2 py-0.5 bg-blue-500/80 text-white rounded text-[10px] hover:bg-blue-600">
-                            View
-                          </button>
-                          <button type="button" onClick={() => handleDeleteFile("certificateDoc")}
-                            className="px-2 py-0.5 bg-red-500/80 text-white rounded text-[10px] hover:bg-red-600">
-                            Del
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Persistent Thumbnail */}
-                    {form.certificateDoc && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none group-hover:hidden transition-all">
-                        {form.certificateDoc.startsWith('data:image') ? (
-                          <img src={form.certificateDoc} alt="Preview" className="h-8 w-8 rounded-full object-cover border-2 border-orange-500/50 shadow-lg" />
-                        ) : (
-                          <div className="h-8 w-8 flex items-center justify-center bg-orange-500/20 rounded-full border border-orange-500/50 text-[8px] text-orange-200">📄</div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                {/* Address */}
+                <InputBox
+                  label="Address"
+                  required
+                  icon={<Home size={16} />}
+                  textarea
+                >
+                  <textarea
+                    name="address"
+                    rows={4}
+                    value={form.address}
+                    onChange={handleChange}
+                    placeholder="Enter address"
+                    className="
+      w-full
+      pl-12
+      pr-4
+      pt-4
+      pb-4
+      rounded-xl
+      border
+      border-[#e4e7ec]
+      bg-white
+      text-[#1f2937]
+      placeholder:text-[#98a2b3]
+      shadow-sm
+      resize-none
+      focus:outline-none
+      focus:border-[#22c55e]
+      focus:ring-4
+      focus:ring-[#22c55e]/10
+    "
+                  />
+                </InputBox>
 
                 {/* ACTIONS */}
                 <div className="col-span-2 flex justify-end gap-4 mt-6">
-                  <button type="button" onClick={() => navigate("/admin/staff")}
-                    className="border border-orange-400 px-6 py-2 rounded">
+
+                  <button
+                    type="button"
+                    onClick={() => navigate("/admin/staff")}
+                    className="
+      px-6 py-3
+      rounded-xl
+      border
+      border-[#dce9df]
+      bg-white
+      text-[#344054]
+      font-semibold
+      shadow-sm
+      hover:bg-gray-50
+      transition-all
+      duration-200
+    "
+                  >
                     Cancel
                   </button>
-                  <button type="submit" disabled={loading}
-                    className="flex items-center gap-2 px-5 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:scale-105 transition-all shadow-lg">
-                    {loading ? "Saving..." : isEdit ? "Update" : "Save"}
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="
+      flex items-center
+      gap-2
+      px-7
+      py-3
+      rounded-xl
+      font-semibold
+      text-white
+      bg-gradient-to-r
+      from-[#22c55e]
+      to-[#16a34a]
+      hover:from-[#16a34a]
+      hover:to-[#15803d]
+      shadow-lg
+      hover:shadow-xl
+      transition-all
+      duration-300
+      disabled:opacity-50
+      disabled:cursor-not-allowed
+    "
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                         {isEdit ? "Update Staff" : "Save Staff"}
+                      </>
+                    )}
                   </button>
+
                 </div>
 
               </div>
@@ -931,10 +1046,10 @@ const AddEditStaff = () => {
 
             <div className="bg-white rounded-2xl border border-[#dce9df] shadow-sm overflow-hidden">
 
-              <div className="px-6 py-4 border-b bg-gradient-to-r from-[#f4f0ff] to-white">
+              <div className="px-6 py-4 border-b border-[#edf3ee] bg-gradient-to-r from-[#eef8ef] to-white">
 
-                <h2 className="font-bold text-[#5b21b6] text-lg">
-                  📷 Staff Photo
+                <h2 className="font-bold text-[#1b7f29] text-lg">
+                  Staff Photo
                 </h2>
 
                 <p className="text-sm text-gray-500 mt-1">
@@ -947,14 +1062,14 @@ const AddEditStaff = () => {
 
                 <label
                   htmlFor="photoUpload"
-                  className="border-2 border-dashed border-[#d7c7ff] rounded-2xl h-56 flex flex-col items-center justify-center cursor-pointer hover:bg-[#faf8ff] transition"
+                  className="border-2 border-dashed border-[#dce9df] rounded-2xl h-56 flex flex-col items-center justify-center cursor-pointer hover:bg-[#faf8ff] transition"
                 >
 
                   <div className="text-5xl mb-3">
                     📤
                   </div>
 
-                  <p className="font-semibold text-[#5b21b6]">
+                  <p className="font-semibold text-[#1b7f29]">
                     Click to upload
                   </p>
 
@@ -1013,65 +1128,118 @@ const AddEditStaff = () => {
 
             <div className="bg-white rounded-2xl border border-[#dce9df] shadow-sm overflow-hidden">
 
-              <div className="px-6 py-4 border-b bg-gradient-to-r from-[#eef8ef] to-white">
+              <div className="px-6 py-4  bg-gradient-to-r from-[#eef8ef] to-white">
 
                 <h2 className="font-bold text-[#123524] text-lg">
-                  📄 Documents
+                  Documents
                 </h2>
 
               </div>
 
               <div className="p-6 space-y-5">
 
-                {/* AADHAR */}
+                {/* AADHAAR */}
 
                 <div>
-
-                  <label className="font-medium text-[#123524]">
+                  <label className="block text-[15px] font-semibold text-[#344054] mb-2">
                     Aadhaar
                   </label>
 
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    className={inputClass}
-                    onChange={(e) => handleFileUpload(e, "aadharDoc")}
-                  />
+                  <label
+                    htmlFor="aadharUpload"
+                    className="flex items-center gap-4 border border-[#e4e7ec] rounded-xl bg-white p-4 cursor-pointer hover:border-[#22c55e] hover:bg-[#f8fffa] transition"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-[#ecfdf3] flex items-center justify-center">
+                      <BadgeCheck size={18} className="text-[#22c55e]" />
+                    </div>
 
-                </div>
-
-                {/* ID */}
-
-                <div>
-
-                  <label className="font-medium text-[#123524]">
-                    ID Proof
+                    <div className="flex-1">
+                      <p className="font-medium text-[#344054]">
+                        {form.aadharDoc ? "Aadhaar Uploaded" : "Choose Aadhaar File"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        JPG, PNG or PDF
+                      </p>
+                    </div>
                   </label>
 
                   <input
+                    id="aadharUpload"
                     type="file"
                     accept="image/*,.pdf"
-                    className={inputClass}
+                    hidden
+                    onChange={(e) => handleFileUpload(e, "aadharDoc")}
+                  />
+                </div>
+
+                {/* ID PROOF */}
+
+                <div>
+                  <label className="block text-[15px] font-semibold text-[#344054] mb-2">
+                    ID Proof
+                  </label>
+
+                  <label
+                    htmlFor="idUpload"
+                    className="flex items-center gap-4 border border-[#e4e7ec] rounded-xl bg-white p-4 cursor-pointer hover:border-[#22c55e] hover:bg-[#f8fffa] transition"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-[#ecfdf3] flex items-center justify-center">
+                      <FileBadge2 size={18} className="text-[#22c55e]" />
+                    </div>
+
+                    <div className="flex-1">
+                      <p className="font-medium text-[#344054]">
+                        {form.idDoc ? "ID Proof Uploaded" : "Choose ID Proof"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        JPG, PNG or PDF
+                      </p>
+                    </div>
+                  </label>
+
+                  <input
+                    id="idUpload"
+                    type="file"
+                    accept="image/*,.pdf"
+                    hidden
                     onChange={(e) => handleFileUpload(e, "idDoc")}
                   />
-
                 </div>
 
                 {/* CERTIFICATE */}
 
                 <div>
-
-                  <label className="font-medium text-[#123524]">
+                  <label className="block text-[15px] font-semibold text-[#344054] mb-2">
                     Certificate
                   </label>
 
+                  <label
+                    htmlFor="certificateUpload"
+                    className="flex items-center gap-4 border border-[#e4e7ec] rounded-xl bg-white p-4 cursor-pointer hover:border-[#22c55e] hover:bg-[#f8fffa] transition"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-[#ecfdf3] flex items-center justify-center">
+                      <FileText size={18} className="text-[#22c55e]" />
+                    </div>
+
+                    <div className="flex-1">
+                      <p className="font-medium text-[#344054]">
+                        {form.certificateDoc ? "Certificate Uploaded" : "Choose Certificate"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        JPG, PNG or PDF
+                      </p>
+                    </div>
+                  </label>
+
                   <input
+                    id="certificateUpload"
                     type="file"
                     accept="image/*,.pdf"
-                    className={inputClass}
+                    hidden
                     onChange={(e) => handleFileUpload(e, "certificateDoc")}
                   />
                 </div>
+
               </div>
             </div>
           </div>
