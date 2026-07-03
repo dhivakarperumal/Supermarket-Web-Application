@@ -30,12 +30,12 @@ const createVideosTable = async (connection) => {
         videoId VARCHAR(255),
         type ENUM('youtube', 'custom') DEFAULT 'youtube',
         thumbnailPath VARCHAR(500),
-        created_by_id CHAR(36),
-        updated_by_id CHAR(36),
+        created_by CHAR(36),
+        updated_by CHAR(36),
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (created_by_id) REFERENCES users(user_id) ON DELETE SET NULL,
-        FOREIGN KEY (updated_by_id) REFERENCES users(user_id) ON DELETE SET NULL
+        FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE SET NULL,
+        FOREIGN KEY (updated_by) REFERENCES users(user_id) ON DELETE SET NULL
       )
     `;
     await connection.query(createTableQuery);
@@ -49,8 +49,7 @@ const getVideos = async (req, res) => {
   try {
     const pool = getPool();
     const [videos] = await pool.query(
-      `SELECT id, title, videoId, videoPath, thumbnailPath, type, created_by_id, updated_by_id, 
-              createdAt, updatedAt FROM videos ORDER BY createdAt DESC`
+      `SELECT id, title, videoId, videoPath, thumbnailPath, type, created_by, updated_by, createdAt, updatedAt FROM videos ORDER BY createdAt DESC`
     );
     
     // Add full URLs for video and thumbnail paths
@@ -76,8 +75,7 @@ const getVideo = async (req, res) => {
     const { id } = req.params;
     const pool = getPool();
     const [videos] = await pool.query(
-      `SELECT id, title, videoId, videoPath, thumbnailPath, type, created_by_id, updated_by_id, 
-              createdAt, updatedAt FROM videos WHERE id = ?`,
+      `SELECT id, title, videoId, videoPath, thumbnailPath, type, created_by, updated_by, createdAt, updatedAt FROM videos WHERE id = ?`,
       [id]
     );
 
@@ -109,7 +107,7 @@ const createVideo = async (req, res) => {
     let title = req.body.title;
     let videoId = req.body.videoId;
     let type = req.body.type || "youtube";
-    let created_by_id = req.body.created_by_id;  // UUID string from user.user_id
+    let created_by = req.body.created_by;  // User UUID from login
     
     const files = req.files || {};
 
@@ -161,9 +159,9 @@ const createVideo = async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO videos (title, videoId, videoPath, thumbnailPath, type, created_by_id, updated_by_id) 
+      `INSERT INTO videos (title, videoId, videoPath, thumbnailPath, type, created_by, updated_by) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [title, videoId || null, videoPath || null, thumbnailPath || null, type, created_by_id || null, created_by_id || null]
+      [title, videoId || null, videoPath || null, thumbnailPath || null, type, created_by || null, created_by || null]
     );
 
     res.status(201).json({
@@ -175,8 +173,8 @@ const createVideo = async (req, res) => {
         title,
         videoId,
         type: type || "youtube",
-        created_by_id: created_by_id || null,
-        updated_by_id: created_by_id || null,
+        created_by,
+        updated_by: created_by,
       },
     });
   } catch (error) {
@@ -195,7 +193,7 @@ const updateVideo = async (req, res) => {
     let title = req.body.title;
     let videoId = req.body.videoId;
     let type = req.body.type || "youtube";
-    let updated_by_id = req.body.updated_by_id;  // UUID string from user.user_id
+    let updated_by = req.body.updated_by;  // User UUID from login
     
     const files = req.files || {};
 
@@ -259,8 +257,8 @@ const updateVideo = async (req, res) => {
     }
 
     const [result] = await pool.query(
-      "UPDATE videos SET title = ?, videoId = ?, videoPath = ?, thumbnailPath = ?, type = ?, updated_by_id = ? WHERE id = ?",
-      [title, videoId || null, videoPath || null, thumbnailPath || null, type || "youtube", updated_by_id || null, id]
+      "UPDATE videos SET title = ?, videoId = ?, videoPath = ?, thumbnailPath = ?, type = ?, updated_by = ? WHERE id = ?",
+      [title, videoId || null, videoPath || null, thumbnailPath || null, type || "youtube", updated_by || null, id]
     );
 
     if (result.affectedRows === 0) {

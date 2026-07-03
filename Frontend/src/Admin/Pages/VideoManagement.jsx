@@ -21,15 +21,22 @@ const VideoManagement = () => {
     const [videos, setVideos] = useState(videosCache || []);
     const [loading, setLoading] = useState(!videosCache);
     const [searchTerm, setSearchTerm] = useState("");
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [currentVideo, setCurrentVideo] = useState({ 
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [newVideo, setNewVideo] = useState({ 
         title: "", 
         videoId: "", 
         videoFile: null,
         thumbnailFile: null,
         type: "youtube" 
     });
-    const [isEditing, setIsEditing] = useState(false);
+    const [editingVideo, setEditingVideo] = useState({ 
+        title: "", 
+        videoId: "", 
+        videoFile: null,
+        thumbnailFile: null,
+        type: "youtube" 
+    });
     const [uploading, setUploading] = useState(false);
     const [thumbUploading, setThumbUploading] = useState(false);
 
@@ -65,13 +72,17 @@ const VideoManagement = () => {
         }
     };
 
-    const handleOpenModal = (video = { title: "", videoId: "", videoFile: null, thumbnailFile: null, type: "youtube" }) => {
-        setCurrentVideo(video);
-        setIsEditing(!!video.id);
-        setIsModalOpen(true);
+    const handleOpenAddModal = () => {
+        setNewVideo({ title: "", videoId: "", videoFile: null, thumbnailFile: null, type: "youtube" });
+        setIsAddModalOpen(true);
     };
 
-    const handleFileUpload = (e) => {
+    const handleOpenEditModal = (video) => {
+        setEditingVideo(video);
+        setIsEditModalOpen(true);
+    };
+
+    const handleFileUploadAdd = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -81,12 +92,27 @@ const VideoManagement = () => {
         }
 
         setUploading(true);
-        setCurrentVideo({ ...currentVideo, videoFile: file, type: "custom" });
+        setNewVideo({ ...newVideo, videoFile: file, type: "custom" });
         setUploading(false);
         toast.success("Video file selected!");
     };
 
-    const handleThumbnailUpload = (e) => {
+    const handleFileUploadEdit = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 500 * 1024 * 1024) {
+            toast.error("File is too large! Max 500MB.");
+            return;
+        }
+
+        setUploading(true);
+        setEditingVideo({ ...editingVideo, videoFile: file });
+        setUploading(false);
+        toast.success("Video file selected!");
+    };
+
+    const handleThumbnailUploadAdd = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -96,47 +122,85 @@ const VideoManagement = () => {
         }
 
         setThumbUploading(true);
-        setCurrentVideo({ ...currentVideo, thumbnailFile: file });
+        setNewVideo({ ...newVideo, thumbnailFile: file });
         setThumbUploading(false);
         toast.success("Thumbnail selected!");
     };
 
-    const handleSubmit = async (e) => {
+    const handleThumbnailUploadEdit = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Thumbnail too large! Max 5MB.");
+            return;
+        }
+
+        setThumbUploading(true);
+        setEditingVideo({ ...editingVideo, thumbnailFile: file });
+        setThumbUploading(false);
+        toast.success("Thumbnail selected!");
+    };
+
+    const handleSubmitAdd = async (e) => {
         e.preventDefault();
         try {
             const formData = new FormData();
-            formData.append("title", currentVideo.title);
-            formData.append("type", currentVideo.type);
-            formData.append("created_by_id", user?.user_id);
-            formData.append("updated_by_id", user?.user_id);
+            formData.append("title", newVideo.title);
+            formData.append("type", newVideo.type);
+            formData.append("created_by", user?.user_id);
 
-            if (currentVideo.type === "youtube") {
-                formData.append("videoId", currentVideo.videoId);
-            } else if (currentVideo.type === "custom" && currentVideo.videoFile) {
-                formData.append("video", currentVideo.videoFile);
+            if (newVideo.type === "youtube") {
+                formData.append("videoId", newVideo.videoId);
+            } else if (newVideo.type === "custom" && newVideo.videoFile) {
+                formData.append("video", newVideo.videoFile);
             }
 
-            if (currentVideo.thumbnailFile) {
-                formData.append("thumbnail", currentVideo.thumbnailFile);
+            if (newVideo.thumbnailFile) {
+                formData.append("thumbnail", newVideo.thumbnailFile);
             }
 
-            if (isEditing) {
-                await api.put(`/videos/${currentVideo.id}`, formData, {
-                    headers: { "Content-Type": "multipart/form-data" }
-                });
-                toast.success("Video updated successfully");
-            } else {
-                await api.post("/videos", formData, {
-                    headers: { "Content-Type": "multipart/form-data" }
-                });
-                toast.success("Video added successfully");
-            }
+            await api.post("/videos", formData, {
+                headers: { "Content-Type": "multipart/form-data" }
+            });
+            toast.success("Video added successfully");
             fetchVideos();
-            setIsModalOpen(false);
-            setCurrentVideo({ title: "", videoId: "", videoFile: null, thumbnailFile: null, type: "youtube" });
+            setIsAddModalOpen(false);
+            setNewVideo({ title: "", videoId: "", videoFile: null, thumbnailFile: null, type: "youtube" });
         } catch (error) {
-            console.error("Error saving video:", error);
-            toast.error(error.response?.data?.message || "Failed to save video");
+            console.error("Error adding video:", error);
+            toast.error(error.response?.data?.message || "Failed to add video");
+        }
+    };
+
+    const handleSubmitEdit = async (e) => {
+        e.preventDefault();
+        try {
+            const formData = new FormData();
+            formData.append("title", editingVideo.title);
+            formData.append("type", editingVideo.type);
+            formData.append("updated_by", user?.user_id);
+
+            if (editingVideo.type === "youtube") {
+                formData.append("videoId", editingVideo.videoId);
+            } else if (editingVideo.type === "custom" && editingVideo.videoFile) {
+                formData.append("video", editingVideo.videoFile);
+            }
+
+            if (editingVideo.thumbnailFile) {
+                formData.append("thumbnail", editingVideo.thumbnailFile);
+            }
+
+            await api.put(`/videos/${editingVideo.id}`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }
+            });
+            toast.success("Video updated successfully");
+            fetchVideos();
+            setIsEditModalOpen(false);
+            setEditingVideo({ title: "", videoId: "", videoFile: null, thumbnailFile: null, type: "youtube" });
+        } catch (error) {
+            console.error("Error updating video:", error);
+            toast.error(error.response?.data?.message || "Failed to update video");
         }
     };
 
@@ -148,7 +212,7 @@ const VideoManagement = () => {
 
                 </div>
                 <button
-                    onClick={() => handleOpenModal()}
+                    onClick={() => handleOpenAddModal()}
                     className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
                 >
                     <FiPlus /> Add New Video
@@ -237,7 +301,7 @@ const VideoManagement = () => {
                                                     <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</span>
                                                     <div className="flex items-center justify-end gap-2">
                                                         <button
-                                                            onClick={() => handleOpenModal(video)}
+                                                            onClick={() => handleOpenEditModal(video)}
                                                             className="p-2 border border-gray-200 text-gray-500 rounded-lg hover:bg-green-500 hover:text-white transition-all shadow-sm md:shadow-none"
                                                             title="Edit"
                                                         >
@@ -266,8 +330,8 @@ const VideoManagement = () => {
                 </div>
             )}
 
-            {/* Modal - Perfectly Centered */}
-            {isModalOpen && createPortal(
+            {/* ADD VIDEO MODAL */}
+            {isAddModalOpen && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300 px-4">
                     <div
                         className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto hide-scrollbar"
@@ -276,24 +340,24 @@ const VideoManagement = () => {
                         <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-slate-50/50 sticky top-0 z-10 backdrop-blur-sm">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-500/20">
-                                    <FiVideo size={24} />
+                                    <FiPlus size={24} />
                                 </div>
                                 <div>
                                     <h3 className="font-black text-slate-800 text-xl uppercase tracking-tighter leading-none">
-                                        {isEditing ? "Modify Creation" : "New Showcase Video"}
+                                        Add New Video
                                     </h3>
                                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5 leading-none">Media Studio</p>
                                 </div>
                             </div>
                             <button
-                                onClick={() => setIsModalOpen(false)}
+                                onClick={() => setIsAddModalOpen(false)}
                                 className="p-3 bg-white border border-gray-100 rounded-2xl transition-all text-gray-400 hover:text-red-500 hover:shadow-lg shadow-sm"
                             >
                                 <FiX size={20} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-8 space-y-8">
+                        <form onSubmit={handleSubmitAdd} className="p-8 space-y-8">
                             <div className="space-y-6">
                                 {/* Title Input */}
                                 <div className="space-y-3">
@@ -303,8 +367,8 @@ const VideoManagement = () => {
                                         required
                                         className="w-full px-6 py-4 bg-gray-50/50 border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all text-slate-800 font-bold shadow-inner"
                                         placeholder="e.g. Fresh Arrivals Showcase"
-                                        value={currentVideo.title}
-                                        onChange={(e) => setCurrentVideo({ ...currentVideo, title: e.target.value })}
+                                        value={newVideo.title}
+                                        onChange={(e) => setNewVideo({ ...newVideo, title: e.target.value })}
                                     />
                                 </div>
 
@@ -315,13 +379,13 @@ const VideoManagement = () => {
                                         <input
                                             type="file"
                                             accept="image/*"
-                                            onChange={handleThumbnailUpload}
+                                            onChange={handleThumbnailUploadAdd}
                                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                         />
-                                        <div className={`p-4 rounded-3xl border-2 border-dashed transition-all flex items-center gap-4 ${currentVideo.thumbnailFile ? 'border-blue-500/30 bg-blue-50/30' : 'border-gray-100 bg-gray-50/50 group-hover:border-blue-200'}`}>
+                                        <div className={`p-4 rounded-3xl border-2 border-dashed transition-all flex items-center gap-4 ${newVideo.thumbnailFile ? 'border-blue-500/30 bg-blue-50/30' : 'border-gray-100 bg-gray-50/50 group-hover:border-blue-200'}`}>
                                             <div className="w-16 h-16 rounded-xl overflow-hidden bg-white shadow-sm flex-shrink-0 border border-gray-100">
-                                                {currentVideo.thumbnailFile ? (
-                                                    <img src={URL.createObjectURL(currentVideo.thumbnailFile)} className="w-full h-full object-cover" alt="Preview" />
+                                                {newVideo.thumbnailFile ? (
+                                                    <img src={URL.createObjectURL(newVideo.thumbnailFile)} className="w-full h-full object-cover" alt="Preview" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-gray-300">
                                                         <FiUploadCloud size={24} />
@@ -329,7 +393,7 @@ const VideoManagement = () => {
                                                 )}
                                             </div>
                                             <div className="flex-1">
-                                                <p className="text-xs font-black text-slate-800">{currentVideo.thumbnailFile ? currentVideo.thumbnailFile.name : "Upload Custom Cover"}</p>
+                                                <p className="text-xs font-black text-slate-800">{newVideo.thumbnailFile ? newVideo.thumbnailFile.name : "Upload Custom Cover"}</p>
                                                 <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">PNG • JPG • WEBP (MAX 5MB)</p>
                                             </div>
                                             {thumbUploading && <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>}
@@ -343,15 +407,15 @@ const VideoManagement = () => {
                                     <div className="grid grid-cols-2 gap-3 p-1.5 bg-gray-50 rounded-2xl border border-gray-100">
                                         <button
                                             type="button"
-                                            onClick={() => setCurrentVideo({ ...currentVideo, type: 'youtube', videoId: isEditing && currentVideo.type === 'youtube' ? currentVideo.videoId : '' })}
-                                            className={`py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${currentVideo.type === 'youtube' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:bg-white/50'}`}
+                                            onClick={() => setNewVideo({ ...newVideo, type: 'youtube', videoId: '' })}
+                                            className={`py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${newVideo.type === 'youtube' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:bg-white/50'}`}
                                         >
                                             YouTube
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => setCurrentVideo({ ...currentVideo, type: 'custom', videoId: isEditing && currentVideo.type === 'custom' ? currentVideo.videoId : '' })}
-                                            className={`py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${currentVideo.type === 'custom' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:bg-white/50'}`}
+                                            onClick={() => setNewVideo({ ...newVideo, type: 'custom' })}
+                                            className={`py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${newVideo.type === 'custom' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:bg-white/50'}`}
                                         >
                                             Upload File
                                         </button>
@@ -359,7 +423,7 @@ const VideoManagement = () => {
                                 </div>
 
                                 {/* Dynamic Input Based on Type */}
-                                {currentVideo.type === 'youtube' ? (
+                                {newVideo.type === 'youtube' ? (
                                     <div className="space-y-3 animate-in slide-in-from-top-2 duration-300">
                                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">YouTube Video ID</label>
                                         <div className="relative">
@@ -368,12 +432,12 @@ const VideoManagement = () => {
                                                 required
                                                 className="w-full px-6 py-4 bg-gray-50/50 border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-red-500/20 focus:ring-4 focus:ring-red-500/5 transition-all text-slate-800 font-bold shadow-inner"
                                                 placeholder="e.g. tgbNymZ7vqY"
-                                                value={currentVideo.videoId}
-                                                onChange={(e) => setCurrentVideo({ ...currentVideo, videoId: e.target.value })}
+                                                value={newVideo.videoId}
+                                                onChange={(e) => setNewVideo({ ...newVideo, videoId: e.target.value })}
                                             />
-                                            {currentVideo.videoId && !currentVideo.thumbnail && (
+                                            {newVideo.videoId && !newVideo.thumbnailFile && (
                                                 <div className="mt-3 p-3 bg-red-50 rounded-xl border border-red-100/50 flex items-center gap-3">
-                                                    <img src={`https://img.youtube.com/vi/${currentVideo.videoId}/maxresdefault.jpg`} className="w-16 h-10 object-cover rounded-lg" onError={(e) => e.target.src = 'https://via.placeholder.com/160x90?text=Wait...'} />
+                                                    <img src={`https://img.youtube.com/vi/${newVideo.videoId}/maxresdefault.jpg`} className="w-16 h-10 object-cover rounded-lg" onError={(e) => e.target.src = 'https://via.placeholder.com/160x90?text=Wait...'} />
                                                     <p className="text-[9px] text-red-600 font-bold leading-relaxed">Preview detected! We'll use the YouTube cover unless you upload a custom one.</p>
                                                 </div>
                                             )}
@@ -382,44 +446,184 @@ const VideoManagement = () => {
                                 ) : (
                                     <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
                                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Video File</label>
-                                        <div className={`relative border-2 border-dashed rounded-[2rem] p-8 transition-all group ${currentVideo.videoFile ? 'border-emerald-500/50 bg-emerald-50/30' : 'border-gray-200 hover:border-blue-500/50 bg-gray-50/30'}`}>
+                                        <div className={`relative border-2 border-dashed rounded-[2rem] p-8 transition-all group ${newVideo.videoFile ? 'border-emerald-500/50 bg-emerald-50/30' : 'border-gray-200 hover:border-blue-500/50 bg-gray-50/30'}`}>
                                             <input
                                                 type="file"
                                                 accept="video/*"
-                                                onChange={handleFileUpload}
+                                                onChange={handleFileUploadAdd}
                                                 className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                             />
                                             <div className="flex flex-col items-center justify-center text-center space-y-4">
-                                                <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 ${currentVideo.videoFile ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-200' : 'bg-white text-gray-400 shadow-lg shadow-gray-200/50'}`}>
+                                                <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 ${newVideo.videoFile ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-200' : 'bg-white text-gray-400 shadow-lg shadow-gray-200/50'}`}>
                                                     {uploading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <FiUploadCloud size={32} />}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-black text-slate-800">{currentVideo.videoFile ? currentVideo.videoFile.name : 'Choose Video File'}</p>
+                                                    <p className="text-sm font-black text-slate-800">{newVideo.videoFile ? newVideo.videoFile.name : 'Choose Video File'}</p>
                                                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">MP4 / MOV / WEBM (MAX 500MB)</p>
                                                 </div>
                                             </div>
                                         </div>
-                                        {currentVideo.videoId && currentVideo.type === 'custom' && (
-                                            <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white">
-                                                    <FiPlay />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-[11px] font-black text-emerald-700">Video Encoded Successfully</p>
-                                                    <p className="text-[8px] text-emerald-600/70 font-bold uppercase">Ready for distribution</p>
-                                                </div>
-                                            </div>
-                                        )}
                                     </div>
                                 )}
                             </div>
 
                             <button
                                 type="submit"
-                                disabled={uploading || thumbUploading || !currentVideo.videoId}
-                                className={`w-full py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-[0.3em] transition-all shadow-2xl active:scale-[0.98] ${uploading || thumbUploading || !currentVideo.videoId ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-slate-900 hover:bg-black text-white shadow-slate-200'}`}
+                                disabled={uploading || thumbUploading || !newVideo.title || (newVideo.type === 'youtube' && !newVideo.videoId) || (newVideo.type === 'custom' && !newVideo.videoFile)}
+                                className={`w-full py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-[0.3em] transition-all shadow-2xl active:scale-[0.98] ${uploading || thumbUploading || !newVideo.title || (newVideo.type === 'youtube' && !newVideo.videoId) || (newVideo.type === 'custom' && !newVideo.videoFile) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-slate-900 hover:bg-black text-white shadow-slate-200'}`}
                             >
-                                {uploading || thumbUploading ? "Processing Media..." : isEditing ? "Save Refinements" : "Launch Showcase"}
+                                {uploading || thumbUploading ? "Processing Media..." : "Launch Showcase"}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            , document.body)}
+
+            {/* EDIT VIDEO MODAL */}
+            {isEditModalOpen && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300 px-4">
+                    <div
+                        className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto hide-scrollbar"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-slate-50/50 sticky top-0 z-10 backdrop-blur-sm">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-green-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-green-500/20">
+                                    <FiEdit2 size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="font-black text-slate-800 text-xl uppercase tracking-tighter leading-none">
+                                        Edit Video
+                                    </h3>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5 leading-none">Media Studio</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsEditModalOpen(false)}
+                                className="p-3 bg-white border border-gray-100 rounded-2xl transition-all text-gray-400 hover:text-red-500 hover:shadow-lg shadow-sm"
+                            >
+                                <FiX size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmitEdit} className="p-8 space-y-8">
+                            <div className="space-y-6">
+                                {/* Title Input */}
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Video Title *</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full px-6 py-4 bg-gray-50/50 border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all text-slate-800 font-bold shadow-inner"
+                                        placeholder="e.g. Fresh Arrivals Showcase"
+                                        value={editingVideo.title}
+                                        onChange={(e) => setEditingVideo({ ...editingVideo, title: e.target.value })}
+                                    />
+                                </div>
+
+                                {/* Thumbnail Upload */}
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Cover Thumbnail (Optional)</label>
+                                    <div className="relative group">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleThumbnailUploadEdit}
+                                            className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                        />
+                                        <div className={`p-4 rounded-3xl border-2 border-dashed transition-all flex items-center gap-4 ${editingVideo.thumbnailFile ? 'border-blue-500/30 bg-blue-50/30' : 'border-gray-100 bg-gray-50/50 group-hover:border-blue-200'}`}>
+                                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-white shadow-sm flex-shrink-0 border border-gray-100">
+                                                {editingVideo.thumbnailFile ? (
+                                                    <img src={URL.createObjectURL(editingVideo.thumbnailFile)} className="w-full h-full object-cover" alt="Preview" />
+                                                ) : editingVideo.thumbnailUrl ? (
+                                                    <img src={editingVideo.thumbnailUrl} className="w-full h-full object-cover" alt="Current" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                                        <FiUploadCloud size={24} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-xs font-black text-slate-800">{editingVideo.thumbnailFile ? editingVideo.thumbnailFile.name : "Update Cover"}</p>
+                                                <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">PNG • JPG • WEBP (MAX 5MB)</p>
+                                            </div>
+                                            {thumbUploading && <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Source Toggle */}
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Video Source</label>
+                                    <div className="grid grid-cols-2 gap-3 p-1.5 bg-gray-50 rounded-2xl border border-gray-100">
+                                        <button
+                                            type="button"
+                                            onClick={() => setEditingVideo({ ...editingVideo, type: 'youtube' })}
+                                            className={`py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${editingVideo.type === 'youtube' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:bg-white/50'}`}
+                                        >
+                                            YouTube
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setEditingVideo({ ...editingVideo, type: 'custom' })}
+                                            className={`py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${editingVideo.type === 'custom' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:bg-white/50'}`}
+                                        >
+                                            Upload File
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Dynamic Input Based on Type */}
+                                {editingVideo.type === 'youtube' ? (
+                                    <div className="space-y-3 animate-in slide-in-from-top-2 duration-300">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">YouTube Video ID</label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                required
+                                                className="w-full px-6 py-4 bg-gray-50/50 border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-red-500/20 focus:ring-4 focus:ring-red-500/5 transition-all text-slate-800 font-bold shadow-inner"
+                                                placeholder="e.g. tgbNymZ7vqY"
+                                                value={editingVideo.videoId}
+                                                onChange={(e) => setEditingVideo({ ...editingVideo, videoId: e.target.value })}
+                                            />
+                                            {editingVideo.videoId && !editingVideo.thumbnailFile && (
+                                                <div className="mt-3 p-3 bg-red-50 rounded-xl border border-red-100/50 flex items-center gap-3">
+                                                    <img src={`https://img.youtube.com/vi/${editingVideo.videoId}/maxresdefault.jpg`} className="w-16 h-10 object-cover rounded-lg" onError={(e) => e.target.src = 'https://via.placeholder.com/160x90?text=Wait...'} />
+                                                    <p className="text-[9px] text-red-600 font-bold leading-relaxed">Preview detected! We'll use the YouTube cover unless you upload a custom one.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Video File</label>
+                                        <div className={`relative border-2 border-dashed rounded-[2rem] p-8 transition-all group ${editingVideo.videoFile ? 'border-emerald-500/50 bg-emerald-50/30' : 'border-gray-200 hover:border-blue-500/50 bg-gray-50/30'}`}>
+                                            <input
+                                                type="file"
+                                                accept="video/*"
+                                                onChange={handleFileUploadEdit}
+                                                className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                            />
+                                            <div className="flex flex-col items-center justify-center text-center space-y-4">
+                                                <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 ${editingVideo.videoFile ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-200' : 'bg-white text-gray-400 shadow-lg shadow-gray-200/50'}`}>
+                                                    {uploading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <FiUploadCloud size={32} />}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-black text-slate-800">{editingVideo.videoFile ? editingVideo.videoFile.name : 'Choose Video File'}</p>
+                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">MP4 / MOV / WEBM (MAX 500MB)</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={uploading || thumbUploading}
+                                className={`w-full py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-[0.3em] transition-all shadow-2xl active:scale-[0.98] ${uploading || thumbUploading ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-slate-900 hover:bg-black text-white shadow-slate-200'}`}
+                            >
+                                {uploading || thumbUploading ? "Processing Media..." : "Save Refinements"}
                             </button>
                         </form>
                     </div>
