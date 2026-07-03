@@ -36,7 +36,17 @@ const CreateBilling = () => {
         customer_phone: "",
         items: [],
         total_amount: 0,
-        status: "Paid"
+        status: "Paid",
+        order_type: "Shop",
+        payment_method: "Cash",
+        shipping_address: {
+            street: "",
+            city: "",
+            district: "",
+            state: "",
+            zip: "",
+            country: "India"
+        }
     });
 
     useEffect(() => {
@@ -393,11 +403,77 @@ const CreateBilling = () => {
                     {/* Product Area */}
                     <div className="lg:col-span-8 space-y-8">
                         <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-6">
-                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><FiUser className="text-blue-600" /> Customer Details</h3>
-                            <div className="grid grid-cols-2 gap-4">
-                                <input type="text" placeholder="Name" value={formData.customer_name} onChange={(e) => setFormData(p => ({ ...p, customer_name: e.target.value }))} className="w-full px-5 py-3.5 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm font-bold" />
-                                <input type="text" placeholder="Phone" value={formData.customer_phone} onChange={(e) => setFormData(p => ({ ...p, customer_phone: e.target.value }))} className="w-full px-5 py-3.5 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm font-bold" />
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><FiUser className="text-blue-600" /> Order & Customer Details</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <select value={formData.order_type} onChange={(e) => setFormData(p => ({ ...p, order_type: e.target.value }))} className="w-full px-5 py-3.5 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm font-bold text-slate-700 outline-none cursor-pointer">
+                                    <option value="Shop">Shop Order</option>
+                                    <option value="Online">Online Order</option>
+                                </select>
+                                <select value={formData.payment_method} onChange={(e) => setFormData(p => ({ ...p, payment_method: e.target.value }))} className="w-full px-5 py-3.5 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm font-bold text-slate-700 outline-none cursor-pointer">
+                                    <option value="Cash">Cash</option>
+                                    <option value="UPI">UPI</option>
+                                    <option value="Card">Card</option>
+                                </select>
+                                <input type="text" placeholder="Customer Name" value={formData.customer_name} onChange={(e) => setFormData(p => ({ ...p, customer_name: e.target.value }))} className="w-full px-5 py-3.5 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm font-bold" />
+                                <input type="text" placeholder="Customer Phone" value={formData.customer_phone} onChange={(e) => setFormData(p => ({ ...p, customer_phone: e.target.value }))} className="w-full px-5 py-3.5 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm font-bold" />
                             </div>
+                            {formData.order_type === 'Online' && (
+                                <div className="animate-in fade-in slide-in-from-top-2 duration-300 border-t border-gray-100 pt-6 space-y-4">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Shipping Address</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <input 
+                                            type="text" 
+                                            placeholder="Street Address" 
+                                            value={formData.shipping_address.street} 
+                                            onChange={(e) => setFormData(p => ({ ...p, shipping_address: { ...p.shipping_address, street: e.target.value } }))} 
+                                            className="w-full px-5 py-3.5 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm font-bold outline-none md:col-span-2" 
+                                        />
+                                        <input 
+                                            type="text" 
+                                            placeholder="City" 
+                                            value={formData.shipping_address.city} 
+                                            onChange={(e) => setFormData(p => ({ ...p, shipping_address: { ...p.shipping_address, city: e.target.value } }))} 
+                                            className="w-full px-5 py-3.5 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm font-bold outline-none" 
+                                        />
+                                        <input 
+                                            type="text" 
+                                            placeholder="District" 
+                                            value={formData.shipping_address.district} 
+                                            onChange={(e) => setFormData(p => ({ ...p, shipping_address: { ...p.shipping_address, district: e.target.value } }))} 
+                                            className="w-full px-5 py-3.5 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm font-bold outline-none" 
+                                        />
+                                        <select 
+                                            value={formData.shipping_address.state} 
+                                            onChange={(e) => setFormData(p => ({ ...p, shipping_address: { ...p.shipping_address, state: e.target.value } }))} 
+                                            className="w-full px-5 py-3.5 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm font-bold text-slate-700 outline-none cursor-pointer"
+                                        >
+                                            <option value="">Select State</option>
+                                            <option value="Tamil Nadu">Tamil Nadu</option>
+                                            <option value="Kerala">Kerala</option>
+                                            <option value="Karnataka">Karnataka</option>
+                                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                            <option value="Telangana">Telangana</option>
+                                            <option value="Maharashtra">Maharashtra</option>
+                                            <option value="Delhi">Delhi</option>
+                                        </select>
+                                        <div className="flex gap-4">
+                                            <input 
+                                                type="text" 
+                                                placeholder="Zip Code" 
+                                                value={formData.shipping_address.zip} 
+                                                onChange={(e) => setFormData(p => ({ ...p, shipping_address: { ...p.shipping_address, zip: e.target.value } }))} 
+                                                className="w-full flex-1 px-5 py-3.5 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm font-bold outline-none" 
+                                            />
+                                            <input 
+                                                type="text" 
+                                                readOnly 
+                                                value={formData.shipping_address.country} 
+                                                className="w-full flex-1 px-5 py-3.5 bg-gray-100 rounded-xl border-2 border-transparent text-sm font-bold text-slate-400 outline-none cursor-not-allowed" 
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-6">
@@ -516,39 +592,39 @@ const CreateBilling = () => {
                             </div>
                         </div>
 
-                        <div className="bg-slate-900 p-6 rounded-[2rem] text-white space-y-4">
-                            <h3 className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 opacity-50"><FiLayers /> Bill Items</h3>
+                        <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
+                            <h3 className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-slate-400"><FiLayers className="text-blue-500" /> Bill Items</h3>
                             <div className="overflow-x-auto min-h-[250px]">
                                 <table className="w-full text-left text-xs">
-                                    <thead className="text-gray-500 border-b border-white/10 uppercase font-black tracking-widest"><tr><th className="px-4 py-3">Product</th><th className="px-4 py-3">Weight</th><th className="px-4 py-3">Price</th><th className="px-4 py-3 w-16">Qty</th><th className="px-4 py-3 text-right">Total</th><th className="px-4 py-3"></th></tr></thead>
-                                    <tbody className="divide-y divide-white/5">
-                                        {formData.items.length === 0 ? (<tr><td colSpan={6} className="py-20 text-center opacity-30 font-black uppercase tracking-widest">No Items Added</td></tr>) : formData.items.map((item, i) => {
+                                    <thead className="text-slate-400 border-b border-gray-100 uppercase font-black tracking-widest"><tr><th className="px-4 py-4">Product</th><th className="px-4 py-4">Weight</th><th className="px-4 py-4">Price</th><th className="px-4 py-4 w-20">Qty</th><th className="px-4 py-4 text-right">Total</th><th className="px-4 py-4"></th></tr></thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {formData.items.length === 0 ? (<tr><td colSpan={6} className="py-20 text-center opacity-30 font-black uppercase tracking-widest text-slate-500">No Items Added</td></tr>) : formData.items.map((item, i) => {
                                             const product = products.find(p => p.id === item.product_id);
                                             const hasVariants = product && product.variants && product.variants.length > 0;
                                             return (
-                                            <tr key={item.id} className="hover:bg-white/5 group">
-                                                <td className="px-4 py-3"><p className="font-bold leading-none">{product ? product.name : item.name}</p></td>
-                                                <td className="px-4 py-3">
+                                            <tr key={item.id} className="hover:bg-blue-50/50 transition-colors group">
+                                                <td className="px-4 py-4"><p className="font-bold text-slate-800 leading-none">{product ? product.name : item.name}</p></td>
+                                                <td className="px-4 py-4">
                                                     {hasVariants ? (
                                                         <select
                                                             value={item.variant_info ? `${item.variant_info.weight}-${item.variant_info.unit}` : ""}
                                                             onChange={(e) => handleVariantChange(i, e.target.value)}
-                                                            className="bg-white/10 border border-white/20 rounded px-2 py-1 text-[10px] text-white font-bold outline-none"
+                                                            className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-[10px] text-slate-700 font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
                                                         >
                                                             {product.variants.map((v, vIdx) => (
-                                                                <option className="bg-slate-800 text-white" key={vIdx} value={`${v.quantity}-${v.unit}`}>
+                                                                <option className="bg-white text-slate-800 font-bold" key={vIdx} value={`${v.quantity}-${v.unit}`}>
                                                                     {v.quantity} {v.unit}
                                                                 </option>
                                                             ))}
                                                         </select>
                                                     ) : (
-                                                        <span className="opacity-50">-</span>
+                                                        <span className="opacity-40 text-slate-400 font-bold">-</span>
                                                     )}
                                                 </td>
-                                                <td className="px-4 py-3 opacity-60">₹{item.price}</td>
-                                                <td className="px-4 py-3"><input type="number" min="1" value={item.quantity} onChange={(e) => handleQuantityChange(i, e.target.value)} className="w-12 bg-white/10 rounded px-1 text-center py-1 outline-none font-bold" /></td>
-                                                <td className="px-4 py-3 text-right font-black">₹{item.total}</td>
-                                                <td className="px-4 py-3 text-center"><button onClick={() => handleRemoveItem(i)} className="text-red-400 hover:text-red-500"><FiTrash2 size={14} /></button></td>
+                                                <td className="px-4 py-4 text-slate-500 font-bold">₹{item.price}</td>
+                                                <td className="px-4 py-4"><input type="number" min="1" value={item.quantity} onChange={(e) => handleQuantityChange(i, e.target.value)} className="w-16 bg-gray-50 border border-gray-200 rounded-xl px-2 text-center py-1.5 outline-none font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" /></td>
+                                                <td className="px-4 py-4 text-right font-black text-slate-800 text-sm">₹{item.total}</td>
+                                                <td className="px-4 py-4 text-center"><button onClick={() => handleRemoveItem(i)} className="text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-all"><FiTrash2 size={16} /></button></td>
                                             </tr>
                                         )})}
                                     </tbody>
