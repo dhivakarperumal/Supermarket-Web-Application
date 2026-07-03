@@ -4,7 +4,7 @@ import { useAdmin } from "../../PrivateRouter/AdminContext";
 import {
   Star, Search, MessageSquare, CheckCircle, AlertCircle,
   Trash2, Send, Loader2, ShieldAlert, Package, ArrowUpRight,
-  Reply, X, Plus, Camera, ThumbsUp, Sparkles, LayoutList, LayoutGrid
+  Reply, X, Plus, Camera, ThumbsUp, Sparkles, LayoutList, LayoutGrid, ChevronDown
 } from "lucide-react";
 import api from "../../api";
 import toast from "react-hot-toast";
@@ -212,82 +212,81 @@ const Reviews = () => {
       </div>
 
       {/* ── TOOLBAR ── */}
-      <div className="flex flex-col lg:flex-row gap-3">
-
-        {/* Status filter tabs */}
-        <div className="flex bg-white rounded-2xl border border-slate-100 shadow-sm p-1.5 gap-1 overflow-x-auto hide-scrollbar shrink-0">
-          {filterTabs.map((tab) => {
-            const active = filter === tab;
-            return (
-              <button
-                key={tab}
-                onClick={() => setFilter(tab)}
-                className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap flex items-center gap-2
-                  ${active ? "bg-slate-900 text-white shadow-lg" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"}`}
-              >
-                {tab}
-                {tabCounts[tab] != null && (
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-black ${active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400"}`}>
-                    {tabCounts[tab]}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Search */}
-        <div className="relative flex-1 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-700 transition-colors" />
-          <input
-            type="text"
-            placeholder="Search by customer, product or keyword..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-full min-h-[52px] bg-white border border-slate-100 rounded-2xl pl-11 pr-10 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-300 transition-all placeholder:text-slate-300 shadow-sm"
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-
-        {/* Star filter */}
-        <div className="flex bg-white border border-slate-100 rounded-2xl shadow-sm p-1.5 gap-1 shrink-0">
-          {[5, 4, 3, 2, 1].map((r) => (
-            <button
-              key={r}
-              onClick={() => setSelectedRating(selectedRating === r ? null : r)}
-              className={`flex-1 min-w-[40px] py-2.5 rounded-xl flex items-center justify-center gap-1 transition-all
-                ${selectedRating === r ? "bg-amber-400 text-white shadow-lg shadow-amber-400/30" : "text-slate-400 hover:bg-amber-50 hover:text-amber-500"}`}
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+        {/* Left Side: Status Select & Search */}
+        <div className="flex w-full lg:w-auto items-center gap-3 flex-1">
+          {/* Status filter dropdown */}
+          <div className="relative shrink-0">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="appearance-none bg-white border border-slate-100 rounded-2xl pl-5 pr-12 py-3.5 text-sm font-black text-slate-700 focus:outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-300 transition-all shadow-sm cursor-pointer uppercase tracking-widest min-w-[160px]"
             >
-              <span className="text-xs font-black">{r}</span>
-              <Star className={`w-3 h-3 ${selectedRating === r ? "fill-white" : ""}`} />
-            </button>
-          ))}
+              {filterTabs.map((tab) => (
+                <option key={tab} value={tab}>
+                  {tab} {tabCounts[tab] != null ? `(${tabCounts[tab]})` : ""}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          </div>
+
+          {/* Search */}
+          <div className="relative flex-1 group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-700 transition-colors" />
+            <input
+              type="text"
+              placeholder="Search by customer, product or keyword..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-full min-h-[52px] bg-white border border-slate-100 rounded-2xl pl-11 pr-10 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-300 transition-all placeholder:text-slate-300 shadow-sm"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* View Mode Toggle */}
-        <div className="flex bg-white border border-slate-100 rounded-2xl shadow-sm p-1.5 gap-1 shrink-0">
-          <button
-            onClick={() => setViewMode("table")}
-            title="Table View"
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all
-              ${viewMode === "table" ? "bg-slate-900 text-white shadow-lg" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"}`}
-          >
-            <LayoutList className="w-4 h-4" />
-            <span className="hidden sm:inline">Table</span>
-          </button>
-          <button
-            onClick={() => setViewMode("card")}
-            title="Card View"
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all
-              ${viewMode === "card" ? "bg-slate-900 text-white shadow-lg" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"}`}
-          >
-            <LayoutGrid className="w-4 h-4" />
-            <span className="hidden sm:inline">Cards</span>
-          </button>
+        {/* Right Side: Star filter & View Mode */}
+        <div className="flex items-center gap-3 w-full lg:w-auto overflow-x-auto hide-scrollbar shrink-0">
+          {/* Star filter */}
+          <div className="flex bg-white border border-slate-100 rounded-2xl shadow-sm p-1.5 gap-1 shrink-0">
+            {[5, 4, 3, 2, 1].map((r) => (
+              <button
+                key={r}
+                onClick={() => setSelectedRating(selectedRating === r ? null : r)}
+                className={`flex-1 min-w-[40px] py-2.5 rounded-xl flex items-center justify-center gap-1 transition-all
+                  ${selectedRating === r ? "bg-amber-400 text-white shadow-lg shadow-amber-400/30" : "text-slate-400 hover:bg-amber-50 hover:text-amber-500"}`}
+              >
+                <span className="text-xs font-black">{r}</span>
+                <Star className={`w-3 h-3 ${selectedRating === r ? "fill-white" : ""}`} />
+              </button>
+            ))}
+          </div>
+
+          {/* View Mode Toggle */}
+          <div className="flex bg-white border border-slate-100 rounded-2xl shadow-sm p-1.5 gap-1 shrink-0">
+            <button
+              onClick={() => setViewMode("table")}
+              title="Table View"
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all
+                ${viewMode === "table" ? "bg-slate-900 text-white shadow-lg" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"}`}
+            >
+              <LayoutList className="w-4 h-4" />
+              <span className="hidden sm:inline">Table</span>
+            </button>
+            <button
+              onClick={() => setViewMode("card")}
+              title="Card View"
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all
+                ${viewMode === "card" ? "bg-slate-900 text-white shadow-lg" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"}`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+              <span className="hidden sm:inline">Cards</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -338,7 +337,7 @@ const Reviews = () => {
             <table className="w-full min-w-[860px]">
               <thead>
                 <tr className="border-b border-slate-100">
-                  {["Customer", "Product", "Rating", "Comment", "Status", "Date", "Actions"].map(h => (
+                  {["S No", "Customer", "Product", "Rating", "Comment", "Status", "Date", "Actions"].map(h => (
                     <th key={h} className="px-5 py-3.5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
                       {h}
                     </th>
@@ -346,10 +345,11 @@ const Reviews = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {reviews.map((item) => (
+                {reviews.map((item, index) => (
                   <TableRow
                     key={item.id}
                     item={item}
+                    index={index}
                     onApprove={() => handleStatusUpdate(item.id, "Published")}
                     onFlag={()    => handleStatusUpdate(item.id, "Flagged")}
                     onDelete={()  => handleDelete(item.id)}
@@ -564,10 +564,15 @@ const Reviews = () => {
 /* ══════════════════════════════════════════
    TABLE ROW
 ══════════════════════════════════════════ */
-const TableRow = ({ item, onApprove, onFlag, onDelete, onReply }) => {
+const TableRow = ({ item, index, onApprove, onFlag, onDelete, onReply }) => {
   const grad = avatarGrad(item.user_name);
   return (
     <tr className="group hover:bg-slate-50/70 transition-colors">
+      {/* S No */}
+      <td className="px-5 py-4 text-xs font-black text-slate-400">
+        #{String(index + 1).padStart(2, '0')}
+      </td>
+
       {/* Customer */}
       <td className="px-5 py-4">
         <div className="flex items-center gap-3">
