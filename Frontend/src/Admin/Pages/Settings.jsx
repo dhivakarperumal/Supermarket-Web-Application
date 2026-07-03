@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "./Settings.css";
 import { 
   Printer, 
@@ -11,7 +11,8 @@ import {
   MonitorSmartphone,
   Search,
   Save,
-  RotateCcw
+  RotateCcw,
+  ArrowLeft
 } from "lucide-react";
 
 const Toggle = ({ label, defaultChecked = false }) => (
@@ -42,68 +43,50 @@ const Select = ({ label, options }) => (
   </div>
 );
 
-const Settings = () => {
-  return (
-    <div className="settings-page">
-      <div className="settings-header">
-        <div className="settings-title-area">
-          <h1>System Settings</h1>
-          <p>Configure your supermarket system, billing, payments, and preferences.</p>
-        </div>
-        <div className="settings-header-actions">
-          <div style={{ position: 'relative' }}>
-            <Search style={{ position: 'absolute', left: 12, top: 10, color: '#94a3b8' }} size={18} />
-            <input type="text" className="settings-search" placeholder="Search settings..." style={{ paddingLeft: '2.5rem' }} />
-          </div>
-          <button className="btn-reset flex items-center gap-2">
-            <RotateCcw size={16} /> Reset
-          </button>
-          <button className="btn-save-all flex items-center gap-2">
-            <Save size={16} /> Save All Changes
-          </button>
-        </div>
-      </div>
+const SETTINGS_CATEGORIES = [
+  { id: 'print', title: 'Print Setup', desc: 'Configure printers & paper sizes.', icon: <Printer size={24} /> },
+  { id: 'receipt', title: 'Receipt Settings', desc: 'Customize receipt layout and info.', icon: <Receipt size={24} /> },
+  { id: 'payment', title: 'Payment Integration', desc: 'Gateways, UPI, and Card setups.', icon: <CreditCard size={24} /> },
+  { id: 'store', title: 'Store Settings', desc: 'Core business and location info.', icon: <Store size={24} /> },
+  { id: 'tax', title: 'Tax & GST', desc: 'Configure GST, SGST, IGST and HSN.', icon: <Percent size={24} /> },
+  { id: 'localization', title: 'Localization', desc: 'Region, Language & formatting.', icon: <Globe size={24} /> },
+  { id: 'barcode', title: 'Barcode & Scanner', desc: 'Barcode formats and scanner inputs.', icon: <Barcode size={24} /> },
+  { id: 'pos', title: 'POS Settings', desc: 'Point of Sale defaults & behavior.', icon: <MonitorSmartphone size={24} /> }
+];
 
-      <div className="settings-grid">
-        {/* 1. Print Setup */}
-        <div className="glass-card">
-          <div className="card-header">
-            <div className="icon-wrapper"><Printer size={24} /></div>
-            <div>
-              <h3 className="card-title">Print Setup</h3>
-              <p className="card-description">Configure printers & paper sizes.</p>
-            </div>
-          </div>
-          <div className="glass-card-content">
+const Settings = () => {
+  const [activeTab, setActiveTab] = useState(null);
+
+  const handleSave = () => {
+    // Save logic here (e.g., API call)
+    // Then return to main grid
+    setActiveTab(null);
+  };
+
+  const renderActiveFields = () => {
+    switch (activeTab) {
+      case 'print':
+        return (
+          <>
             <Select label="Printer Selection" options={['EPSON TM-T82', 'TVS RP 3150', 'Generic POS Printer']} />
-            <Toggle label="Default Printer" defaultChecked />
+            <Select label="Connection Type" options={['USB', 'LAN / Network', 'Bluetooth', 'Wi-Fi']} />
+            <Input label="Printer IP Address (For LAN/Wi-Fi)" placeholder="192.168.1.100" />
+            <Input label="Bluetooth Name / MAC Address" placeholder="e.g. POS-80 or 00:1A:2B:3C:4D:5E" />
             <Select label="Paper Size" options={['58mm', '80mm', 'A4']} />
             <Input label="Print Copies" type="number" placeholder="1" />
             <Toggle label="Auto Print Invoice" defaultChecked />
+            <Toggle label="Cash Drawer Trigger" defaultChecked />
             <Toggle label="Kitchen Printer" />
             <Toggle label="Barcode Printing" defaultChecked />
             <Toggle label="QR Code Printing" defaultChecked />
-            <Toggle label="Cash Drawer Trigger" defaultChecked />
             <Toggle label="Print Logo" defaultChecked />
             <Toggle label="Print Header" defaultChecked />
             <Toggle label="Print Footer" defaultChecked />
-          </div>
-          <div className="card-actions">
-            <button className="btn-secondary">Preview</button>
-            <button className="btn-primary">Test Print</button>
-          </div>
-        </div>
-
-        {/* 2. Receipt Settings */}
-        <div className="glass-card">
-          <div className="card-header">
-            <div className="icon-wrapper"><Receipt size={24} /></div>
-            <div>
-              <h3 className="card-title">Receipt Settings</h3>
-              <p className="card-description">Customize receipt layout and info.</p>
-            </div>
-          </div>
-          <div className="glass-card-content">
+          </>
+        );
+      case 'receipt':
+        return (
+          <>
             <Input label="Store Logo Upload" type="file" />
             <Input label="Store Name" placeholder="Priyam Super Market" />
             <Input label="Address" placeholder="123 Main Street" />
@@ -122,23 +105,11 @@ const Settings = () => {
             <Input label="Footer Message" placeholder="Visit again!" />
             <Input label="Thank You Message" placeholder="Thank you for shopping with us." />
             <Input label="Return Policy" placeholder="No returns after 7 days." />
-          </div>
-          <div className="card-actions">
-            <button className="btn-secondary">Cancel</button>
-            <button className="btn-primary">Save Changes</button>
-          </div>
-        </div>
-
-        {/* 3. Payment Integration */}
-        <div className="glass-card">
-          <div className="card-header">
-            <div className="icon-wrapper"><CreditCard size={24} /></div>
-            <div>
-              <h3 className="card-title">Payment Integration</h3>
-              <p className="card-description">Gateways, UPI, and Card setups.</p>
-            </div>
-          </div>
-          <div className="glass-card-content">
+          </>
+        );
+      case 'payment':
+        return (
+          <>
             <Select label="Primary Gateway" options={['Razorpay', 'Stripe', 'Paytm', 'PhonePe', 'Google Pay']} />
             <Toggle label="Cash Support" defaultChecked />
             <Toggle label="UPI Support" defaultChecked />
@@ -155,23 +126,11 @@ const Settings = () => {
             <Toggle label="Wallet Payment" defaultChecked />
             <Toggle label="COD" defaultChecked />
             <Toggle label="EMI Support" />
-          </div>
-          <div className="card-actions">
-            <button className="btn-secondary">Test Connection</button>
-            <button className="btn-primary">Save Integration</button>
-          </div>
-        </div>
-
-        {/* 4. Store Settings */}
-        <div className="glass-card">
-          <div className="card-header">
-            <div className="icon-wrapper"><Store size={24} /></div>
-            <div>
-              <h3 className="card-title">Store Settings</h3>
-              <p className="card-description">Core business and location info.</p>
-            </div>
-          </div>
-          <div className="glass-card-content">
+          </>
+        );
+      case 'store':
+        return (
+          <>
             <Input label="Store Name" placeholder="Priyam Super Market" />
             <Input label="Store Logo" type="file" />
             <Input label="Email" placeholder="admin@priyam.com" />
@@ -189,23 +148,11 @@ const Settings = () => {
             <Select label="Currency" options={['INR (₹)', 'USD ($)']} />
             <Input label="Opening Time" type="time" />
             <Input label="Closing Time" type="time" />
-          </div>
-          <div className="card-actions">
-            <button className="btn-secondary">Cancel</button>
-            <button className="btn-primary">Save Changes</button>
-          </div>
-        </div>
-
-        {/* 5. Tax & GST Settings */}
-        <div className="glass-card">
-          <div className="card-header">
-            <div className="icon-wrapper"><Percent size={24} /></div>
-            <div>
-              <h3 className="card-title">Tax & GST</h3>
-              <p className="card-description">Configure GST, SGST, IGST and HSN.</p>
-            </div>
-          </div>
-          <div className="glass-card-content">
+          </>
+        );
+      case 'tax':
+        return (
+          <>
             <Toggle label="Enable GST" defaultChecked />
             <Select label="Default GST Percentage" options={['0%', '5%', '12%', '18%', '28%']} />
             <Toggle label="CGST Split" defaultChecked />
@@ -216,23 +163,11 @@ const Settings = () => {
             <Input label="Default SAC Code" placeholder="9983" />
             <Input label="Tax Invoice Prefix" placeholder="TAX-" />
             <Select label="Default Tax Category" options={['Standard Goods', 'Essential Goods', 'Luxury Goods']} />
-          </div>
-          <div className="card-actions">
-            <button className="btn-secondary">Cancel</button>
-            <button className="btn-primary">Save Changes</button>
-          </div>
-        </div>
-
-        {/* 6. Localization */}
-        <div className="glass-card">
-          <div className="card-header">
-            <div className="icon-wrapper"><Globe size={24} /></div>
-            <div>
-              <h3 className="card-title">Localization</h3>
-              <p className="card-description">Region, Language & formatting.</p>
-            </div>
-          </div>
-          <div className="glass-card-content">
+          </>
+        );
+      case 'localization':
+        return (
+          <>
             <Select label="System Language" options={['English (US)', 'English (UK)', 'Hindi']} />
             <Select label="System Currency" options={['INR', 'USD', 'EUR', 'GBP']} />
             <Select label="Timezone" options={['Asia/Kolkata', 'America/New_York']} />
@@ -240,23 +175,11 @@ const Settings = () => {
             <Select label="Time Format" options={['12-hour (AM/PM)', '24-hour']} />
             <Select label="Number Format" options={['1,00,000.00', '100,000.00']} />
             <Toggle label="Multi-language Support" defaultChecked />
-          </div>
-          <div className="card-actions">
-            <button className="btn-secondary">Cancel</button>
-            <button className="btn-primary">Save Changes</button>
-          </div>
-        </div>
-
-        {/* 7. Barcode & Scanner Settings */}
-        <div className="glass-card">
-          <div className="card-header">
-            <div className="icon-wrapper"><Barcode size={24} /></div>
-            <div>
-              <h3 className="card-title">Barcode & Scanner</h3>
-              <p className="card-description">Barcode formats and scanner inputs.</p>
-            </div>
-          </div>
-          <div className="glass-card-content">
+          </>
+        );
+      case 'barcode':
+        return (
+          <>
             <Select label="Barcode Format" options={['CODE128', 'EAN-13', 'UPC-A']} />
             <Input label="Barcode Width (px)" type="number" placeholder="2" />
             <Input label="Barcode Height (px)" type="number" placeholder="50" />
@@ -264,23 +187,11 @@ const Settings = () => {
             <Toggle label="Auto Scan Focus" defaultChecked />
             <Toggle label="Scan Beep Sound" defaultChecked />
             <Toggle label="Generate Missing Barcodes" defaultChecked />
-          </div>
-          <div className="card-actions">
-            <button className="btn-secondary">Print Test Barcode</button>
-            <button className="btn-primary">Save Changes</button>
-          </div>
-        </div>
-
-        {/* 8. POS Settings */}
-        <div className="glass-card">
-          <div className="card-header">
-            <div className="icon-wrapper"><MonitorSmartphone size={24} /></div>
-            <div>
-              <h3 className="card-title">POS Settings</h3>
-              <p className="card-description">Point of Sale defaults & behavior.</p>
-            </div>
-          </div>
-          <div className="glass-card-content">
+          </>
+        );
+      case 'pos':
+        return (
+          <>
             <Input label="Default Customer Name" placeholder="Walk-in Customer" />
             <Select label="Default Payment Method" options={['Cash', 'UPI', 'Card']} />
             <Toggle label="Round Off Bill Amount" defaultChecked />
@@ -290,13 +201,76 @@ const Settings = () => {
             <Toggle label="Enable Resume Bill" defaultChecked />
             <Toggle label="Invoice Auto Save" defaultChecked />
             <Toggle label="Enable Customer Display" />
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const activeCategory = SETTINGS_CATEGORIES.find(c => c.id === activeTab);
+
+  return (
+    <div className="settings-page">
+      <div className="settings-header">
+        <div className="settings-title-area">
+          <h1>System Settings</h1>
+          <p>Configure your supermarket system, billing, payments, and preferences.</p>
+        </div>
+        
+        {/* Only show global actions if NOT inside a specific card */}
+        {!activeTab && (
+          <div className="settings-header-actions">
+            <div style={{ position: 'relative' }}>
+              <Search style={{ position: 'absolute', left: 12, top: 10, color: '#94a3b8' }} size={18} />
+              <input type="text" className="settings-search" placeholder="Search categories..." style={{ paddingLeft: '2.5rem' }} />
+            </div>
           </div>
-          <div className="card-actions">
-            <button className="btn-secondary">Cancel</button>
-            <button className="btn-primary">Save Changes</button>
+        )}
+      </div>
+
+      {!activeTab ? (
+        <div className="settings-grid">
+          {SETTINGS_CATEGORIES.map((cat) => (
+            <div 
+              key={cat.id} 
+              className="glass-card clickable-card" 
+              onClick={() => setActiveTab(cat.id)}
+            >
+              <div className="card-header" style={{ marginBottom: 0 }}>
+                <div className="icon-wrapper">{cat.icon}</div>
+                <div>
+                  <h3 className="card-title">{cat.title}</h3>
+                  <p className="card-description">{cat.desc}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="glass-card detail-view animate-fade-in">
+          <div className="detail-header">
+            <button className="back-button" onClick={() => setActiveTab(null)}>
+              <ArrowLeft size={20} /> Back
+            </button>
+            <div className="detail-title-area">
+              <div className="icon-wrapper sm">{activeCategory.icon}</div>
+              <h2>{activeCategory.title}</h2>
+            </div>
+          </div>
+          
+          <div className="detail-content grid-2-col">
+            {renderActiveFields()}
+          </div>
+          
+          <div className="detail-actions">
+            <button className="btn-secondary" onClick={() => setActiveTab(null)}>Cancel</button>
+            <button className="btn-primary" onClick={handleSave}>
+              <Save size={18} /> Save Settings
+            </button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
