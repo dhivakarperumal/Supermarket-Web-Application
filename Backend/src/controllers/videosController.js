@@ -1,6 +1,7 @@
 const { getPool } = require("../config/db");
 const path = require("path");
 const fs = require("fs").promises;
+const { randomUUID } = require("crypto");
 
 const VIDEOS_DIR = path.join(__dirname, "../../uploads/videos");
 const THUMBNAILS_DIR = path.join(__dirname, "../../uploads/thumbnails");
@@ -19,9 +20,8 @@ ensureDirectories();
 
 const createVideosTable = async (connection) => {
   try {
-    // Drop existing table if it exists (to ensure fresh schema)
-    await connection.query(`DROP TABLE IF EXISTS videos`);
-    
+    // Ensure the videos table exists. Do not drop existing table to avoid
+    // deleting stored videos - creating only if missing.
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS videos (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -135,7 +135,6 @@ const createVideo = async (req, res) => {
     }
 
     const pool = getPool();
-    await createVideosTable(pool);
 
     let videoPath = null;
     let thumbnailPath = null;
@@ -143,7 +142,8 @@ const createVideo = async (req, res) => {
     // Handle video file upload
     if (files.video) {
       const videoFile = files.video;
-      const videoFileName = `${Date.now()}-${videoFile.name}`;
+      const safeName = videoFile.name.replace(/\s+/g, "_");
+      const videoFileName = `${Date.now()}-${randomUUID()}-${safeName}`;
       videoPath = path.join(VIDEOS_DIR, videoFileName);
       
       await videoFile.mv(videoPath);
@@ -152,7 +152,8 @@ const createVideo = async (req, res) => {
     // Handle thumbnail upload
     if (files.thumbnail) {
       const thumbnailFile = files.thumbnail;
-      const thumbnailFileName = `${Date.now()}-${thumbnailFile.name}`;
+      const safeName = thumbnailFile.name.replace(/\s+/g, "_");
+      const thumbnailFileName = `${Date.now()}-${randomUUID()}-${safeName}`;
       thumbnailPath = path.join(THUMBNAILS_DIR, thumbnailFileName);
       
       await thumbnailFile.mv(thumbnailPath);
@@ -232,7 +233,8 @@ const updateVideo = async (req, res) => {
       }
 
       const videoFile = files.video;
-      const videoFileName = `${Date.now()}-${videoFile.name}`;
+      const safeName = videoFile.name.replace(/\s+/g, "_");
+      const videoFileName = `${Date.now()}-${randomUUID()}-${safeName}`;
       videoPath = path.join(VIDEOS_DIR, videoFileName);
       
       await videoFile.mv(videoPath);
@@ -250,7 +252,8 @@ const updateVideo = async (req, res) => {
       }
 
       const thumbnailFile = files.thumbnail;
-      const thumbnailFileName = `${Date.now()}-${thumbnailFile.name}`;
+      const safeName = thumbnailFile.name.replace(/\s+/g, "_");
+      const thumbnailFileName = `${Date.now()}-${randomUUID()}-${safeName}`;
       thumbnailPath = path.join(THUMBNAILS_DIR, thumbnailFileName);
       
       await thumbnailFile.mv(thumbnailPath);
