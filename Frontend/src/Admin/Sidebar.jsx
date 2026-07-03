@@ -41,10 +41,12 @@ const navItems = [
     children: [
       { path: "/admin/products/all", label: "All Products", icon: List },
       { path: "/admin/products/add", label: "Add New Product", icon: PlusCircle },
+      { path: "/admin/products/category", label: "Categories", icon: Layers },
+      { path: "/admin/products/stock", label: "Inventory", icon: Archive },
     ],
   },
 
-  { path: "/admin/products/category", label: "Categories", icon: Layers },
+ 
 
   {
     label: "Orders",
@@ -58,7 +60,7 @@ const navItems = [
   },
 
   { path: "/admin/users/all", label: "Customers", icon: Users },
-  { path: "/admin/products/stock", label: "Inventory", icon: Archive },
+
   { path: "/admin/banners", label: "Offers & Discounts", icon: Gift },
   { path: "/admin/reports", label: "Reports", icon: BarChart3 },
   // { path: "/admin/banners", label: "Banners", icon: Image },
@@ -178,7 +180,7 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                   {/* Sub Menu */}
                   {!collapsed && (
                     <div className={`overflow-hidden transition-all duration-300 ${isMenuOpen ? "max-h-60 opacity-100 mt-1" : "max-h-0 opacity-0"}`}>
-                      <div className="ml-5 pl-4 border-l border-white/10 space-y-1 py-1.5">
+                      <div className="ml-5 pl-4  space-y-1 py-1.5">
                         {item.children.map((sub) => {
                           const isActive = location.pathname === sub.path || (sub.path !== "/admin" && location.pathname.startsWith(sub.path + "/"));
                           return (
