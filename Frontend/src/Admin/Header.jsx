@@ -655,6 +655,9 @@ const Header = ({ onMenuClick }) => {
                     <User className="w-4 h-4 opacity-50" /> Profile
                   </Link>
 
+
+                  
+
                   {/* <Link
                     to="/admin/settings"
                     className="flex items-center gap-3 px-3 py-2.5 

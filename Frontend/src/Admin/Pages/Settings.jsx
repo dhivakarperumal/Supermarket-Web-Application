@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Settings.css";
 import { 
   Printer, 
@@ -12,7 +13,13 @@ import {
   Search,
   Save,
   RotateCcw,
-  ArrowLeft
+  ArrowLeft,
+  Bluetooth,
+  Wifi,
+  Usb,
+  Network,
+  Truck,
+  Ticket
 } from "lucide-react";
 
 const Toggle = ({ label, defaultChecked = false }) => (
@@ -32,10 +39,10 @@ const Input = ({ label, type = "text", placeholder }) => (
   </div>
 );
 
-const Select = ({ label, options }) => (
+const Select = ({ label, options, value, onChange }) => (
   <div className="form-group">
     <label className="form-label">{label}</label>
-    <select className="form-select">
+    <select className="form-select" value={value} onChange={onChange}>
       {options.map((opt, i) => (
         <option key={i} value={opt}>{opt}</option>
       ))}
@@ -51,16 +58,44 @@ const SETTINGS_CATEGORIES = [
   { id: 'tax', title: 'Tax & GST', desc: 'Configure GST, SGST, IGST and HSN.', icon: <Percent size={24} /> },
   { id: 'localization', title: 'Localization', desc: 'Region, Language & formatting.', icon: <Globe size={24} /> },
   { id: 'barcode', title: 'Barcode & Scanner', desc: 'Barcode formats and scanner inputs.', icon: <Barcode size={24} /> },
-  { id: 'pos', title: 'POS Settings', desc: 'Point of Sale defaults & behavior.', icon: <MonitorSmartphone size={24} /> }
+  { id: 'pos', title: 'POS Settings', desc: 'Point of Sale defaults & behavior.', icon: <MonitorSmartphone size={24} /> },
+  { id: 'delivery', title: 'Delivery Charges', desc: 'Manage shipping & delivery fees.', icon: <Truck size={24} /> },
+  { id: 'coupon', title: 'Coupon Settings', desc: 'Configure discount & promo codes.', icon: <Ticket size={24} /> }
 ];
 
 const Settings = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(null);
+  
+  // States for Printer specific UI
+  const [connectionType, setConnectionType] = useState('USB');
+  const [isScanning, setIsScanning] = useState(false);
+  
+  // Bluetooth devices state
+  const [pairedDevices, setPairedDevices] = useState([
+    { id: 'dev1', name: 'POS-58 Receipt Printer', mac: '00:11:22:33:44:55' }
+  ]);
+  const [availableDevices, setAvailableDevices] = useState([
+    { id: 'dev2', name: 'TVS RP3150', mac: 'A1:B2:C3:D4:E5:F6' }
+  ]);
 
   const handleSave = () => {
-    // Save logic here (e.g., API call)
-    // Then return to main grid
     setActiveTab(null);
+  };
+
+  const handleScanBluetooth = () => {
+    setIsScanning(true);
+    setTimeout(() => setIsScanning(false), 2500);
+  };
+
+  const handlePair = (device) => {
+    setAvailableDevices(prev => prev.filter(d => d.id !== device.id));
+    setPairedDevices(prev => [...prev, device]);
+  };
+
+  const handleUnpair = (device) => {
+    setPairedDevices(prev => prev.filter(d => d.id !== device.id));
+    setAvailableDevices(prev => [...prev, device]);
   };
 
   const renderActiveFields = () => {
@@ -69,11 +104,117 @@ const Settings = () => {
         return (
           <>
             <Select label="Printer Selection" options={['EPSON TM-T82', 'TVS RP 3150', 'Generic POS Printer']} />
-            <Select label="Connection Type" options={['USB', 'LAN / Network', 'Bluetooth', 'Wi-Fi']} />
-            <Input label="Printer IP Address (For LAN/Wi-Fi)" placeholder="192.168.1.100" />
-            <Input label="Bluetooth Name / MAC Address" placeholder="e.g. POS-80 or 00:1A:2B:3C:4D:5E" />
+            
+            <Select 
+              label="Connection Type" 
+              options={['USB', 'LAN / Network', 'Bluetooth', 'Wi-Fi']} 
+              value={connectionType}
+              onChange={(e) => setConnectionType(e.target.value)}
+            />
+
+            {/* Dynamic UI based on connection type */}
+            <div style={{ gridColumn: '1 / -1', marginTop: '0.5rem', marginBottom: '1rem' }}>
+              {connectionType === 'LAN / Network' || connectionType === 'Wi-Fi' ? (
+                <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#0f172a', fontWeight: 'bold' }}>
+                    {connectionType === 'Wi-Fi' ? <Wifi size={18}/> : <Network size={18}/>} 
+                    Network Configuration
+                  </div>
+                  <Input label="Printer IP Address" placeholder="192.168.1.100" />
+                  <Input label="Port" placeholder="9100" />
+                </div>
+              ) : connectionType === 'USB' ? (
+                <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Usb size={18} style={{ color: '#64748b' }}/>
+                  <span style={{ fontSize: '0.9rem', color: '#475569' }}>Please ensure the printer is plugged into a USB port. Auto-detection enabled.</span>
+                </div>
+              ) : connectionType === 'Bluetooth' ? (
+                <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0f172a', fontWeight: 'bold' }}>
+                      <Bluetooth size={18} style={{ color: '#3b82f6' }}/> 
+                      Bluetooth Printers
+                    </div>
+                    <button 
+                      onClick={handleScanBluetooth}
+                      style={{ 
+                        background: '#eff6ff', color: '#2563eb', border: 'none', padding: '0.4rem 0.8rem', 
+                        borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' 
+                      }}
+                    >
+                      {isScanning ? 'Scanning...' : 'Scan Devices'}
+                    </button>
+                  </div>
+
+                  {/* Paired Devices */}
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <h5 style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Paired Devices</h5>
+                    {pairedDevices.length === 0 ? (
+                      <p style={{ fontSize: '0.85rem', color: '#94a3b8' }}>No paired devices</p>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {pairedDevices.map(device => (
+                          <div key={device.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'white', padding: '0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <Printer size={20} style={{ color: '#94a3b8' }} />
+                              <div>
+                                <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: '700', color: '#1e293b' }}>{device.name}</p>
+                                <p style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8' }}>{device.mac}</p>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#10b981', background: '#d1fae5', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>Connected</span>
+                              <button 
+                                onClick={() => handleUnpair(device)}
+                                style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
+                              >
+                                Unpair
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Available Devices */}
+                  <div>
+                    <h5 style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Available Devices</h5>
+                    {isScanning ? (
+                      <p style={{ fontSize: '0.85rem', color: '#64748b', textAlign: 'center', padding: '1rem 0' }}>Searching for nearby printers...</p>
+                    ) : availableDevices.length === 0 ? (
+                      <p style={{ fontSize: '0.85rem', color: '#94a3b8', textAlign: 'center', padding: '1rem 0' }}>No available devices found.</p>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {availableDevices.map(device => (
+                          <div key={device.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'white', padding: '0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <Printer size={20} style={{ color: '#94a3b8' }} />
+                              <div>
+                                <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: '700', color: '#1e293b' }}>{device.name}</p>
+                                <p style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8' }}>{device.mac}</p>
+                              </div>
+                            </div>
+                            <button 
+                              onClick={() => handlePair(device)}
+                              style={{ background: 'none', border: 'none', color: '#3b82f6', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
+                            >
+                              Pair
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
             <Select label="Paper Size" options={['58mm', '80mm', 'A4']} />
             <Input label="Print Copies" type="number" placeholder="1" />
+            
+            <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #e2e8f0', paddingTop: '1rem', marginTop: '0.5rem' }}></div>
+            
             <Toggle label="Auto Print Invoice" defaultChecked />
             <Toggle label="Cash Drawer Trigger" defaultChecked />
             <Toggle label="Kitchen Printer" />
@@ -203,6 +344,46 @@ const Settings = () => {
             <Toggle label="Enable Customer Display" />
           </>
         );
+      case 'delivery':
+        return (
+          <>
+            <div style={{ gridColumn: '1 / -1', background: '#f8fafc', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1rem' }}>
+              <h4 style={{ marginBottom: '1rem', color: '#1e293b', fontSize: '1rem', fontWeight: 'bold' }}>Standard Delivery Settings</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+                <Input label="Base Delivery Charge (₹)" type="number" placeholder="e.g. 50" />
+                <Input label="Free Delivery Minimum Order Amount (₹)" type="number" placeholder="e.g. 500" />
+                <Input label="Per KM Delivery Charge (₹)" type="number" placeholder="e.g. 10" />
+                <Input label="Maximum Delivery Distance (KM)" type="number" placeholder="e.g. 15" />
+                <Select label="Delivery Area Scope" options={['Local', 'City', 'Custom Radius']} />
+              </div>
+            </div>
+
+            <div style={{ gridColumn: '1 / -1', background: '#f0f9ff', padding: '1.25rem', borderRadius: '12px', border: '1px solid #bae6fd' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Truck size={20} style={{ color: '#0284c7' }} />
+                  <h4 style={{ margin: 0, color: '#0284c7', fontSize: '1rem', fontWeight: 'bold' }}>Express Delivery</h4>
+                </div>
+                <Toggle label="Enable Express Delivery" defaultChecked />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+                <Input label="Express Delivery Charge (₹)" type="number" placeholder="e.g. 100" />
+                <Input label="Estimated Delivery Time" placeholder="e.g. 30 Mins" />
+              </div>
+            </div>
+          </>
+        );
+      case 'coupon':
+        return (
+          <>
+            <Toggle label="Enable Coupon System" defaultChecked />
+            <Toggle label="Allow Multiple Coupons per Order" />
+            <Select label="Default Discount Type" options={['Percentage (%)', 'Flat Amount (₹)']} />
+            <Input label="Maximum Discount Cap (₹)" placeholder="e.g. ₹2000" />
+            <Toggle label="Show Available Coupons at Checkout" defaultChecked />
+            <Toggle label="Auto-apply Best Coupon" />
+          </>
+        );
       default:
         return null;
     }
@@ -218,7 +399,6 @@ const Settings = () => {
           <p>Configure your supermarket system, billing, payments, and preferences.</p>
         </div>
         
-        {/* Only show global actions if NOT inside a specific card */}
         {!activeTab && (
           <div className="settings-header-actions">
             <div style={{ position: 'relative' }}>
@@ -235,7 +415,11 @@ const Settings = () => {
             <div 
               key={cat.id} 
               className="glass-card clickable-card" 
-              onClick={() => setActiveTab(cat.id)}
+              onClick={() => {
+                if (cat.id === 'delivery') { navigate('/admin/delivery-charges'); return; }
+                if (cat.id === 'coupon') { navigate('/admin/coupons'); return; }
+                setActiveTab(cat.id);
+              }}
             >
               <div className="card-header" style={{ marginBottom: 0 }}>
                 <div className="icon-wrapper">{cat.icon}</div>
@@ -265,6 +449,9 @@ const Settings = () => {
           
           <div className="detail-actions">
             <button className="btn-secondary" onClick={() => setActiveTab(null)}>Cancel</button>
+            <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <RotateCcw size={18} /> Reset
+            </button>
             <button className="btn-primary" onClick={handleSave}>
               <Save size={18} /> Save Settings
             </button>

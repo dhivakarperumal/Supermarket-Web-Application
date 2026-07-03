@@ -76,6 +76,8 @@ const navItems = [
   },
 
   { path: "/admin/banners", label: "Offers & Discounts", icon: Gift },
+  { path: "/admin/coupons", label: "Coupons", icon: Tag },
+  { path: "/admin/delivery-charges", label: "Delivery Charges", icon: Truck },
   { path: "/admin/reports", label: "Reports", icon: BarChart3 },
   // { path: "/admin/banners", label: "Banners", icon: Image },
   { path: "/admin/reviews", label: "Reviews", icon: Star },

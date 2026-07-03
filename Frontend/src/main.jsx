@@ -44,6 +44,8 @@ const Dealers = React.lazy(() => import("./Admin/Pages/Dealers.jsx"));
 const Reviews = React.lazy(() => import("./Admin/Pages/Reviews.jsx"));
 const Reports = React.lazy(() => import("./Admin/Pages/Reports.jsx"));
 const Settings = React.lazy(() => import("./Admin/Pages/Settings.jsx"));
+const Coupons = React.lazy(() => import("./Admin/Pages/Coupons.jsx"));
+const DeliveryCharges = React.lazy(() => import("./Admin/Pages/DeliveryCharges.jsx"));
 const Profile = React.lazy(() => import("./Admin/Pages/Profile.jsx"));
 const OrderDetail = React.lazy(() => import("./Admin/Pages/OrderDetail.jsx"));
 const ProductDetail = React.lazy(() => import("./Admin/Pages/ProductDetail.jsx"));
@@ -134,6 +136,8 @@ const router = createBrowserRouter([
       { path: "reports", element: <Reports /> },
       { path: "videos", element: <VideoManagement /> },
       { path: "banners", element: <BannerManagement /> },
+      { path: "coupons", element: <Coupons /> },
+      { path: "delivery-charges", element: <DeliveryCharges /> },
       { path: "settings", element: <Settings /> },
       { path: "profile", element: <Profile /> },
     ],

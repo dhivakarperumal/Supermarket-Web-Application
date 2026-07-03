@@ -243,77 +243,277 @@ const Dashboard = () => {
             </div>
 
             {/* ══ STAT CARDS ══ */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
-                {/* Total Sales */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-green-600">Total Sales</span>
-                        <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white shadow-md">
-                            <ShoppingBag className="w-5 h-5" />
+            <style>{`
+                @keyframes cardShimmer {
+                    0% { background-position: -200% center; }
+                    100% { background-position: 200% center; }
+                }
+                @keyframes floatIcon {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-4px) rotate(3deg); }
+                }
+                @keyframes countUp {
+                    from { opacity: 0; transform: translateY(8px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .stat-card {
+                    position: relative;
+                    overflow: hidden;
+                    border-radius: 20px;
+                    padding: 20px;
+                    cursor: default;
+                    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+                }
+                .stat-card:hover {
+                    transform: translateY(-6px) scale(1.02);
+                }
+                .stat-card::before {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%);
+                    background-size: 200% auto;
+                    opacity: 0;
+                    transition: opacity 0.3s;
+                    border-radius: inherit;
+                    pointer-events: none;
+                }
+                .stat-card:hover::before {
+                    opacity: 1;
+                    animation: cardShimmer 0.9s linear;
+                }
+                .stat-card .stat-icon-wrap {
+                    animation: floatIcon 3s ease-in-out infinite;
+                }
+                .stat-card .stat-value {
+                    animation: countUp 0.6s ease both;
+                }
+                .stat-sparkbar {
+                    display: flex;
+                    align-items: flex-end;
+                    gap: 3px;
+                    height: 28px;
+                }
+                .stat-sparkbar span {
+                    flex: 1;
+                    border-radius: 3px 3px 0 0;
+                    opacity: 0.75;
+                    transition: opacity 0.2s;
+                }
+                .stat-sparkbar span:last-child { opacity: 1; }
+                .stat-card:hover .stat-sparkbar span { opacity: 1; }
+                .stat-badge-up {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 3px;
+                    background: rgba(255,255,255,0.22);
+                    border: 1px solid rgba(255,255,255,0.3);
+                    border-radius: 999px;
+                    padding: 2px 9px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: #fff;
+                    backdrop-filter: blur(4px);
+                }
+                .stat-badge-down {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 3px;
+                    background: rgba(255,255,255,0.18);
+                    border: 1px solid rgba(255,255,255,0.25);
+                    border-radius: 999px;
+                    padding: 2px 9px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: rgba(255,255,255,0.9);
+                    backdrop-filter: blur(4px);
+                }
+                .stat-card-label {
+                    font-size: 12px;
+                    font-weight: 700;
+                    letter-spacing: 0.04em;
+                    text-transform: uppercase;
+                    color: rgba(255,255,255,0.82);
+                    margin-bottom: 10px;
+                }
+                .stat-card-value {
+                    font-size: clamp(1.3rem, 2.5vw, 1.75rem);
+                    font-weight: 900;
+                    color: #fff;
+                    line-height: 1.1;
+                    margin-bottom: 12px;
+                    text-shadow: 0 2px 8px rgba(0,0,0,0.12);
+                }
+                .stat-bg-blob {
+                    position: absolute;
+                    border-radius: 50%;
+                    opacity: 0.18;
+                    pointer-events: none;
+                }
+            `}</style>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
+
+                {/* ── Total Sales ── */}
+                <div className="stat-card" style={{
+                    background: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
+                    boxShadow: "0 10px 40px rgba(17,153,142,0.35)"
+                }}>
+                    <div className="stat-bg-blob" style={{ width: 120, height: 120, background: "#fff", top: -30, right: -30 }} />
+                    <div className="stat-bg-blob" style={{ width: 60, height: 60, background: "#fff", bottom: 10, left: -10 }} />
+                    <div style={{ position: "relative", zIndex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
+                            <p className="stat-card-label">Total Sales</p>
+                            <div className="stat-icon-wrap" style={{
+                                width: 44, height: 44, borderRadius: 14,
+                                background: "rgba(255,255,255,0.22)",
+                                border: "1.5px solid rgba(255,255,255,0.35)",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                backdropFilter: "blur(6px)"
+                            }}>
+                                <ShoppingBag style={{ width: 22, height: 22, color: "#fff" }} />
+                            </div>
                         </div>
-                    </div>
-                    <p className="text-lg font-black text-gray-900 leading-tight">{String(totalSales).replace("$", "₹")}</p>
-                    <div className="flex items-center gap-1 mt-1.5">
-                        <TrendingUp className="w-3 h-3 text-green-500" />
-                        <span className="text-[11px] font-bold text-green-500">12.5% vs last week</span>
+                        <p className="stat-card-value stat-value">{String(totalSales).replace("$", "₹")}</p>
+                        <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
+                            {[40,55,35,65,50,70,85].map((h,i) => (
+                                <span key={i} style={{ height: `${h}%`, background: "rgba(255,255,255,0.6)" }} />
+                            ))}
+                        </div>
+                        <span className="stat-badge-up">
+                            <TrendingUp style={{ width: 11, height: 11 }} /> +12.5% vs last week
+                        </span>
                     </div>
                 </div>
-                {/* Total Orders */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-blue-600">Total Orders</span>
-                        <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-md">
-                            <BarChart2 className="w-5 h-5" />
+
+                {/* ── Total Orders ── */}
+                <div className="stat-card" style={{
+                    background: "linear-gradient(135deg, #4776e6 0%, #8e54e9 100%)",
+                    boxShadow: "0 10px 40px rgba(71,118,230,0.35)"
+                }}>
+                    <div className="stat-bg-blob" style={{ width: 120, height: 120, background: "#fff", top: -30, right: -30 }} />
+                    <div className="stat-bg-blob" style={{ width: 60, height: 60, background: "#fff", bottom: 10, left: -10 }} />
+                    <div style={{ position: "relative", zIndex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
+                            <p className="stat-card-label">Total Orders</p>
+                            <div className="stat-icon-wrap" style={{
+                                width: 44, height: 44, borderRadius: 14,
+                                background: "rgba(255,255,255,0.22)",
+                                border: "1.5px solid rgba(255,255,255,0.35)",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                backdropFilter: "blur(6px)"
+                            }}>
+                                <BarChart2 style={{ width: 22, height: 22, color: "#fff" }} />
+                            </div>
                         </div>
-                    </div>
-                    <p className="text-lg font-black text-gray-900">{String(totalOrders)}</p>
-                    <div className="flex items-center gap-1 mt-1.5">
-                        <TrendingUp className="w-3 h-3 text-green-500" />
-                        <span className="text-[11px] font-bold text-green-500">8.3% vs last week</span>
+                        <p className="stat-card-value stat-value">{String(totalOrders)}</p>
+                        <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
+                            {[30,60,45,75,55,65,90].map((h,i) => (
+                                <span key={i} style={{ height: `${h}%`, background: "rgba(255,255,255,0.6)" }} />
+                            ))}
+                        </div>
+                        <span className="stat-badge-up">
+                            <TrendingUp style={{ width: 11, height: 11 }} /> +8.3% vs last week
+                        </span>
                     </div>
                 </div>
-                {/* Total Customers */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-purple-600">Total Customers</span>
-                        <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center text-white shadow-md">
-                            <Users className="w-5 h-5" />
+
+                {/* ── Total Customers ── */}
+                <div className="stat-card" style={{
+                    background: "linear-gradient(135deg, #f953c6 0%, #b91d73 100%)",
+                    boxShadow: "0 10px 40px rgba(249,83,198,0.35)"
+                }}>
+                    <div className="stat-bg-blob" style={{ width: 120, height: 120, background: "#fff", top: -30, right: -30 }} />
+                    <div className="stat-bg-blob" style={{ width: 60, height: 60, background: "#fff", bottom: 10, left: -10 }} />
+                    <div style={{ position: "relative", zIndex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
+                            <p className="stat-card-label">Total Customers</p>
+                            <div className="stat-icon-wrap" style={{
+                                width: 44, height: 44, borderRadius: 14,
+                                background: "rgba(255,255,255,0.22)",
+                                border: "1.5px solid rgba(255,255,255,0.35)",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                backdropFilter: "blur(6px)"
+                            }}>
+                                <Users style={{ width: 22, height: 22, color: "#fff" }} />
+                            </div>
                         </div>
-                    </div>
-                    <p className="text-lg font-black text-gray-900">{String(totalCustomers)}</p>
-                    <div className="flex items-center gap-1 mt-1.5">
-                        <TrendingUp className="w-3 h-3 text-green-500" />
-                        <span className="text-[11px] font-bold text-green-500">6.7% vs last week</span>
+                        <p className="stat-card-value stat-value">{String(totalCustomers)}</p>
+                        <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
+                            {[50,40,70,60,80,55,75].map((h,i) => (
+                                <span key={i} style={{ height: `${h}%`, background: "rgba(255,255,255,0.6)" }} />
+                            ))}
+                        </div>
+                        <span className="stat-badge-up">
+                            <TrendingUp style={{ width: 11, height: 11 }} /> +6.7% vs last week
+                        </span>
                     </div>
                 </div>
-                {/* Total Products */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-orange-600">Total Products</span>
-                        <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white shadow-md">
-                            <Package className="w-5 h-5" />
+
+                {/* ── Total Products ── */}
+                <div className="stat-card" style={{
+                    background: "linear-gradient(135deg, #f7971e 0%, #ffd200 100%)",
+                    boxShadow: "0 10px 40px rgba(247,151,30,0.35)"
+                }}>
+                    <div className="stat-bg-blob" style={{ width: 120, height: 120, background: "#fff", top: -30, right: -30 }} />
+                    <div className="stat-bg-blob" style={{ width: 60, height: 60, background: "#fff", bottom: 10, left: -10 }} />
+                    <div style={{ position: "relative", zIndex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
+                            <p className="stat-card-label" style={{ color: "rgba(0,0,0,0.6)" }}>Total Products</p>
+                            <div className="stat-icon-wrap" style={{
+                                width: 44, height: 44, borderRadius: 14,
+                                background: "rgba(0,0,0,0.1)",
+                                border: "1.5px solid rgba(0,0,0,0.12)",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                backdropFilter: "blur(6px)"
+                            }}>
+                                <Package style={{ width: 22, height: 22, color: "rgba(0,0,0,0.65)" }} />
+                            </div>
                         </div>
-                    </div>
-                    <p className="text-lg font-black text-gray-900">{String(totalProducts)}</p>
-                    <div className="flex items-center gap-1 mt-1.5">
-                        <TrendingDown className="w-3 h-3 text-red-400" />
-                        <span className="text-[11px] font-bold text-red-400">4.3% vs last week</span>
+                        <p className="stat-card-value stat-value" style={{ color: "rgba(0,0,0,0.8)", textShadow: "none" }}>{String(totalProducts)}</p>
+                        <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
+                            {[80,65,72,58,68,62,55].map((h,i) => (
+                                <span key={i} style={{ height: `${h}%`, background: "rgba(0,0,0,0.2)" }} />
+                            ))}
+                        </div>
+                        <span className="stat-badge-down" style={{ color: "rgba(0,0,0,0.65)", background: "rgba(0,0,0,0.1)", border: "1px solid rgba(0,0,0,0.12)" }}>
+                            <TrendingDown style={{ width: 11, height: 11 }} /> -4.3% vs last week
+                        </span>
                     </div>
                 </div>
-                {/* Low Stock */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-red-500">Low Stock Items</span>
-                        <div className="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center text-white shadow-md">
-                            <AlertTriangle className="w-5 h-5" />
+
+                {/* ── Low Stock ── */}
+                <div className="stat-card" style={{
+                    background: "linear-gradient(135deg, #f85032 0%, #e73827 50%, #c0392b 100%)",
+                    boxShadow: "0 10px 40px rgba(248,80,50,0.35)"
+                }}>
+                    <div className="stat-bg-blob" style={{ width: 120, height: 120, background: "#fff", top: -30, right: -30 }} />
+                    <div className="stat-bg-blob" style={{ width: 60, height: 60, background: "#fff", bottom: 10, left: -10 }} />
+                    <div style={{ position: "relative", zIndex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
+                            <p className="stat-card-label">Low Stock Items</p>
+                            <div className="stat-icon-wrap" style={{
+                                width: 44, height: 44, borderRadius: 14,
+                                background: "rgba(255,255,255,0.22)",
+                                border: "1.5px solid rgba(255,255,255,0.35)",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                backdropFilter: "blur(6px)"
+                            }}>
+                                <AlertTriangle style={{ width: 22, height: 22, color: "#fff" }} />
+                            </div>
                         </div>
-                    </div>
-                    <p className="text-lg font-black text-gray-900">{String(lowStockCount)}</p>
-                    <div className="flex items-center gap-1 mt-1.5">
-                        <TrendingDown className="w-3 h-3 text-red-400" />
-                        <span className="text-[11px] font-bold text-red-400">5.2% vs last week</span>
+                        <p className="stat-card-value stat-value">{String(lowStockCount)}</p>
+                        <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
+                            {[30,50,45,65,55,70,60].map((h,i) => (
+                                <span key={i} style={{ height: `${h}%`, background: "rgba(255,255,255,0.6)" }} />
+                            ))}
+                        </div>
+                        <span className="stat-badge-down">
+                            <TrendingDown style={{ width: 11, height: 11 }} /> -5.2% vs last week
+                        </span>
                     </div>
                 </div>
+
             </div>
 
             {/* ══ ROW 2: Sales Overview | Orders Overview | Top Selling ══ */}
