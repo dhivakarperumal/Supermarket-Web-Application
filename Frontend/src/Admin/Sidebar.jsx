@@ -115,18 +115,17 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
         `}
       >
         {/* ===== LOGO ===== */}
-        <div className={`flex items-center gap-2.5 border-b border-white/10 ${collapsed ? "px-3 py-5 justify-center" : "px-4 py-6"}`}>
-          <div className="w-10 h-10 flex items-center justify-center shrink-0 text-white">
-             {/* Using an icon that looks like the cart in the image */}
-            <ShoppingCart className="w-8 h-8" strokeWidth={2} />
+        <div className={`flex items-center gap-3 border-b border-white/10 ${collapsed ? "px-3 py-5 justify-center" : "px-5 py-5"}`}>
+          <div className="w-11 h-11 flex items-center justify-center shrink-0 overflow-hidden rounded-full bg-black shadow-md border-2 border-white/10">
+            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
           </div>
 
           {!collapsed && (
-            <div className="leading-tight overflow-hidden">
-              <h1 className="text-xl font-black text-white leading-none uppercase">
-                <span className="text-[#59c33f]">Priyam</span>
+            <div className="leading-tight overflow-hidden flex flex-col justify-center">
+              <h1 className="text-lg font-black text-white leading-none">
+                <span className="text-[#59c33f]">PRIYAM</span>
               </h1>
-              <p className="text-[9px] text-gray-400 font-bold tracking-[0.2em] uppercase mt-1">Super Market</p>
+              <p className="text-[8px] text-gray-300 font-bold tracking-[0.2em] uppercase mt-1">Super Market</p>
             </div>
           )}
 
