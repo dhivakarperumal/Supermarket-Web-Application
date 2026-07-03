@@ -11,7 +11,9 @@ import {
     FiVideo,
     FiX,
     FiPlay,
-    FiUploadCloud
+    FiUploadCloud,
+    FiList,
+    FiGrid
 } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 
@@ -21,6 +23,7 @@ const VideoManagement = () => {
     const [videos, setVideos] = useState(videosCache || []);
     const [loading, setLoading] = useState(!videosCache);
     const [searchTerm, setSearchTerm] = useState("");
+    const [viewMode, setViewMode] = useState('table');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [newVideo, setNewVideo] = useState({ 
@@ -59,6 +62,8 @@ const VideoManagement = () => {
     useEffect(() => {
         fetchVideos();
     }, []);
+
+    const filteredVideos = videos.filter(v => (v.title || "").toLowerCase().includes(searchTerm.toLowerCase()));
 
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this video?")) return;
@@ -208,15 +213,65 @@ const VideoManagement = () => {
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 min-h-[600px]">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                    <div className="relative flex-1 max-w-md">
+                        <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search videos by title..."
+                            className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition-all text-sm font-bold"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
                 </div>
-                <button
-                    onClick={() => handleOpenAddModal()}
-                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
-                >
-                    <FiPlus /> Add New Video
-                </button>
+
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setViewMode('table')}
+                        aria-label="Table view"
+                        className={`p-2 rounded-md ${viewMode === 'table' ? 'bg-slate-900 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                        <FiList />
+                    </button>
+                    <button
+                        onClick={() => setViewMode('card')}
+                        aria-label="Card view"
+                        className={`p-2 rounded-md ${viewMode === 'card' ? 'bg-slate-900 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                        <FiGrid />
+                    </button>
+
+                    <button
+                        onClick={() => handleOpenAddModal()}
+                        className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
+                    >
+                        <FiPlus />
+                    </button>
+                </div>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="p-6 flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
+                            <FiVideo className="text-blue-600" />
+                        </div>
+                        <div>
+                            <div className="text-xs text-gray-400 uppercase font-black tracking-widest">Total Videos</div>
+                            <div className="text-2xl font-extrabold text-slate-800">{videos.length}</div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center">
+                            <FiPlay className="text-emerald-600" />
+                        </div>
+                        <div>
+                            <div className="text-xs text-gray-400 uppercase font-black tracking-widest">Active Videos</div>
+                            <div className="text-2xl font-extrabold text-slate-800">{videos.filter(v => v.videoPath || v.videoId).length}</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {loading ? (
@@ -226,33 +281,23 @@ const VideoManagement = () => {
                 </div>
             ) : (
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden text-slate-800">
-                    <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="relative flex-1 max-w-md">
-                            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search videos by title..."
-                                className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition-all text-sm font-bold"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
+                    <div className="p-6 border-b border-gray-50 flex items-center justify-between gap-4">
+                        <div />
                     </div>
 
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse block md:table">
-                            <thead className="hidden md:table-header-group">
-                                <tr className="bg-gray-50/50">
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Preview</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Title</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Source</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="block md:table-row-group divide-y divide-gray-50 text-slate-800 px-3 py-4 md:p-0">
-                                {videos
-                                    .filter(v => (v.title || "").toLowerCase().includes(searchTerm.toLowerCase()))
-                                    .map((video) => (
+                        {viewMode === 'table' ? (
+                            <table className="w-full text-left border-collapse block md:table">
+                                <thead className="hidden md:table-header-group">
+                                    <tr className="bg-gray-50/50">
+                                        <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Preview</th>
+                                        <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Title</th>
+                                        <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Source</th>
+                                        <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="block md:table-row-group divide-y divide-gray-50 text-slate-800 px-3 py-4 md:p-0">
+                                    {filteredVideos.map((video) => (
                                         <tr key={video.id} className="hover:bg-blue-50/30 transition-colors group block md:table-row bg-white md:bg-transparent border border-gray-100 md:border-0 rounded-2xl md:rounded-none mb-4 md:mb-0 shadow-sm md:shadow-none">
                                             <td className="px-3 py-4 md:px-6 md:py-4 block md:table-cell border-b border-gray-50 md:border-b-0">
                                                 <div className="flex md:block items-center justify-between w-full">
@@ -261,11 +306,7 @@ const VideoManagement = () => {
                                                         {video.thumbnailUrl ? (
                                                             <img src={video.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                                                         ) : video.type === 'youtube' ? (
-                                                            <img
-                                                                src={`https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`}
-                                                                alt={video.title}
-                                                                className="w-full h-full object-cover"
-                                                            />
+                                                            <img src={`https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`} alt={video.title} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <div className="w-full h-full flex items-center justify-center bg-slate-200">
                                                                 <FiVideo className="text-slate-400" />
@@ -300,28 +341,49 @@ const VideoManagement = () => {
                                                 <div className="flex md:block items-center justify-between w-full">
                                                     <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</span>
                                                     <div className="flex items-center justify-end gap-2">
-                                                        <button
-                                                            onClick={() => handleOpenEditModal(video)}
-                                                            className="p-2 border border-gray-200 text-gray-500 rounded-lg hover:bg-green-500 hover:text-white transition-all shadow-sm md:shadow-none"
-                                                            title="Edit"
-                                                        >
-                                                            <FiEdit2 size={16} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDelete(video.id)}
-                                                            className="p-2 border border-gray-200 text-gray-500 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm md:shadow-none"
-                                                            title="Delete"
-                                                        >
-                                                            <FiTrash2 size={16} />
-                                                        </button>
+                                                        <button onClick={() => handleOpenEditModal(video)} className="p-2 border border-gray-200 text-gray-500 rounded-lg hover:bg-green-500 hover:text-white transition-all shadow-sm md:shadow-none" title="Edit"><FiEdit2 size={16} /></button>
+                                                        <button onClick={() => handleDelete(video.id)} className="p-2 border border-gray-200 text-gray-500 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm md:shadow-none" title="Delete"><FiTrash2 size={16} /></button>
                                                     </div>
                                                 </div>
                                             </td>
                                         </tr>
                                     ))}
-                            </tbody>
-                        </table>
-                        {videos.filter(v => (v.title || "").toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6">
+                                {filteredVideos.map((video) => (
+                                    <div key={video.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex flex-col">
+                                        <div className="relative w-full h-44 rounded-lg overflow-hidden bg-gray-100 mb-4">
+                                            {video.thumbnailUrl ? (
+                                                <img src={video.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                                            ) : video.type === 'youtube' ? (
+                                                <img src={`https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`} alt={video.title} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-slate-200">
+                                                    <FiVideo className="text-slate-400" />
+                                                </div>
+                                            )}
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                                <FiPlay className="text-white" />
+                                            </div>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h4 className="font-bold text-sm mb-2">{video.title}</h4>
+                                            <div className="flex items-center justify-between">
+                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${video.type === 'youtube' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>{video.type}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <button onClick={() => handleOpenEditModal(video)} className="p-2 border border-gray-200 text-gray-500 rounded-lg hover:bg-green-500 hover:text-white transition-all"><FiEdit2 /></button>
+                                                    <button onClick={() => handleDelete(video.id)} className="p-2 border border-gray-200 text-gray-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><FiTrash2 /></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {filteredVideos.length === 0 && (
                             <div className="text-center py-10">
                                 <p className="text-gray-400 font-bold">No videos found.</p>
                             </div>
