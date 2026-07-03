@@ -59,7 +59,7 @@ const navItems = [
   { path: "/admin/products/stock", label: "Inventory", icon: Archive },
   { path: "/admin/banners", label: "Offers & Discounts", icon: Gift },
   { path: "/admin/reports", label: "Reports", icon: BarChart3 },
-  { path: "/admin/banners", label: "Banners", icon: Image },
+  // { path: "/admin/banners", label: "Banners", icon: Image },
   { path: "/admin/reviews", label: "Reviews", icon: Star },
   { path: "/admin/videos", label: "Settings", icon: Settings },
 ];
