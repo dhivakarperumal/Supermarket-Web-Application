@@ -8,13 +8,13 @@ const createBannersTable = async () => {
         await connection.query(`
             CREATE TABLE IF NOT EXISTS banners (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                title VARCHAR(255) NOT NULL DEFAULT '',
+                title VARCHAR(255) DEFAULT '',
                 subtitle VARCHAR(255) DEFAULT '',
                 description TEXT DEFAULT '',
                 image LONGTEXT DEFAULT '',
                 mobile_image LONGTEXT DEFAULT '',
                 link VARCHAR(500) DEFAULT '',
-                type ENUM('hero', 'promo', 'banner', 'popup', 'sidebar') NOT NULL DEFAULT 'hero',
+                type VARCHAR(50) NOT NULL DEFAULT 'hero',
                 active TINYINT(1) NOT NULL DEFAULT 1,
                 sort_order INT DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -55,10 +55,6 @@ const createBanner = async (req, res) => {
     try {
         await createBannersTable();
         const data = req.body || {};
-
-        if (!data.title) {
-            return res.status(400).json({ success: false, message: "Title is required." });
-        }
 
         const pool = getPool();
         const connection = await pool.getConnection();
@@ -110,21 +106,22 @@ const updateBanner = async (req, res) => {
                 return res.status(404).json({ success: false, message: "Banner not found." });
             }
 
+            const row = existing[0];
             await connection.execute(
                 `UPDATE banners SET
                     title = ?, subtitle = ?, description = ?, image = ?, mobile_image = ?,
                     link = ?, type = ?, active = ?, sort_order = ?, updated_at = NOW()
                  WHERE id = ?`,
                 [
-                    data.title || existing[0].title,
-                    data.subtitle || existing[0].subtitle || "",
-                    data.description || existing[0].description || "",
-                    data.image || existing[0].image || "",
-                    data.mobile_image || existing[0].mobile_image || "",
-                    data.link || existing[0].link || "",
-                    data.type || existing[0].type,
-                    data.active !== undefined ? (data.active ? 1 : 0) : existing[0].active,
-                    data.sort_order !== undefined ? data.sort_order : existing[0].sort_order,
+                    data.title !== undefined ? data.title : row.title,
+                    data.subtitle !== undefined ? data.subtitle : row.subtitle,
+                    data.description !== undefined ? data.description : row.description,
+                    data.image !== undefined ? data.image : row.image,
+                    data.mobile_image !== undefined ? data.mobile_image : row.mobile_image,
+                    data.link !== undefined ? data.link : row.link,
+                    data.type !== undefined ? data.type : row.type,
+                    data.active !== undefined ? (data.active ? 1 : 0) : row.active,
+                    data.sort_order !== undefined ? data.sort_order : row.sort_order,
                     id
                 ]
             );
