@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
     FiArrowLeft, FiPlus, FiTrash2, FiSave, FiUser, FiPackage,
     FiSearch, FiPhone, FiCheckCircle, FiMic, FiMaximize, FiLayers, FiCamera, FiX
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../PrivateRouter/AuthContext";
 import api from "../../api";
 import { toast } from "react-hot-toast";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
 const CreateBilling = () => {
     const navigate = useNavigate();
+    const { user } = useContext(AuthContext);
     const barcodeInputRef = useRef(null);
     const [loading, setLoading] = useState(false);
 
@@ -32,6 +34,7 @@ const CreateBilling = () => {
 
     // Form State
     const [formData, setFormData] = useState({
+        user_id: "",
         customer_name: "",
         customer_phone: "",
         items: [],
@@ -48,6 +51,13 @@ const CreateBilling = () => {
             country: "India"
         }
     });
+
+    // Set user_id when user is loaded
+    useEffect(() => {
+        if (user?.user_id) {
+            setFormData(prev => ({ ...prev, user_id: user.user_id }));
+        }
+    }, [user]);
 
     useEffect(() => {
         const fetchData = async () => {

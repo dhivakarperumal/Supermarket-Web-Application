@@ -27,44 +27,51 @@ const Checkout = () => {
 
   const fetchAddresses = async () => {
     try {
-
-      const res = await api.get("/orders");
-
-      const userAddresses = res.data.filter(
-        (addr) => addr.user_id === user?.user_id
-      );
-
+      const res = await api.get(`/addresses/user/${user.user_id}`);
+      const userAddresses = res.data || [];
       setAddresses(userAddresses);
 
+      // Auto-fill form with default address
+      const defaultAddr = userAddresses.find(a => a.is_default) || userAddresses[0];
+      if (defaultAddr) {
+        setSelectedAddress(defaultAddr.id);
+        setForm(prev => ({
+          ...prev,
+          customer_name: defaultAddr.customer_name || "",
+          customer_email: defaultAddr.customer_email || "",
+          customer_phone: defaultAddr.customer_phone || "",
+          street_address: defaultAddr.street_address || "",
+          city: defaultAddr.city || "",
+          district: defaultAddr.district || "",
+          state: defaultAddr.state || "",
+          country: defaultAddr.country || "India",
+          zip_code: defaultAddr.zip_code || ""
+        }));
+      }
     } catch (error) {
       console.error(error);
     }
   };
 
-  useEffect(() => {
-    if (user?.user_id) {
-      fetchAddresses();
-    }
-  }, [user]);
-
   const selectAddress = (address) => {
-
     setSelectedAddress(address.id);
-
-    setForm({
-      ...form,
+    setForm(prev => ({
+      ...prev,
       customer_name: address.customer_name,
-      customer_email: address.customer_email,
-      customer_phone: address.customer_phone,
+      customer_email: address.customer_email || "",
+      customer_phone: address.customer_phone || "",
       street_address: address.street_address,
-      city: address.city,
-      district: address.district,
-      state: address.state,
-      country: address.country,
-      zip_code: address.zip_code
-    });
-
+      city: address.city || "",
+      district: address.district || "",
+      state: address.state || "",
+      country: address.country || "India",
+      zip_code: address.zip_code || ""
+    }));
   };
+
+  useEffect(() => {
+    if (user?.user_id) fetchAddresses();
+  }, [user]);
 
   const indianStates = [
     "Andhra Pradesh",
