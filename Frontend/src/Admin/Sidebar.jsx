@@ -233,33 +233,46 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
           })}
         </nav>
 
-        {/* ===== NEED HELP CARD ===== */}
+        {/* ===== BOOST SALES CARD ===== */}
         {!collapsed && (
-          <div className="mx-3 mb-3 rounded-2xl bg-[#f0faf0] border border-[#d4edd4] p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-full bg-[#3a8b28] flex items-center justify-center shrink-0">
-                <Headphones className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-gray-800">Need Help?</p>
-                <p className="text-[10px] text-gray-500">We're here to help you</p>
-              </div>
+          <div className="mx-4 mb-4 rounded-xl bg-[#eaf7e3] p-4 flex gap-3 relative overflow-hidden">
+            {/* Left side: Illustration */}
+            <div className="w-14 shrink-0 flex items-center justify-center relative">
+              <div className="text-4xl relative z-10 drop-shadow-sm">🛍️</div>
+              <div className="absolute inset-0 bg-[#68c93a]/20 blur-xl rounded-full"></div>
             </div>
-            <button className="w-full py-2 rounded-xl bg-[#3a8b28] text-white text-xs font-bold hover:bg-[#2d731d] transition-colors">
-              Contact Support
-            </button>
+            
+            {/* Right side: Content */}
+            <div className="flex-1 flex flex-col justify-center">
+              <h3 className="text-sm font-bold text-gray-800">Boost Your Sales!</h3>
+              <p className="text-[10px] text-gray-500 leading-snug mt-1 mb-3">
+                Add new offers and<br/>attract more customers
+              </p>
+              <button className="w-full py-2 rounded-lg bg-[#3a8b28] text-white text-xs font-bold hover:bg-[#2d731d] transition-colors shadow-sm shadow-[#3a8b28]/20">
+                Create Offer
+              </button>
+            </div>
           </div>
         )}
 
-        {/* ===== GROCERY BOTTOM IMAGE ===== */}
+        {/* ===== USER PROFILE CARD ===== */}
         {!collapsed && (
-          <div className="relative h-28 overflow-hidden rounded-b-none">
-            <img
-              src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop"
-              alt="Fresh Groceries"
-              className="w-full h-full object-cover object-top"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#3a8b28]/60 to-transparent" />
+          <div className="mx-4 mb-6 p-3 rounded-xl border border-gray-100 flex items-center gap-3 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.03)] cursor-pointer hover:border-[#3a8b28]/30 transition-all">
+            <div className="w-10 h-10 rounded-full bg-[#f0faf0] flex items-center justify-center shrink-0">
+              <ShoppingCart className="w-5 h-5 text-[#3a8b28]" />
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <h4 className="text-sm font-bold text-gray-800 truncate">GreenMart</h4>
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className="text-[11px] text-gray-500 truncate">Super Admin</span>
+                <div className="w-3.5 h-3.5 rounded-full bg-[#3a8b28] flex items-center justify-center shrink-0">
+                  <svg className="w-2 h-2 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
           </div>
         )}
 
