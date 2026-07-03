@@ -29,6 +29,8 @@ import {
 
 import { useAuth } from "../PrivateRouter/AuthContext";
 
+import basketImage from "../../public/basket.png"
+
 /* ================= NAV ITEMS ================= */
 const navItems = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -116,8 +118,8 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
       >
         {/* ===== LOGO ===== */}
         <div className={`flex items-center gap-3 border-b border-white/10 ${collapsed ? "px-3 py-5 justify-center" : "px-5 py-5"}`}>
-          <div className="w-11 h-11 flex items-center justify-center shrink-0 overflow-hidden rounded-full bg-black shadow-md border-2 border-white/10">
-            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
+          <div className="w-12 h-12 flex items-center justify-center shrink-0 overflow-hidden rounded-full bg-black shadow-md border-2 border-white/10">
+            <img src={basketImage} alt="Logo" className="w-full h-full object-contain" />
           </div>
 
           {!collapsed && (
@@ -242,20 +244,27 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
 
         {/* ===== BOOST SALES CARD ===== */}
         {!collapsed && (
-          <div className="mx-4 mb-6 rounded-2xl bg-[#eaf7e3] p-4 flex flex-col relative overflow-hidden shadow-lg">
-            <h3 className="text-xs font-bold text-gray-800 flex items-center gap-1 mb-1">
-                Boost Your Sales! 🚀
-            </h3>
-            <p className="text-[10px] text-gray-600 leading-snug mb-3 pr-2">
-              Create exciting offers &<br/>discounts to attract<br/>more customers.
-            </p>
-            <div className="flex justify-between items-end relative z-10">
-                <div className="w-16 h-16 shrink-0 relative flex items-center justify-center translate-y-2 -translate-x-1">
-                    <div className="text-5xl drop-shadow-md">🛒</div>
-                </div>
-                <button className="px-4 py-1.5 rounded-lg bg-[#249533] text-white text-[10px] font-bold hover:bg-[#1d7828] transition-colors shadow-sm">
-                    Create Offer
-                </button>
+          <div className="mx-4 mb-6 rounded-2xl bg-white p-3.5 flex gap-2 relative overflow-hidden shadow-xl border border-gray-100">
+            {/* Left side: Illustration */}
+            <div className="w-25 shrink-0 relative flex items-center justify-center">
+                {/* Reference to the basket image the user uploaded */}
+                <img src={basketImage} alt="Boost Sales Basket" className="w-full h-full object-contain relative z-10 drop-shadow-lg scale-[1.15]" />
+            </div>
+            
+            {/* Right side: Content */}
+            <div className="flex-1 flex flex-col justify-center pr-1">
+              <h3 className="text-sm font-extrabold text-[#113a22] flex items-center gap-1 mb-1.5 leading-tight">
+                  Boost Your Sales! 
+              </h3>
+              <p className="text-[10px] font-semibold text-gray-800 leading-snug mb-3">
+                Create exciting offers & discounts to attract more customers.
+              </p>
+              <button className="w-full py-1.5 px-2 rounded-xl bg-gradient-to-b from-[#6ec81e] to-[#41940b] text-white text-[11px] font-bold shadow-[0_4px_8px_rgba(65,148,11,0.4)] flex items-center justify-between border-t border-[#8fed37] border-b border-[#2d6907]">
+                  <span className="flex-1 text-center drop-shadow-sm ml-4">Create Offer</span>
+                  <div className="w-4 h-4 rounded-full bg-[#d0f5a1] flex items-center justify-center shrink-0 shadow-inner">
+                      <ChevronRight className="w-3 h-3 text-[#2d6907] stroke-[3]" />
+                  </div>
+              </button>
             </div>
           </div>
         )}
@@ -267,8 +276,8 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                 <img src="https://ui-avatars.com/api/?name=Super+Admin&background=f0faf0&color=3a8b28" alt="Super Admin" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 overflow-hidden">
-              <h4 className="text-sm font-bold text-white truncate">Super Admin</h4>
-              <p className="text-[10px] text-gray-400 truncate mt-0.5">superadmin@gmail.com</p>
+              <h4 className="text-sm font-bold text-white truncate">Admin</h4>
+              <p className="text-[10px] text-gray-400 truncate mt-0.5">admin@gmail.com</p>
             </div>
             <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
           </div>
