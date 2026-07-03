@@ -919,7 +919,9 @@ const AddEditStaff = () => {
                   </button>
                 </div>
 
-                    </div>
+              </div>
+            </div>
+          </div>
 
         {/* RIGHT SIDE */}
         <div className="space-y-6">
