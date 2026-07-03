@@ -489,22 +489,22 @@ const Dashboard = () => {
 
                 {/* ── Total Deliveries ── */}
                 <div className="stat-card" style={{
-                    background: "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)",
-                    boxShadow: "0 10px 40px rgba(15,32,39,0.40)"
+                    background: "linear-gradient(135deg, #4f00bc 0%, #29ABE2 100%)",
+                    boxShadow: "0 10px 40px rgba(79,0,188,0.35)"
                 }}>
-                    <div className="stat-bg-blob" style={{ width: 130, height: 130, background: "#4fc3f7", top: -35, right: -35 }} />
-                    <div className="stat-bg-blob" style={{ width: 65, height: 65, background: "#4fc3f7", bottom: 8, left: -12 }} />
+                    <div className="stat-bg-blob" style={{ width: 130, height: 130, background: "#fff", top: -35, right: -35 }} />
+                    <div className="stat-bg-blob" style={{ width: 65, height: 65, background: "#fff", bottom: 8, left: -12 }} />
                     <div style={{ position: "relative", zIndex: 1 }}>
                         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
                             <p className="stat-card-label">Total Deliveries</p>
                             <div className="stat-icon-wrap" style={{
                                 width: 44, height: 44, borderRadius: 14,
-                                background: "rgba(79,195,247,0.25)",
-                                border: "1.5px solid rgba(79,195,247,0.4)",
+                                background: "rgba(255,255,255,0.22)",
+                                border: "1.5px solid rgba(255,255,255,0.35)",
                                 display: "flex", alignItems: "center", justifyContent: "center",
                                 backdropFilter: "blur(6px)"
                             }}>
-                                <Truck style={{ width: 22, height: 22, color: "#4fc3f7" }} />
+                                <Truck style={{ width: 22, height: 22, color: "#fff" }} />
                             </div>
                         </div>
                         <p className="stat-card-value stat-value">
@@ -512,10 +512,10 @@ const Dashboard = () => {
                         </p>
                         <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
                             {[55,70,60,80,65,75,90].map((h,i) => (
-                                <span key={i} style={{ height: `${h}%`, background: "rgba(79,195,247,0.7)" }} />
+                                <span key={i} style={{ height: `${h}%`, background: "rgba(255,255,255,0.6)" }} />
                             ))}
                         </div>
-                        <span className="stat-badge-up" style={{ background: "rgba(79,195,247,0.2)", border: "1px solid rgba(79,195,247,0.35)" }}>
+                        <span className="stat-badge-up">
                             <TrendingUp style={{ width: 11, height: 11 }} /> +9.1% vs last week
                         </span>
                     </div>
@@ -523,22 +523,22 @@ const Dashboard = () => {
 
                 {/* ── Orders Today ── */}
                 <div className="stat-card" style={{
-                    background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-                    boxShadow: "0 10px 40px rgba(15,52,96,0.45)"
+                    background: "linear-gradient(135deg, #ff6a00 0%, #ee0979 100%)",
+                    boxShadow: "0 10px 40px rgba(255,106,0,0.38)"
                 }}>
-                    <div className="stat-bg-blob" style={{ width: 130, height: 130, background: "#e040fb", top: -35, right: -35 }} />
-                    <div className="stat-bg-blob" style={{ width: 65, height: 65, background: "#e040fb", bottom: 8, left: -12 }} />
+                    <div className="stat-bg-blob" style={{ width: 130, height: 130, background: "#fff", top: -35, right: -35 }} />
+                    <div className="stat-bg-blob" style={{ width: 65, height: 65, background: "#fff", bottom: 8, left: -12 }} />
                     <div style={{ position: "relative", zIndex: 1 }}>
                         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
                             <p className="stat-card-label">Orders Today</p>
                             <div className="stat-icon-wrap" style={{
                                 width: 44, height: 44, borderRadius: 14,
-                                background: "rgba(224,64,251,0.25)",
-                                border: "1.5px solid rgba(224,64,251,0.4)",
+                                background: "rgba(255,255,255,0.22)",
+                                border: "1.5px solid rgba(255,255,255,0.35)",
                                 display: "flex", alignItems: "center", justifyContent: "center",
                                 backdropFilter: "blur(6px)"
                             }}>
-                                <Clock style={{ width: 22, height: 22, color: "#e040fb" }} />
+                                <Clock style={{ width: 22, height: 22, color: "#fff" }} />
                             </div>
                         </div>
                         <p className="stat-card-value stat-value">
@@ -546,10 +546,10 @@ const Dashboard = () => {
                         </p>
                         <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
                             {[20,45,30,60,50,55,72].map((h,i) => (
-                                <span key={i} style={{ height: `${h}%`, background: "rgba(224,64,251,0.7)" }} />
+                                <span key={i} style={{ height: `${h}%`, background: "rgba(255,255,255,0.6)" }} />
                             ))}
                         </div>
-                        <span className="stat-badge-up" style={{ background: "rgba(224,64,251,0.2)", border: "1px solid rgba(224,64,251,0.35)" }}>
+                        <span className="stat-badge-up">
                             <TrendingUp style={{ width: 11, height: 11 }} /> +14.2% vs yesterday
                         </span>
                     </div>
@@ -622,6 +622,170 @@ const Dashboard = () => {
                 </div>
 
             </div>
+
+            {/* ══ QUICK ACCESS ══ */}
+            <style>{`
+                .qa-section-title {
+                    font-size: 17px;
+                    font-weight: 900;
+                    color: #1e293b;
+                    letter-spacing: -0.3px;
+                }
+                .qa-section-sub {
+                    font-size: 12px;
+                    color: #94a3b8;
+                    font-weight: 600;
+                    margin-top: 1px;
+                }
+                .qa-card {
+                    position: relative;
+                    border-radius: 18px;
+                    padding: 18px 16px 14px;
+                    cursor: pointer;
+                    overflow: hidden;
+                    text-decoration: none;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 10px;
+                    transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.28s ease;
+                    border: 1px solid rgba(255,255,255,0.15);
+                }
+                .qa-card:hover {
+                    transform: translateY(-5px) scale(1.03);
+                }
+                .qa-card::after {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    border-radius: inherit;
+                    background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
+                    opacity: 0;
+                    transition: opacity 0.3s;
+                }
+                .qa-card:hover::after { opacity: 1; }
+                .qa-icon-box {
+                    width: 46px;
+                    height: 46px;
+                    border-radius: 13px;
+                    background: rgba(255,255,255,0.2);
+                    border: 1.5px solid rgba(255,255,255,0.3);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    backdrop-filter: blur(6px);
+                    flex-shrink: 0;
+                }
+                .qa-label {
+                    font-size: 12px;
+                    font-weight: 800;
+                    color: #fff;
+                    letter-spacing: 0.02em;
+                    line-height: 1.3;
+                }
+                .qa-arrow {
+                    margin-top: auto;
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 8px;
+                    background: rgba(255,255,255,0.18);
+                    border: 1px solid rgba(255,255,255,0.25);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: background 0.2s;
+                }
+                .qa-card:hover .qa-arrow {
+                    background: rgba(255,255,255,0.32);
+                }
+                .qa-bg-circle {
+                    position: absolute;
+                    border-radius: 50%;
+                    opacity: 0.15;
+                    pointer-events: none;
+                }
+            `}</style>
+
+            {/* <div style={{ background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)", borderRadius: 24, padding: "20px 20px 22px", border: "1px solid #e2e8f0", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
+                
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                    <div>
+                        <p className="qa-section-title">⚡ Quick Access</p>
+                        <p className="qa-section-sub">Jump to any section instantly</p>
+                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#64748b", background: "#e2e8f0", borderRadius: 999, padding: "3px 10px" }}>10 shortcuts</span>
+                </div>
+
+              
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 12 }}>
+
+                    
+                    <Link to="/admin/products/add" className="qa-card" style={{ background: "linear-gradient(135deg, #11998e, #38ef7d)", boxShadow: "0 8px 24px rgba(17,153,142,0.3)" }}>
+                        <div className="qa-bg-circle" style={{ width: 90, height: 90, background: "#fff", top: -20, right: -20 }} />
+                        <div className="qa-icon-box"><Package style={{ width: 22, height: 22, color: "#fff" }} /></div>
+                        <span className="qa-label">Add Product</span>
+                        <div className="qa-arrow"><ArrowRight style={{ width: 13, height: 13, color: "#fff" }} /></div>
+                    </Link>
+
+                  
+                    <Link to="/admin/orders/all" className="qa-card" style={{ background: "linear-gradient(135deg, #4776e6, #8e54e9)", boxShadow: "0 8px 24px rgba(71,118,230,0.3)" }}>
+                        <div className="qa-bg-circle" style={{ width: 90, height: 90, background: "#fff", top: -20, right: -20 }} />
+                        <div className="qa-icon-box"><ShoppingCart style={{ width: 22, height: 22, color: "#fff" }} /></div>
+                        <span className="qa-label">All Orders</span>
+                        <div className="qa-arrow"><ArrowRight style={{ width: 13, height: 13, color: "#fff" }} /></div>
+                    </Link>
+
+                    
+
+                    <Link to="/admin/users/all" className="qa-card" style={{ background: "linear-gradient(135deg, #f7971e, #ffd200)", boxShadow: "0 8px 24px rgba(247,151,30,0.3)" }}>
+                        <div className="qa-bg-circle" style={{ width: 90, height: 90, background: "#fff", top: -20, right: -20 }} />
+                        <div className="qa-icon-box"><Users style={{ width: 22, height: 22, color: "rgba(0,0,0,0.6)" }} /></div>
+                        <span className="qa-label" style={{ color: "rgba(0,0,0,0.75)" }}>All Users</span>
+                        <div className="qa-arrow" style={{ background: "rgba(0,0,0,0.12)", border: "1px solid rgba(0,0,0,0.12)" }}><ArrowRight style={{ width: 13, height: 13, color: "rgba(0,0,0,0.6)" }} /></div>
+                    </Link>
+
+                    
+                    <Link to="/admin/products/category" className="qa-card" style={{ background: "linear-gradient(135deg, #2c3e50, #4ca1af)", boxShadow: "0 8px 24px rgba(44,62,80,0.3)" }}>
+                        <div className="qa-bg-circle" style={{ width: 90, height: 90, background: "#4ca1af", top: -20, right: -20 }} />
+                        <div className="qa-icon-box"><BarChart2 style={{ width: 22, height: 22, color: "#fff" }} /></div>
+                        <span className="qa-label">Categories</span>
+                        <div className="qa-arrow"><ArrowRight style={{ width: 13, height: 13, color: "#fff" }} /></div>
+                    </Link>
+
+                  
+                    <Link to="/admin/products/stock" className="qa-card" style={{ background: "linear-gradient(135deg, #134e5e, #71b280)", boxShadow: "0 8px 24px rgba(19,78,94,0.3)" }}>
+                        <div className="qa-bg-circle" style={{ width: 90, height: 90, background: "#71b280", top: -20, right: -20 }} />
+                        <div className="qa-icon-box"><Package style={{ width: 22, height: 22, color: "#fff" }} /></div>
+                        <span className="qa-label">Stock Details</span>
+                        <div className="qa-arrow"><ArrowRight style={{ width: 13, height: 13, color: "#fff" }} /></div>
+                    </Link>
+
+                    <Link to="/admin/billing" className="qa-card" style={{ background: "linear-gradient(135deg, #005c97, #363795)", boxShadow: "0 8px 24px rgba(0,92,151,0.3)" }}>
+                        <div className="qa-bg-circle" style={{ width: 90, height: 90, background: "#363795", top: -20, right: -20 }} />
+                        <div className="qa-icon-box"><DollarSign style={{ width: 22, height: 22, color: "#fff" }} /></div>
+                        <span className="qa-label">Billing</span>
+                        <div className="qa-arrow"><ArrowRight style={{ width: 13, height: 13, color: "#fff" }} /></div>
+                    </Link>
+
+                    <Link to="/admin/coupons" className="qa-card" style={{ background: "linear-gradient(135deg, #c94b4b, #4b134f)", boxShadow: "0 8px 24px rgba(201,75,75,0.3)" }}>
+                        <div className="qa-bg-circle" style={{ width: 90, height: 90, background: "#4b134f", top: -20, right: -20 }} />
+                        <div className="qa-icon-box"><Star style={{ width: 22, height: 22, color: "#fff" }} /></div>
+                        <span className="qa-label">Coupons</span>
+                        <div className="qa-arrow"><ArrowRight style={{ width: 13, height: 13, color: "#fff" }} /></div>
+                    </Link>
+
+                
+                    <Link to="/admin/dealer/all" className="qa-card" style={{ background: "linear-gradient(135deg, #0f2027, #2c5364)", boxShadow: "0 8px 24px rgba(15,32,39,0.35)" }}>
+                        <div className="qa-bg-circle" style={{ width: 90, height: 90, background: "#4fc3f7", top: -20, right: -20 }} />
+                        <div className="qa-icon-box" style={{ background: "rgba(79,195,247,0.25)", border: "1.5px solid rgba(79,195,247,0.4)" }}><Truck style={{ width: 22, height: 22, color: "#4fc3f7" }} /></div>
+                        <span className="qa-label">Dealers</span>
+                        <div className="qa-arrow"><ArrowRight style={{ width: 13, height: 13, color: "#fff" }} /></div>
+                    </Link>
+
+                    
+
+                </div>
+            </div> */}
 
             {/* ══ ROW 2: Sales Overview | Orders Overview | Top Selling ══ */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
