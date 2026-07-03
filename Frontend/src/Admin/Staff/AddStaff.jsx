@@ -763,25 +763,54 @@ const AddEditStaff = () => {
                     className={`${inputClass} appearance-none ${errors.role ? "border-red-500" : ""
                       }`}
                   >
-
                     <option value="">Select Role</option>
 
-                    <option value="trainer">Trainer</option>
-
-                    <option value="personal_trainer">
-                      Personal Trainer
+                    <option value="store_manager">
+                      Store Manager
                     </option>
 
-                    <option value="gym_manager">
-                      Gym Manager
+                    <option value="assistant_manager">
+                      Assistant Manager
                     </option>
 
-                    <option value="receptionist">
-                      Receptionist
+                    <option value="cashier">
+                      Cashier
                     </option>
 
-                    <option value="nutritionist">
-                      Nutritionist
+                    <option value="sales_executive">
+                      Sales Executive
+                    </option>
+
+                    <option value="inventory_manager">
+                      Inventory Manager
+                    </option>
+
+                    <option value="stock_keeper">
+                      Stock Keeper
+                    </option>
+
+                    <option value="billing_staff">
+                      Billing Staff
+                    </option>
+
+                    <option value="customer_service">
+                      Customer Service
+                    </option>
+
+                    <option value="delivery_staff">
+                      Delivery Staff
+                    </option>
+
+                    <option value="warehouse_staff">
+                      Warehouse Staff
+                    </option>
+
+                    <option value="quality_checker">
+                      Quality Checker
+                    </option>
+
+                    <option value="cleaning_staff">
+                      Cleaning Staff
                     </option>
 
                     <option value="security">
@@ -1027,7 +1056,7 @@ const AddEditStaff = () => {
                       </>
                     ) : (
                       <>
-                         {isEdit ? "Update Staff" : "Save Staff"}
+                        {isEdit ? "Update Staff" : "Save Staff"}
                       </>
                     )}
                   </button>
