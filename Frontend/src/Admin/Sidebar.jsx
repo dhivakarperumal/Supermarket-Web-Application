@@ -62,6 +62,15 @@ const navItems = [
 
   { path: "/admin/users/all", label: "Customers", icon: Users },
 
+  {
+    label: "Employee Management",
+    icon: Users,
+    children: [
+      { path: "/admin/staff", label: "All Employees", icon: List },
+      { path: "/admin/addstaff", label: "Add Employee", icon: PlusCircle },
+    ],
+  },
+
   { path: "/admin/billing", label: "Billing", icon: CreditCard },
 
   // {

@@ -53,6 +53,9 @@ const AddProducts = React.lazy(() => import("./Admin/Pages/AddProducts.jsx"));
 const AddDealer = React.lazy(() => import("./Admin/Pages/AddDealer.jsx"));
 const AddInvoice = React.lazy(() => import("./Admin/Pages/AddInvoice.jsx"));
 const CreateOrder = React.lazy(() => import("./Admin/Pages/CreateOrder.jsx"));
+const Staffs = React.lazy(() => import("./Admin/Staff/Staffs.jsx"));
+const AddStaff = React.lazy(() => import("./Admin/Staff/AddStaff.jsx"));
+const ViewStaff = React.lazy(() => import("./Admin/Staff/ViewStaff.jsx"));
 const VideoManagement = React.lazy(() => import("./Admin/Pages/VideoManagement.jsx"));
 const BannerManagement = React.lazy(() => import("./Admin/Pages/BannerManagement.jsx"));
 const ErrorPage = React.lazy(() => import("./Admin/Pages/ErrorPage.jsx"));
@@ -114,6 +117,10 @@ const router = createBrowserRouter([
       // Others
       { path: "users/all", element: <Users initialTab="All" /> },
       { path: "users/new", element: <Users initialTab="New" /> },
+      { path: "staff", element: <Staffs /> },
+      { path: "addstaff", element: <AddStaff /> },
+      { path: "addstaff/:id", element: <AddStaff /> },
+      { path: "viewstaff/:id", element: <ViewStaff /> },
       // Marketing & Support
 
       // Finance
