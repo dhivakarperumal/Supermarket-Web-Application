@@ -19,19 +19,18 @@ const Billing = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchOrders = async () => {
+        const fetchInvoices = async () => {
             try {
-                const res = await api.get("/orders");
-                // Only show shop bills
-                const shopOrders = (res.data || []).filter(order => !order.order_type || order.order_type === 'Shop');
-                setInvoices(shopOrders);
+                const res = await api.get("/invoices");
+                const invoiceData = res.data?.data || [];
+                setInvoices(invoiceData);
             } catch (error) {
-                console.error("Failed to fetch orders:", error);
+                console.error("Failed to fetch invoices:", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchOrders();
+        fetchInvoices();
     }, []);
 
     const getStatusStyle = (status) => {

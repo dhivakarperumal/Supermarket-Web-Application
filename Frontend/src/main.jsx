@@ -54,6 +54,9 @@ const CreateOrder = React.lazy(() => import("./Admin/Pages/CreateOrder.jsx"));
 const VideoManagement = React.lazy(() => import("./Admin/Pages/VideoManagement.jsx"));
 const BannerManagement = React.lazy(() => import("./Admin/Pages/BannerManagement.jsx"));
 const ErrorPage = React.lazy(() => import("./Admin/Pages/ErrorPage.jsx"));
+const DealerDetail = React.lazy(() => import("./Admin/Pages/DealerDetail.jsx"));
+const PurchaseOrder = React.lazy(() => import("./Admin/Pages/PurchaseOrder.jsx"));
+const DealerProductMapping = React.lazy(() => import("./Admin/Pages/DealerProductMapping.jsx"));
 
 const router = createBrowserRouter([
   {
@@ -118,6 +121,9 @@ const router = createBrowserRouter([
       { path: "dealer", element: <DealerDashboard /> },
       { path: "dealer/dashboard", element: <DealerDashboard /> },
       { path: "dealer/all", element: <Dealers /> },
+      { path: "dealer/:id", element: <DealerDetail /> },
+      { path: "dealer/purchase-order/new", element: <PurchaseOrder /> },
+      { path: "dealer/mapping", element: <DealerProductMapping /> },
       { path: "dealer/add", element: <AddDealer /> },
       { path: "dealer/orders", element: <Orders statusFilter="All" /> },
       // Legacy routes (keep to avoid broken links)

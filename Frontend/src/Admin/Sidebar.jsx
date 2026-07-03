@@ -79,7 +79,7 @@ const navItems = [
   { path: "/admin/reports", label: "Reports", icon: BarChart3 },
   // { path: "/admin/banners", label: "Banners", icon: Image },
   { path: "/admin/reviews", label: "Reviews", icon: Star },
-  { path: "/admin/videos", label: "Settings", icon: Settings },
+  { path: "/admin/videos", label: "Videos Management", icon: Video },
 ];
 
 /* ================= SIDEBAR ================= */

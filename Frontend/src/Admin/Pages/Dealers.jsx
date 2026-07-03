@@ -268,8 +268,8 @@ const Dealers = () => {
 
             {/* History Modal */}
             {showHistory && selectedDealer && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 left-0 right-0 top-0 bottom-0 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-5xl mx-auto rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500">
                         <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-slate-50/50">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">

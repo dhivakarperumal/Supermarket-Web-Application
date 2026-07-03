@@ -118,27 +118,56 @@ const AddInvoice = () => {
             toast.error("Please add at least one product");
             return;
         }
-
         setLoading(true);
         try {
-            // Simulation
-            toast.success("Invoice created successfully!");
-            setTimeout(() => navigate("/admin/dealers"), 1500);
+            // Find selected dealer
+            const dealer = dealers.find(d => d.id.toString() === formData.dealer_id.toString());
+
+            const payload = {
+                dealer_id: formData.dealer_id,
+                invoice_date: formData.invoice_date,
+                status: formData.status || 'Pending',
+                payment_method: 'Offline',
+                payment_status: 'pending',
+                total_amount: parseFloat(formData.total_amount) || 0,
+                customer_name: dealer?.name || "Dealer",
+                customer_phone: dealer?.phone || dealer?.contact || "",
+                customer_email: dealer?.email || null,
+                shipping_address: dealer ? { name: dealer.name, email: dealer.email, phone: dealer.phone, location: dealer.location } : null,
+                document: formData.document ? formData.document.name : null,
+                items: formData.items.map(it => ({
+                    product_id: it.product_id || it.id || null,
+                    name: it.name,
+                    price: it.price,
+                    quantity: it.quantity,
+                    total: it.total,
+                    image: it.image || null,
+                }))
+            };
+
+            const res = await api.post('/invoices', payload);
+            if (res?.data?.success) {
+                toast.success('Invoice created successfully!');
+                setTimeout(() => navigate('/admin/dealers'), 1200);
+            } else {
+                console.error('Create invoice response:', res?.data || res);
+                toast.error(res?.data?.message || 'Failed to create invoice');
+            }
         } catch (error) {
-            console.error("Invoice Error:", error);
-            toast.error("Failed to create invoice");
+            console.error("Invoice Error:", error?.response?.data || error);
+            toast.error(error?.response?.data?.message || "Failed to create invoice");
         } finally {
             setLoading(false);
         }
     };
 
-    const filteredDealers = dealers.filter(d =>
-        d.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredDealers = (dealers || []).filter(d =>
+        (d.name || '').toLowerCase().includes((searchTerm || '').toLowerCase())
     );
 
-    const filteredProducts = products.filter(p =>
-        p.name.toLowerCase().includes(productSearchTerm.toLowerCase()) ||
-        p.product_code?.toLowerCase().includes(productSearchTerm.toLowerCase())
+    const filteredProducts = (products || []).filter(p =>
+        (p.name || '').toLowerCase().includes((productSearchTerm || '').toLowerCase()) ||
+        (p.product_code || '').toLowerCase().includes((productSearchTerm || '').toLowerCase())
     );
 
     return (
