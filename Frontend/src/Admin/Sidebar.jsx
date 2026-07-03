@@ -64,16 +64,18 @@ const navItems = [
 
   { path: "/admin/billing", label: "Billing", icon: CreditCard },
 
-  {
-    label: "Dealer",
-    icon: Handshake,
-    children: [
-      { path: "/admin/dealer", label: "Dashboard", icon: LayoutDashboard },
-      { path: "/admin/dealer/all", label: "All Dealers", icon: List },
-      // { path: "/admin/dealer/add", label: "Add Dealer", icon: PlusCircle },
+  // {
+  //   label: "Dealer",
+  //   icon: Handshake,
+  //   children: [
+  //     // { path: "/admin/dealer", label: "Dashboard", icon: LayoutDashboard },
       
-    ],
-  },
+  //     // { path: "/admin/dealer/add", label: "Add Dealer", icon: PlusCircle },
+      
+  //   ],
+  // },
+
+  { path: "/admin/dealer/all", label: "All Dealers", icon: List },
 
   { path: "/admin/banners", label: "Offers & Discounts", icon: Gift },
   { path: "/admin/coupons", label: "Coupons", icon: Tag },
