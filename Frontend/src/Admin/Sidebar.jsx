@@ -25,6 +25,7 @@ import {
   Settings,
   Gift,
   Star,
+  CreditCard,
 } from "lucide-react";
 
 import { useAuth } from "../PrivateRouter/AuthContext";
@@ -61,6 +62,7 @@ const navItems = [
 
   { path: "/admin/users/all", label: "Customers", icon: Users },
 
+  { path: "/admin/billing", label: "Billing", icon: CreditCard },
   { path: "/admin/banners", label: "Offers & Discounts", icon: Gift },
   { path: "/admin/reports", label: "Reports", icon: BarChart3 },
   // { path: "/admin/banners", label: "Banners", icon: Image },

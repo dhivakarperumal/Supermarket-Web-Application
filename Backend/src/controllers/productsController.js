@@ -10,6 +10,18 @@ const parseJsonField = (value) => {
   }
 };
 
+const transformPricingOptionsToVariants = (pricingOptions) => {
+  if (!Array.isArray(pricingOptions)) return [];
+  return pricingOptions.map((option) => ({
+    quantity: option.weight_volume || option.quantity || 1,
+    unit: option.unit || "kg",
+    mrp: option.mrp || 0,
+    sellingPrice: option.selling_price || 0,
+    offer: option.offer || 0,
+    stock: option.stock_quantity || 0
+  }));
+};
+
 const createProduct = async (req, res) => {
   try {
     const data = req.body || {};
@@ -101,15 +113,19 @@ const getProducts = async (req, res) => {
         "SELECT * FROM products ORDER BY created_at DESC"
       );
 
-      const products = rows.map((row) => ({
-        ...row,
-        pricing_options: parseJsonField(row.pricing_options),
-        product_images: parseJsonField(row.product_images),
-        featured_product: !!row.featured_product,
-        best_seller: !!row.best_seller,
-        todays_deal: !!row.todays_deal,
-        return_available: !!row.return_available
-      }));
+      const products = rows.map((row) => {
+        const pricingOptions = parseJsonField(row.pricing_options);
+        return {
+          ...row,
+          pricing_options: pricingOptions,
+          variants: transformPricingOptionsToVariants(pricingOptions),
+          product_images: parseJsonField(row.product_images),
+          featured_product: !!row.featured_product,
+          best_seller: !!row.best_seller,
+          todays_deal: !!row.todays_deal,
+          return_available: !!row.return_available
+        };
+      });
 
       return res.status(200).json(products);
     } finally {
@@ -184,7 +200,9 @@ const getProduct = async (req, res) => {
       }
 
       const product = rows[0];
-      product.pricing_options = parseJsonField(product.pricing_options);
+      const pricingOptions = parseJsonField(product.pricing_options);
+      product.pricing_options = pricingOptions;
+      product.variants = transformPricingOptionsToVariants(pricingOptions);
       product.product_images = parseJsonField(product.product_images);
       product.featured_product = !!product.featured_product;
       product.best_seller = !!product.best_seller;

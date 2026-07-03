@@ -38,6 +38,7 @@ const AddStock = React.lazy(() => import("./Admin/Pages/AddStock.jsx"));
 const Orders = React.lazy(() => import("./Admin/Pages/Orders.jsx"));
 const Users = React.lazy(() => import("./Admin/Pages/Users.jsx"));
 const Billing = React.lazy(() => import("./Admin/Pages/Billing.jsx"));
+const CreateBilling = React.lazy(() => import("./Admin/Pages/CreateBilling.jsx"));
 const Dealers = React.lazy(() => import("./Admin/Pages/Dealers.jsx"));
 const Reviews = React.lazy(() => import("./Admin/Pages/Reviews.jsx"));
 const Reports = React.lazy(() => import("./Admin/Pages/Reports.jsx"));
@@ -111,6 +112,7 @@ const router = createBrowserRouter([
 
       // Finance
       { path: "billing", element: <Billing /> },
+      { path: "billing/create", element: <CreateBilling /> },
       { path: "dealers", element: <Dealers /> },
       { path: "dealers/add", element: <AddDealer /> },
       { path: "invoices/add", element: <AddInvoice /> },

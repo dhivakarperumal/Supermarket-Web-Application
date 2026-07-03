@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
     FiDownload,
     FiFilter,
@@ -6,11 +7,13 @@ import {
     FiMoreVertical,
     FiCreditCard,
     FiFileText,
-    FiTrendingUp
+    FiTrendingUp,
+    FiPlus
 } from "react-icons/fi";
 import { FaRupeeSign } from "react-icons/fa";
 
 const Billing = () => {
+    const navigate = useNavigate();
     const invoices = [
         { id: "#INV-8821", date: "2024-03-05", customer: "John Doe", amount: 245.00, status: "Paid", method: "Visa •••• 4242" },
         { id: "#INV-8822", date: "2024-03-04", customer: "Jane Smith", amount: 85.00, status: "Pending", method: "PayPal" },
@@ -40,8 +43,10 @@ const Billing = () => {
                     <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-100 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all shadow-sm">
                         <FiFileText /> Generate Report
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-100">
-                        <FiCreditCard /> Withdrawal
+                    <button 
+                        onClick={() => navigate("/admin/billing/create")}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-100">
+                        <FiPlus /> New Bill
                     </button>
                 </div>
             </div>
