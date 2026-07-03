@@ -106,7 +106,7 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
         className={`
           fixed top-0 left-0 z-50 h-full
           flex flex-col
-          bg-white border-r border-gray-100
+          bg-white
           transition-all duration-300
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0
@@ -176,7 +176,7 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                   {/* Sub Menu */}
                   {!collapsed && (
                     <div className={`overflow-hidden transition-all duration-300 ${isMenuOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"}`}>
-                      <div className="ml-4 pl-3 border-l-2 border-gray-100 space-y-1 py-1.5">
+                      <div className="ml-4 pl-3  space-y-1 py-1.5">
                         {item.children.map((sub) => {
                           const isActive = location.pathname === sub.path || (sub.path !== "/admin" && location.pathname.startsWith(sub.path + "/"));
                           return (

@@ -350,105 +350,119 @@ const AllProducts = () => {
                         /* Modern Table View */
                         <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
                             <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse block md:table">
-                                    <thead className="hidden md:table-header-group">
-                                        <tr className="bg-slate-50/50">
-                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Product Name</th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Status</th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Stock Count</th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Price</th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">Actions</th>
+                                <table className="w-full text-left border-collapse whitespace-nowrap">
+                                    <thead>
+                                        <tr className="bg-[#f8fbf6] border-b border-gray-100">
+                                            <th className="px-4 py-4 w-12 text-center">
+                                                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[#3a8b28] focus:ring-[#3a8b28]" />
+                                            </th>
+                                            <th className="px-4 py-4 text-xs font-bold text-gray-800">
+                                                <div className="flex items-center gap-1">Product <span className="text-gray-400 text-[10px]">↕</span></div>
+                                            </th>
+                                            <th className="px-4 py-4 text-xs font-bold text-gray-800">
+                                                <div className="flex items-center gap-1">SKU / Barcode <span className="text-gray-400 text-[10px]">↕</span></div>
+                                            </th>
+                                            <th className="px-4 py-4 text-xs font-bold text-gray-800">
+                                                <div className="flex items-center gap-1">Category <span className="text-gray-400 text-[10px]">↕</span></div>
+                                            </th>
+                                            <th className="px-4 py-4 text-xs font-bold text-gray-800">
+                                                <div className="flex items-center gap-1">Price <span className="text-gray-400 text-[10px]">↕</span></div>
+                                            </th>
+                                            <th className="px-4 py-4 text-xs font-bold text-gray-800">
+                                                <div className="flex items-center gap-1">Stock <span className="text-gray-400 text-[10px]">↕</span></div>
+                                            </th>
+                                            <th className="px-4 py-4 text-xs font-bold text-gray-800">
+                                                <div className="flex items-center gap-1">Status <span className="text-gray-400 text-[10px]">↕</span></div>
+                                            </th>
+                                            <th className="px-4 py-4 text-xs font-bold text-gray-800 text-center">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="block md:table-row-group md:divide-y divide-gray-50/50 p-4 md:p-0">
-                                        {currentItems.map((product) => (
-                                            <tr key={product.id} className="hover:bg-blue-50/20 transition-colors group block md:table-row bg-white md:bg-transparent border border-gray-100 md:border-0 rounded-2xl md:rounded-none mb-4 md:mb-0 shadow-sm md:shadow-none">
-                                                <td className="px-4 py-5 md:px-8 md:py-6 block md:table-cell border-b border-gray-50 md:border-b-0">
-                                                    <div className="flex flex-col md:block w-full gap-3 md:gap-0">
-                                                        <span className="md:hidden text-[11px] font-black text-gray-400 uppercase tracking-widest">Product Name</span>
-                                                        <div className="flex items-center gap-4 md:gap-5 text-left w-full min-w-0">
-                                                            <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden shrink-0 shadow-sm group-hover:scale-105 transition-transform duration-500">
-                                                                 <img
-                                                                    src={getProductImage(product)}
-                                                                    alt={product.name}
-                                                                    loading="lazy"
-                                                                    className="w-full h-full object-cover"
-                                                                    onError={(e) => e.target.src = 'https://via.placeholder.com/100?text=No+Image'}
-                                                                />
-                                                            </div>
-                                                            <div className="min-w-0 flex-1 md:flex-none">
-                                                                <p className="text-sm font-black text-slate-800 break-words whitespace-normal leading-tight md:truncate md:whitespace-nowrap md:max-w-[200px] lg:max-w-xs">{product.name}</p>
-                                                                <div className="flex flex-wrap md:flex-nowrap items-center justify-start gap-2 mt-1.5">
-                                                                    <span className="text-[9px] font-black uppercase tracking-widest text-blue-500 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
-                                                                        {product.product_code || `PRD-${product.id}`}
-                                                                    </span>
-                                                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 italic">
-                                                                        {product.category}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {currentItems.map((product) => {
+                                            const stock = product.total_stock ?? product.stock ?? 0;
+                                            const mrp = parseFloat(product.mrp || 0);
+                                            const price = parseFloat(product.offer_price || product.selling_price || 0);
+                                            
+                                            const getCategoryStyle = (cat) => {
+                                                const c = cat?.toLowerCase() || '';
+                                                if (c.includes('beverage')) return 'bg-blue-50 text-blue-600';
+                                                if (c.includes('dairy')) return 'bg-purple-50 text-purple-600';
+                                                if (c.includes('snack')) return 'bg-orange-50 text-orange-600';
+                                                if (c.includes('household')) return 'bg-pink-50 text-pink-600';
+                                                if (c.includes('personal')) return 'bg-teal-50 text-teal-600';
+                                                return 'bg-[#eefae6] text-[#3a8b28]'; // Default Grocery
+                                            };
+
+                                            const statusText = product.status || 'Active';
+                                            const isActive = statusText === 'Active';
+
+                                            return (
+                                            <tr key={product.id} className="hover:bg-gray-50/50 transition-colors bg-white">
+                                                <td className="px-4 py-3 text-center">
+                                                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[#3a8b28] focus:ring-[#3a8b28]" />
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-12 h-12 rounded-lg border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center p-1">
+                                                             <img
+                                                                src={getProductImage(product)}
+                                                                alt={product.name}
+                                                                loading="lazy"
+                                                                className="w-full h-full object-contain"
+                                                                onError={(e) => e.target.src = 'https://via.placeholder.com/100?text=No+Image'}
+                                                            />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-bold text-gray-800 max-w-[200px] truncate">{product.name}</p>
+                                                            <p className="text-xs text-gray-500 mt-0.5 truncate">Brand: {product.brand || 'N/A'}</p>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-5 md:px-8 md:py-6 block md:table-cell border-b border-gray-50 md:border-b-0">
-                                                    <div className="flex flex-col md:block w-full gap-3 md:gap-0">
-                                                        <span className="md:hidden text-[11px] font-black text-gray-400 uppercase tracking-widest">Status</span>
-                                                        <div>
-                                                            <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusStyle(product.status)}`}>
-                                                                {product.status}
-                                                            </span>
-                                                        </div>
+                                                <td className="px-4 py-3">
+                                                    <div>
+                                                        <p className="text-sm font-bold text-gray-800">{product.product_code || `SKU${product.id || '0000'}`}</p>
+                                                        <p className="text-xs text-gray-500 mt-0.5">{product.barcode || '8901030827451'}</p>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-5 md:px-8 md:py-6 block md:table-cell border-b border-gray-50 md:border-b-0">
-                                                    <div className="flex flex-col md:block w-full gap-3 md:gap-0">
-                                                        <span className="md:hidden text-[11px] font-black text-gray-400 uppercase tracking-widest">Stock Count</span>
-                                                        <div className="flex items-center justify-start gap-2 cursor-pointer group/stock" onClick={() => { setCurrentProduct(product); setNewStock(product.total_stock || "0"); }}>
-                                                            <FiPackage className="text-gray-300 group-hover/stock:text-blue-500 transition-colors" size={14} />
-                                                            <span className="text-sm font-black text-slate-700 underline decoration-dotted decoration-gray-200 group-hover/stock:text-blue-600 transition-colors">{product.total_stock ?? product.stock ?? 0}</span>
-                                                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Units</span>
-                                                        </div>
+                                                <td className="px-4 py-3">
+                                                    <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${getCategoryStyle(product.category)}`}>
+                                                        {product.category || 'Grocery'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div>
+                                                        <p className="text-sm font-bold text-gray-800">₹ {price.toFixed(2)}</p>
+                                                        <p className="text-[11px] text-gray-500 mt-0.5">MRP: ₹ {mrp.toFixed(2)}</p>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-5 md:px-8 md:py-6 block md:table-cell border-b border-gray-50 md:border-b-0">
-                                                    <div className="flex flex-col md:block w-full gap-3 md:gap-0">
-                                                        <span className="md:hidden text-[11px] font-black text-gray-400 uppercase tracking-widest">Price</span>
-                                                        <div className="flex flex-col text-left">
-                                                            <span className="text-base font-black text-slate-800 tracking-tighter">₹{parseFloat(product.offer_price || product.discount_price || 0).toLocaleString()}</span>
-                                                            <span className="text-[10px] text-gray-400 line-through font-bold">MRP: ₹{parseFloat(product.mrp || 0).toLocaleString()}</span>
-                                                        </div>
+                                                <td className="px-4 py-3">
+                                                    <div>
+                                                        <p className={`text-sm font-bold ${stock > 0 ? 'text-[#3a8b28]' : 'text-red-600'}`}>{stock}</p>
+                                                        <p className="text-[11px] text-gray-500 mt-0.5">{stock > 0 ? 'In Stock' : 'Out of Stock'}</p>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-5 md:px-8 md:py-6 block md:table-cell text-left md:text-right">
-                                                    <div className="flex flex-col md:block w-full gap-3 md:gap-0">
-                                                        <span className="md:hidden text-[11px] font-black text-gray-400 uppercase tracking-widest">Actions</span>
-                                                        <div className="flex items-center justify-start md:justify-end gap-3">
-                                                            <Link
-                                                                to={`/admin/products/${product.id}`}
-                                                                className="p-3 border border-gray-200 text-gray-500 rounded-xl hover:bg-blue-500 hover:text-white transition-all shadow-sm md:shadow-none"
-                                                                title="View Product"
-                                                            >
-                                                                <FiEye size={18} />
-                                                            </Link>
-                                                            <Link
-                                                                to={`/admin/products/edit/${product.id}`}
-                                                                className="p-3 border border-gray-200 text-gray-500 rounded-xl hover:bg-green-500 hover:text-white transition-all shadow-sm md:shadow-none"
-                                                                title="Edit Product"
-                                                            >
-                                                                <FiEdit2 size={18} />
-                                                            </Link>
-                                                            <button
-                                                                onClick={() => handleDelete(product.id)}
-                                                                className="p-3 border border-gray-200 text-gray-500 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm md:shadow-none"
-                                                                title="Delete Product"
-                                                            >
-                                                                <FiTrash2 size={18} />
-                                                            </button>
-                                                        </div>
+                                                <td className="px-4 py-3">
+                                                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${isActive ? 'bg-[#eefae6] text-[#3a8b28]' : 'bg-red-50 text-red-600'}`}>
+                                                        <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#3a8b28]' : 'bg-red-600'}`}></div>
+                                                        {statusText}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <Link to={`/admin/products/${product.id}`} className="p-1.5 rounded-md bg-[#eefae6] text-[#3a8b28] hover:bg-[#d8f2ca] transition-colors" title="View">
+                                                            <FiEye size={14} />
+                                                        </Link>
+                                                        <Link to={`/admin/products/edit/${product.id}`} className="p-1.5 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Edit">
+                                                            <FiEdit2 size={14} />
+                                                        </Link>
+                                                        <button onClick={() => handleDelete(product.id)} className="p-1.5 rounded-md bg-red-50 text-red-600 hover:bg-red-100 transition-colors" title="Delete">
+                                                            <FiTrash2 size={14} />
+                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>
-                                        ))}
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
