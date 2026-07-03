@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { createPortal } from "react-dom";
 import { useAdmin } from "../../PrivateRouter/AdminContext";
+import { useAuth } from "../../PrivateRouter/AuthContext";
 import api from "../../api";
 import {
     FiPlus,
@@ -16,11 +17,18 @@ import { toast } from "react-hot-toast";
 
 const VideoManagement = () => {
     const { videosCache, setVideosCache } = useAdmin();
+    const { user } = useAuth();
     const [videos, setVideos] = useState(videosCache || []);
     const [loading, setLoading] = useState(!videosCache);
     const [searchTerm, setSearchTerm] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [currentVideo, setCurrentVideo] = useState({ title: "", videoId: "", thumbnail: "", type: "youtube" });
+    const [currentVideo, setCurrentVideo] = useState({ 
+        title: "", 
+        videoId: "", 
+        videoFile: null,
+        thumbnailFile: null,
+        type: "youtube" 
+    });
     const [isEditing, setIsEditing] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [thumbUploading, setThumbUploading] = useState(false);
@@ -57,65 +65,78 @@ const VideoManagement = () => {
         }
     };
 
-    const handleOpenModal = (video = { title: "", videoId: "", thumbnail: "", type: "youtube" }) => {
+    const handleOpenModal = (video = { title: "", videoId: "", videoFile: null, thumbnailFile: null, type: "youtube" }) => {
         setCurrentVideo(video);
         setIsEditing(!!video.id);
         setIsModalOpen(true);
     };
 
-    const handleFileUpload = async (e) => {
+    const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        if (file.size > 50 * 1024 * 1024) {
-            toast.error("File is too large! Max 50MB.");
+        if (file.size > 500 * 1024 * 1024) {
+            toast.error("File is too large! Max 500MB.");
             return;
         }
 
         setUploading(true);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setCurrentVideo({ ...currentVideo, videoId: reader.result, type: "custom" });
-            setUploading(false);
-            toast.success("Video uploaded successfully!");
-        };
-        reader.readAsDataURL(file);
+        setCurrentVideo({ ...currentVideo, videoFile: file, type: "custom" });
+        setUploading(false);
+        toast.success("Video file selected!");
     };
 
-    const handleThumbnailUpload = async (e) => {
+    const handleThumbnailUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        if (file.size > 2 * 1024 * 1024) {
-            toast.error("Thumbnail too large! Max 2MB.");
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Thumbnail too large! Max 5MB.");
             return;
         }
 
         setThumbUploading(true);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setCurrentVideo({ ...currentVideo, thumbnail: reader.result });
-            setThumbUploading(false);
-            toast.success("Thumbnail ready!");
-        };
-        reader.readAsDataURL(file);
+        setCurrentVideo({ ...currentVideo, thumbnailFile: file });
+        setThumbUploading(false);
+        toast.success("Thumbnail selected!");
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const formData = new FormData();
+            formData.append("title", currentVideo.title);
+            formData.append("type", currentVideo.type);
+            formData.append("created_by_id", user?.user_id);
+            formData.append("updated_by_id", user?.user_id);
+
+            if (currentVideo.type === "youtube") {
+                formData.append("videoId", currentVideo.videoId);
+            } else if (currentVideo.type === "custom" && currentVideo.videoFile) {
+                formData.append("video", currentVideo.videoFile);
+            }
+
+            if (currentVideo.thumbnailFile) {
+                formData.append("thumbnail", currentVideo.thumbnailFile);
+            }
+
             if (isEditing) {
-                await api.put(`/videos/${currentVideo.id}`, currentVideo);
+                await api.put(`/videos/${currentVideo.id}`, formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
                 toast.success("Video updated successfully");
             } else {
-                await api.post("/videos", currentVideo);
+                await api.post("/videos", formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
                 toast.success("Video added successfully");
             }
             fetchVideos();
             setIsModalOpen(false);
+            setCurrentVideo({ title: "", videoId: "", videoFile: null, thumbnailFile: null, type: "youtube" });
         } catch (error) {
             console.error("Error saving video:", error);
-            toast.error("Failed to save video");
+            toast.error(error.response?.data?.message || "Failed to save video");
         }
     };
 
@@ -173,8 +194,8 @@ const VideoManagement = () => {
                                                 <div className="flex md:block items-center justify-between w-full">
                                                     <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Preview</span>
                                                     <div className="relative w-24 h-16 rounded-lg overflow-hidden border border-gray-100 bg-gray-100 hover:shadow-md transition-shadow">
-                                                        {video.thumbnail ? (
-                                                            <img src={video.thumbnail} alt="" className="w-full h-full object-cover" />
+                                                        {video.thumbnailUrl ? (
+                                                            <img src={video.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                                                         ) : video.type === 'youtube' ? (
                                                             <img
                                                                 src={`https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`}
@@ -297,10 +318,10 @@ const VideoManagement = () => {
                                             onChange={handleThumbnailUpload}
                                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                         />
-                                        <div className={`p-4 rounded-3xl border-2 border-dashed transition-all flex items-center gap-4 ${currentVideo.thumbnail ? 'border-blue-500/30 bg-blue-50/30' : 'border-gray-100 bg-gray-50/50 group-hover:border-blue-200'}`}>
+                                        <div className={`p-4 rounded-3xl border-2 border-dashed transition-all flex items-center gap-4 ${currentVideo.thumbnailFile ? 'border-blue-500/30 bg-blue-50/30' : 'border-gray-100 bg-gray-50/50 group-hover:border-blue-200'}`}>
                                             <div className="w-16 h-16 rounded-xl overflow-hidden bg-white shadow-sm flex-shrink-0 border border-gray-100">
-                                                {currentVideo.thumbnail ? (
-                                                    <img src={currentVideo.thumbnail} className="w-full h-full object-cover" alt="Preview" />
+                                                {currentVideo.thumbnailFile ? (
+                                                    <img src={URL.createObjectURL(currentVideo.thumbnailFile)} className="w-full h-full object-cover" alt="Preview" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-gray-300">
                                                         <FiUploadCloud size={24} />
@@ -308,8 +329,8 @@ const VideoManagement = () => {
                                                 )}
                                             </div>
                                             <div className="flex-1">
-                                                <p className="text-xs font-black text-slate-800">{currentVideo.thumbnail ? "Replace Thumbnail" : "Upload Custom Cover"}</p>
-                                                <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">PNG • JPG • WEBP (MAX 2MB)</p>
+                                                <p className="text-xs font-black text-slate-800">{currentVideo.thumbnailFile ? currentVideo.thumbnailFile.name : "Upload Custom Cover"}</p>
+                                                <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">PNG • JPG • WEBP (MAX 5MB)</p>
                                             </div>
                                             {thumbUploading && <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>}
                                         </div>
@@ -361,7 +382,7 @@ const VideoManagement = () => {
                                 ) : (
                                     <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
                                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Video File</label>
-                                        <div className={`relative border-2 border-dashed rounded-[2rem] p-8 transition-all group ${currentVideo.videoId && currentVideo.type === 'custom' ? 'border-emerald-500/50 bg-emerald-50/30' : 'border-gray-200 hover:border-blue-500/50 bg-gray-50/30'}`}>
+                                        <div className={`relative border-2 border-dashed rounded-[2rem] p-8 transition-all group ${currentVideo.videoFile ? 'border-emerald-500/50 bg-emerald-50/30' : 'border-gray-200 hover:border-blue-500/50 bg-gray-50/30'}`}>
                                             <input
                                                 type="file"
                                                 accept="video/*"
@@ -369,12 +390,12 @@ const VideoManagement = () => {
                                                 className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                             />
                                             <div className="flex flex-col items-center justify-center text-center space-y-4">
-                                                <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 ${currentVideo.videoId && currentVideo.type === 'custom' ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-200' : 'bg-white text-gray-400 shadow-lg shadow-gray-200/50'}`}>
+                                                <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 ${currentVideo.videoFile ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-200' : 'bg-white text-gray-400 shadow-lg shadow-gray-200/50'}`}>
                                                     {uploading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <FiUploadCloud size={32} />}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-black text-slate-800">{currentVideo.videoId && currentVideo.type === 'custom' ? 'Change Selection' : 'Choose Video File'}</p>
-                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">MP4 / MOV / WEBM (MAX 50MB)</p>
+                                                    <p className="text-sm font-black text-slate-800">{currentVideo.videoFile ? currentVideo.videoFile.name : 'Choose Video File'}</p>
+                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">MP4 / MOV / WEBM (MAX 500MB)</p>
                                                 </div>
                                             </div>
                                         </div>
