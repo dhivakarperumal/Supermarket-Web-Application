@@ -235,11 +235,11 @@ const Dashboard = () => {
                         Welcome back, <span className="text-[#3a8b28] font-bold">Admin!</span> Here's what's happening with your store today.
                     </p>
                 </div>
-                <div className="flex items-center gap-2 border border-gray-200 bg-white rounded-xl px-4 py-2.5 text-sm text-gray-600 font-semibold shadow-sm shrink-0 cursor-pointer hover:shadow-md transition-shadow">
+                {/* <div className="flex items-center gap-2 border border-gray-200 bg-white rounded-xl px-4 py-2.5 text-sm text-gray-600 font-semibold shadow-sm shrink-0 cursor-pointer hover:shadow-md transition-shadow">
                     <Calendar className="w-4 h-4 text-gray-400" />
                     May 24 - May 30, 2025
                     <ChevronDown className="w-4 h-4 text-gray-400" />
-                </div>
+                </div> */}
             </div>
 
             {/* ══ STAT CARDS ══ */}
