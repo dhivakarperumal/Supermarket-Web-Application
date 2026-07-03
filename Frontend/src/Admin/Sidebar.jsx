@@ -68,9 +68,10 @@ const navItems = [
     label: "Dealer",
     icon: Handshake,
     children: [
+      { path: "/admin/dealer", label: "Dashboard", icon: LayoutDashboard },
       { path: "/admin/dealer/all", label: "All Dealers", icon: List },
-      { path: "/admin/dealer/add", label: "Add Dealer", icon: PlusCircle },
-      { path: "/admin/dealer/orders", label: "Dealer Orders", icon: Archive },
+      // { path: "/admin/dealer/add", label: "Add Dealer", icon: PlusCircle },
+      
     ],
   },
 
@@ -259,7 +260,7 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
 
         {/* ===== BOOST SALES CARD ===== */}
         {!collapsed && (
-          <div className="mx-4 mb-6 rounded-2xl bg-white p-3.5 flex gap-2 relative overflow-hidden shadow-xl border border-gray-100">
+          <div className="mx-4 mb-1 rounded-2xl bg-white p-3.5 flex gap-2 relative overflow-hidden shadow-xl border border-gray-100">
             {/* Left side: Illustration */}
             <div className="w-25 shrink-0 relative flex items-center justify-center">
                 {/* Reference to the basket image the user uploaded */}

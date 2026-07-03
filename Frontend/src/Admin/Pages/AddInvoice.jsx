@@ -29,17 +29,32 @@ const AddInvoice = () => {
             try {
                 const [dealerRes, productRes] = await Promise.all([
                     api.get("/dealers"),
-                    api.get("/products")
-                ]);
-                setDealers(dealerRes.data || []);
-                setProducts(productRes.data || []);
+                        api.get("/products")
+                    ]);
+                    // Backend returns { success: true, data: [...], count }
+                    const rawDealerList = dealerRes.data?.data || dealerRes.data || [];
+                    const productList = productRes.data?.data || productRes.data || [];
 
-                if (preselectedDealerId && dealerRes.data) {
-                    const dealer = dealerRes.data.find(d => d.id.toString() === preselectedDealerId.toString());
-                    if (dealer) {
-                        setSearchTerm(dealer.name);
+                    // Normalize dealers to the frontend shape
+                    const dealerList = rawDealerList.map(d => ({
+                        id: d.id,
+                        name: d.dealerName || d.name || d.companyName || "Unknown",
+                        contact: d.contactPerson || d.contact || "",
+                        location: d.city ? `${d.city}${d.state ? ', ' + d.state : ''}` : (d.location || ""),
+                        email: d.email || "",
+                        phone: d.mobileNumber || d.phone || d.whatsappNumber || "",
+                        image: d.profileImage || d.image || "",
+                    }));
+
+                    setDealers(dealerList);
+                    setProducts(productList);
+
+                    if (preselectedDealerId && dealerList.length > 0) {
+                        const dealer = dealerList.find(d => d.id.toString() === preselectedDealerId.toString());
+                        if (dealer) {
+                            setSearchTerm(dealer.name);
+                        }
                     }
-                }
             } catch (error) {
                 console.error("Error fetching data:", error);
                 toast.error("Failed to load dealers or products");

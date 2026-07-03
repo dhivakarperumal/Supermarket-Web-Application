@@ -39,7 +39,23 @@ const Dealers = () => {
         setLoading(true);
         try {
             const res = await api.get("/dealers");
-            setDealers(res.data);
+            // Backend returns { success: true, data: [...], count }
+            // Accept both shapes: direct array or wrapped in .data
+            const raw = res.data?.data || res.data || [];
+            // Normalize backend fields to frontend shape
+            const normalized = raw.map(d => ({
+                id: d.id,
+                name: d.dealerName || d.name || d.companyName || "Unknown",
+                contact: d.contactPerson || d.contact || d.companyName || "",
+                location: d.city ? `${d.city}${d.state ? ', ' + d.state : ''}` : (d.location || ""),
+                email: d.email || "",
+                phone: d.mobileNumber || d.phone || d.whatsappNumber || "",
+                image: d.profileImage || d.image || "",
+                status: d.status || "Pending",
+                rating: d.rating || 0,
+                orders: d.orders || 0
+            }));
+            setDealers(normalized);
         } catch (error) {
             console.error("Fetch Dealers Error:", error);
             toast.error("Failed to load dealers");
@@ -274,7 +290,7 @@ const Dealers = () => {
 
                         <div className="p-8 max-h-[60vh] overflow-y-auto">
                             <div className="space-y-4">
-                                {mockHistory.map((h, i) => (
+                                {recentOrders.map((h, i) => (
                                     <div key={i} className="group p-5 bg-gray-50 hover:bg-white border border-gray-100 hover:border-blue-100 rounded-3xl transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-blue-500 shadow-sm border border-gray-50 group-hover:bg-blue-600 group-hover:text-white transition-colors">
