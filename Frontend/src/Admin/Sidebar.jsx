@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -9,7 +9,7 @@ import {
   BarChart3,
   X,
   ChevronDown,
-  ChevronLeft,
+  ChevronRight,
   Home,
   Tag,
   PlusCircle,
@@ -20,7 +20,11 @@ import {
   Archive,
   Handshake,
   Video,
-  Image
+  Image,
+  Headphones,
+  Settings,
+  Gift,
+  Star,
 } from "lucide-react";
 
 import { useAuth } from "../PrivateRouter/AuthContext";
@@ -30,216 +34,177 @@ const navItems = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
 
   {
-    label: "Inventory",
+    label: "Products",
     icon: Package,
     children: [
       { path: "/admin/products/all", label: "All Products", icon: List },
-      { path: "/admin/products/add", label: "Add Product", icon: PlusCircle },
-      { path: "/admin/products/category", label: "Categories", icon: Layers },
-      { path: "/admin/products/stock", label: "Stock Details", icon: Archive },
+      { path: "/admin/products/add", label: "Add New Product", icon: PlusCircle },
     ],
   },
+
+  { path: "/admin/products/category", label: "Categories", icon: Layers },
 
   {
     label: "Orders",
     icon: ShoppingCart,
     children: [
-
       { path: "/admin/orders/new", label: "New Orders", icon: List },
       { path: "/admin/orders/all", label: "All Orders", icon: Archive },
       { path: "/admin/orders/delivery", label: "Delivery Orders", icon: Truck },
       { path: "/admin/orders/cancelled", label: "Cancelled Orders", icon: XCircle },
-
     ],
   },
 
-  { path: "/admin/orders/create", label: "Billing", icon: PlusCircle },
   { path: "/admin/users/all", label: "Customers", icon: Users },
-  {
-    label: "Dealers",
-    icon: Handshake,
-    children: [
-      { path: "/admin/dealers", label: "Dealers List", icon: List },
-      { path: "/admin/invoices/add", label: "New Invoice", icon: PlusCircle },
-    ],
-  },
-  { path: "/admin/banners", label: "Promotion Banners", icon: Image },
-  { path: "/admin/videos", label: "Showcase Videos", icon: Video },
-  { path: "/admin/reviews", label: "Customer Reviews", icon: MessageSquare },
+  { path: "/admin/products/stock", label: "Inventory", icon: Archive },
+  { path: "/admin/banners", label: "Offers & Discounts", icon: Gift },
   { path: "/admin/reports", label: "Reports", icon: BarChart3 },
-  { path: "/", label: "Back Home", icon: Home },
+  { path: "/admin/banners", label: "Banners", icon: Image },
+  { path: "/admin/reviews", label: "Reviews", icon: Star },
+  { path: "/admin/videos", label: "Settings", icon: Settings },
 ];
 
 /* ================= SIDEBAR ================= */
 const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
   const { profileName } = useAuth();
   const location = useLocation();
-  const [openMenu, setOpenMenu] = useState(null);
+  const [openMenu, setOpenMenu] = useState(() => {
+    // Auto-open relevant submenu on load
+    for (const item of navItems) {
+      if (item.children) {
+        if (item.children.some(c => location.pathname === c.path || location.pathname.startsWith(c.path + "/"))) {
+          return item.label;
+        }
+      }
+    }
+    return null;
+  });
 
-  /* ================= ACTIVE ROUTE MAP ================= */
-  const activeRouteMap = {
-    "/admin/products": ["/admin/products/all", "/admin/products/add", "/admin/products/category"],
-    "/admin/orders": ["/admin/orders/all", "/admin/orders/new", "/admin/orders/create", "/admin/orders/delivery", "/admin/orders/cancelled"],
-    "/admin/users": ["/admin/users/all"],
-  };
-
-  /* ================= HELPERS & LOGIC ================= */
+  /* ================= HELPERS ================= */
   const isActiveRoute = (item) => {
-    const currentPath = location.pathname;
-
-    // 1. Strict exact match for root routes to prevent Dashboard/BackHome overlap
-    if (item.path === "/" || item.path === "/admin" || item.exact) {
-      return currentPath === item.path;
-    }
-
-    // 2. Dropdown parent check: check if any child is perfectly active or a sub-path
-    if (item.children) {
-      return item.children.some(child =>
-        currentPath === child.path || currentPath.startsWith(child.path + "/")
-      );
-    }
-
-    // 3. Normal item check: match exact or match as a parent path (with boundary)
-    if (item.path) {
-      return currentPath === item.path || currentPath.startsWith(item.path + "/");
-    }
-
+    const p = location.pathname;
+    if (item.path === "/" || item.path === "/admin" || item.exact) return p === item.path;
+    if (item.children) return item.children.some(c => p === c.path || p.startsWith(c.path + "/"));
+    if (item.path) return p === item.path || p.startsWith(item.path + "/");
     return false;
   };
 
-  /* Dropdown logic - only one open at a time */
   const toggleMenu = (label) => {
     setOpenMenu(prev => prev === label ? null : label);
   };
 
   return (
     <>
-      {/* ========== MOBILE OVERLAY ========== */}
+      {/* Mobile Overlay */}
       <div
         onClick={onClose}
-        className={`fixed inset-0 z-40 bg-black  lg:hidden
-        transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+        className={`fixed inset-0 z-40 bg-black/40 lg:hidden transition-opacity duration-300 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
       />
 
-      {/* ========== SIDEBAR ========== */}
+      {/* Sidebar */}
       <aside
         className={`
-        bg-slate-950 border-r border-slate-800
-        fixed top-0 left-0 z-50 h-full overflow-hidden
-        flex flex-col transition-all duration-300
-        ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0
-        ${collapsed ? "w-20" : "w-76"}
-      `}
+          fixed top-0 left-0 z-50 h-full
+          flex flex-col
+          bg-white border-r border-gray-100
+          transition-all duration-300
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:translate-x-0
+          ${collapsed ? "w-20" : "w-76"}
+          shadow-[4px_0_20px_rgba(0,0,0,0.06)]
+        `}
       >
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: "radial-gradient(circle at top left, rgba(255,255,255,0.03) 0%, transparent 40%), radial-gradient(circle at bottom right, rgba(255,255,255,0.03) 0%, transparent 40%)",
-          }}
-        />
-        <div className="absolute top-0 left-0 right-0 h-24 bg-linear-to-b from-white/5 to-transparent pointer-events-none" />
-
-        {/* ========== LOGO ========== */}
-        <div className="relative flex items-center gap-3 px-4 py-5 border-b border-white/10 overflow-hidden">
-          <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shrink-0 overflow-hidden shadow-md">
-            <img
-              src="/logo.png"
-              alt="Logo"
-              className="w-12 h-12 object-contain p-0.5"
-              onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=SP&background=fff&color=000"; }}
-            />
+        {/* ===== LOGO ===== */}
+        <div className={`flex items-center gap-2.5 border-b border-gray-100 ${collapsed ? "px-3 py-5 justify-center" : "px-4 py-4"}`}>
+          <div className="w-9 h-9 rounded-xl bg-[#3a8b28] flex items-center justify-center shrink-0 shadow-md">
+            <ShoppingCart className="w-5 h-5 text-white" strokeWidth={2.5} />
           </div>
 
           {!collapsed && (
-            <div className="overflow-hidden">
-              <h1 className="text-xl font-black text-white tracking-tight uppercase leading-none">
-                <span className="text-emerald-400">Priyam</span>
+            <div className="leading-tight overflow-hidden">
+              <h1 className="text-base font-black text-gray-900 leading-none">
+                <span className="text-[#3a8b28]">Priyam</span>
               </h1>
-              <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase mt-0.5">
-                Super Market
-              </p>
+              <p className="text-[9px] text-gray-400 font-bold tracking-[0.2em] uppercase mt-0.5">Supermarket</p>
             </div>
           )}
 
+          {/* Mobile close button */}
           <button
             onClick={onClose}
-            className="ml-auto p-2 rounded-xl text-white/40 hover:bg-white/5 lg:hidden border border-transparent hover:border-white/10 transition-all"
+            className="ml-auto p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 lg:hidden"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* ========== NAVIGATION ========== */}
-        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto hide-scrollbar">
+        {/* ===== NAVIGATION ===== */}
+        <nav className="flex-1 px-2.5 py-4 space-y-1.5 overflow-y-auto hide-scrollbar">
           {navItems.map((item) => {
             const Icon = item.icon;
 
-            /* ===== DROPDOWN ITEM ===== */
+            /* ----- DROPDOWN ITEM ----- */
             if (item.children) {
               const isMenuOpen = openMenu === item.label;
               const isAnyChildActive = isActiveRoute(item);
 
               return (
-                <div key={item.label} className="space-y-1">
+                <div key={item.label}>
                   <button
                     onClick={() => toggleMenu(item.label)}
+                    title={collapsed ? item.label : undefined}
                     className={`
-                      w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
-                      ${isMenuOpen
-                        ? "text-white ring-1 ring-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] bg-white/16"
-                        : "text-slate-100 hover:bg-white/12 hover:text-white hover:translate-x-1"
+                      w-full flex items-center gap-3 rounded-xl transition-all duration-200
+                      ${collapsed ? "px-0 py-3 justify-center" : "px-3 py-2.5"}
+                      ${isAnyChildActive
+                        ? "text-[#3a8b28] bg-[#f0faf0]"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                       }
                     `}
                   >
-                    <Icon className="w-5 h-5 shrink-0" />
-
+                    <Icon className={`w-5 h-5 shrink-0 ${isAnyChildActive ? "text-[#3a8b28]" : "text-gray-500"}`} />
                     {!collapsed && (
                       <>
-                        <span className="flex-1 text-left text-sm font-bold tracking-wide">{item.label}</span>
+                        <span className={`flex-1 text-left text-sm font-bold`}>{item.label}</span>
                         <ChevronDown
-                          className={`w-4 h-4 transition-transform ${isMenuOpen ? "rotate-180" : ""
-                            }`}
+                          className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isMenuOpen ? "rotate-180" : ""}`}
                         />
                       </>
                     )}
                   </button>
 
-                  {/* ===== SUB MENU ===== */}
+                  {/* Sub Menu */}
                   {!collapsed && (
-                    <div
-                      className={`ml-4 pl-4  space-y-1 overflow-y-auto hide-scrollbar transition-all duration-300
-                      ${isMenuOpen ? "max-h-60 opacity-100 py-2" : "max-h-0 opacity-0"}`}
-                    >
-                      {item.children.map((sub) => {
-                        const SubIcon = sub.icon;
-                        const isActive = location.pathname === sub.path;
-
-                        return (
-                          <NavLink
-                            key={sub.path}
-                            to={sub.path}
-                            onClick={() => isOpen && onClose()}
-                            className={`
-                              flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200
-                              ${(location.pathname === sub.path || (sub.path !== "/admin" && location.pathname.startsWith(sub.path)))
-                                ? "text-white shadow-lg bg-white/18 ring-1 ring-white/20"
-                                : "text-slate-200 hover:text-white hover:bg-white/12 hover:translate-x-1"
-                              }
-                            `}
-                          >
-                            <SubIcon className="w-4 h-4 shrink-0" />
-                            <span>{sub.label}</span>
-                          </NavLink>
-                        );
-                      })}
+                    <div className={`overflow-hidden transition-all duration-300 ${isMenuOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"}`}>
+                      <div className="ml-4 pl-3 border-l-2 border-gray-100 space-y-1 py-1.5">
+                        {item.children.map((sub) => {
+                          const isActive = location.pathname === sub.path || (sub.path !== "/admin" && location.pathname.startsWith(sub.path + "/"));
+                          return (
+                            <NavLink
+                              key={sub.path}
+                              to={sub.path}
+                              onClick={() => isOpen && onClose()}
+                              className={`
+                                flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-bold transition-all duration-200
+                                ${isActive
+                                  ? "text-[#3a8b28] bg-[#f0faf0]"
+                                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+                                }
+                              `}
+                            >
+                              <div className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-[#3a8b28]" : "bg-gray-300"}`} />
+                              <span>{sub.label}</span>
+                            </NavLink>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>
               );
             }
 
-            /* ===== NORMAL ITEM ===== */
+            /* ----- NORMAL ITEM ----- */
             const isActive = isActiveRoute(item);
 
             return (
@@ -247,58 +212,63 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                 key={item.path}
                 to={item.path}
                 end={item.exact}
+                title={collapsed ? item.label : undefined}
                 onClick={() => {
                   setOpenMenu(null);
                   if (isOpen) onClose();
                 }}
                 className={`
-                  flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                  flex items-center gap-3 rounded-xl transition-all duration-200
+                  ${collapsed ? "px-0 py-3 justify-center" : "px-3 py-2.5"}
                   ${isActive
-                    ? "text-white shadow-xl bg-white/18 ring-1 ring-white/20"
-                    : "text-slate-100 hover:bg-white/12 hover:text-white hover:translate-x-1"
+                    ? "text-[#3a8b28] bg-[#f0faf0] font-bold"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   }
                 `}
               >
-                <Icon className="w-5 h-5 shrink-0" />
-                {!collapsed && <span className="text-sm font-bold tracking-wide">{item.label}</span>}
+                <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-[#3a8b28]" : "text-gray-500"}`} />
+                {!collapsed && <span className="text-sm font-bold">{item.label}</span>}
               </NavLink>
             );
           })}
         </nav>
 
-        {/* ========== FOOTER / PROFILE ========== */}
+        {/* ===== NEED HELP CARD ===== */}
         {!collapsed && (
-          <div className="relative p-4 mx-3 mb-6 rounded-2xl border border-white/5 bg-white/5 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-            <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%)" }} />
-            <p className="relative text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 pl-1">System Identity</p>
-            <div className="relative flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-lg bg-slate-800 border border-slate-700">
-                {profileName?.charAt(0) || "A"}
+          <div className="mx-3 mb-3 rounded-2xl bg-[#f0faf0] border border-[#d4edd4] p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-[#3a8b28] flex items-center justify-center shrink-0">
+                <Headphones className="w-4 h-4 text-white" />
               </div>
-              <div className="overflow-hidden">
-                <p className="text-xs font-black text-white truncate">{profileName || "Administrator"}</p>
-                <p className="text-[9px] text-blue-400 font-bold uppercase truncate opacity-70">Master Control</p>
+              <div>
+                <p className="text-xs font-bold text-gray-800">Need Help?</p>
+                <p className="text-[10px] text-gray-500">We're here to help you</p>
               </div>
             </div>
+            <button className="w-full py-2 rounded-xl bg-[#3a8b28] text-white text-xs font-bold hover:bg-[#2d731d] transition-colors">
+              Contact Support
+            </button>
           </div>
         )}
 
-        {/* ========== COLLAPSE BUTTON ========== */}
+        {/* ===== GROCERY BOTTOM IMAGE ===== */}
+        {!collapsed && (
+          <div className="relative h-28 overflow-hidden rounded-b-none">
+            <img
+              src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop"
+              alt="Fresh Groceries"
+              className="w-full h-full object-cover object-top"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#3a8b28]/60 to-transparent" />
+          </div>
+        )}
+
+        {/* ===== COLLAPSE TOGGLE ===== */}
         <button
           onClick={onToggleCollapse}
-          className="
-            hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2
-            w-6 h-6 rounded-full
-            bg-white border border-slate-200
-            shadow-[0_4px_10px_rgba(0,0,0,0.1)]
-            items-center justify-center
-            text-slate-500 hover:text-blue-600 hover:scale-110 transition-all z-50
-          "
+          className="hidden lg:flex absolute -right-3 top-16 w-6 h-6 rounded-full bg-white border border-gray-200 shadow-md items-center justify-center text-gray-500 hover:text-[#3a8b28] hover:border-[#3a8b28] transition-all z-50"
         >
-          <ChevronLeft
-            className={`w-4 h-4 transition-transform ${collapsed ? "rotate-180" : ""
-              }`}
-          />
+          <ChevronRight className={`w-3.5 h-3.5 transition-transform ${collapsed ? "" : "rotate-180"}`} />
         </button>
       </aside>
     </>
