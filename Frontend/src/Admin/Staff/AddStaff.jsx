@@ -923,19 +923,163 @@ const AddEditStaff = () => {
             </div>
           </div>
 
-        {/* RIGHT SIDE */}
-        <div className="space-y-6">
-          {/* We'll add the Photo, Documents and Status cards here in the next part */}
-        </div>
+          {/* RIGHT SIDE */}
 
-      </form>
+          <div className="space-y-6">
 
-      <PreviewModal />
+            {/* STAFF PHOTO */}
 
+            <div className="bg-white rounded-2xl border border-[#dce9df] shadow-sm overflow-hidden">
+
+              <div className="px-6 py-4 border-b bg-gradient-to-r from-[#f4f0ff] to-white">
+
+                <h2 className="font-bold text-[#5b21b6] text-lg">
+                  📷 Staff Photo
+                </h2>
+
+                <p className="text-sm text-gray-500 mt-1">
+                  Upload profile image
+                </p>
+
+              </div>
+
+              <div className="p-6">
+
+                <label
+                  htmlFor="photoUpload"
+                  className="border-2 border-dashed border-[#d7c7ff] rounded-2xl h-56 flex flex-col items-center justify-center cursor-pointer hover:bg-[#faf8ff] transition"
+                >
+
+                  <div className="text-5xl mb-3">
+                    📤
+                  </div>
+
+                  <p className="font-semibold text-[#5b21b6]">
+                    Click to upload
+                  </p>
+
+                  <p className="text-sm text-gray-500">
+                    PNG, JPG, JPEG
+                  </p>
+
+                </label>
+
+                <input
+                  id="photoUpload"
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => handleFileUpload(e, "photo")}
+                />
+
+                {form.photo && (
+
+                  <div className="mt-5">
+
+                    <img
+                      src={form.photo}
+                      className="w-full h-56 rounded-xl object-cover border"
+                    />
+
+                    <div className="flex gap-3 mt-3">
+
+                      <button
+                        type="button"
+                        onClick={() => openPreview(form.photo, "Photo")}
+                        className="flex-1 py-2 rounded-lg bg-blue-100 text-blue-700 font-semibold"
+                      >
+                        Preview
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteFile("photo")}
+                        className="flex-1 py-2 rounded-lg bg-red-100 text-red-600 font-semibold"
+                      >
+                        Remove
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                )}
+
+              </div>
+
+            </div>
+
+            {/* DOCUMENTS */}
+
+            <div className="bg-white rounded-2xl border border-[#dce9df] shadow-sm overflow-hidden">
+
+              <div className="px-6 py-4 border-b bg-gradient-to-r from-[#eef8ef] to-white">
+
+                <h2 className="font-bold text-[#123524] text-lg">
+                  📄 Documents
+                </h2>
+
+              </div>
+
+              <div className="p-6 space-y-5">
+
+                {/* AADHAR */}
+
+                <div>
+
+                  <label className="font-medium text-[#123524]">
+                    Aadhaar
+                  </label>
+
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    className={inputClass}
+                    onChange={(e) => handleFileUpload(e, "aadharDoc")}
+                  />
+
+                </div>
+
+                {/* ID */}
+
+                <div>
+
+                  <label className="font-medium text-[#123524]">
+                    ID Proof
+                  </label>
+
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    className={inputClass}
+                    onChange={(e) => handleFileUpload(e, "idDoc")}
+                  />
+
+                </div>
+
+                {/* CERTIFICATE */}
+
+                <div>
+
+                  <label className="font-medium text-[#123524]">
+                    Certificate
+                  </label>
+
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    className={inputClass}
+                    onChange={(e) => handleFileUpload(e, "certificateDoc")}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+        <PreviewModal />
+      </div>
     </div>
-
-  </div>
-);
+  );
 };
 
 export default AddEditStaff;
