@@ -586,7 +586,7 @@ const AddEditStaff = () => {
                     className={`${inputClass} ${errors.phone ? "border-red-500 focus:ring-red-500" : ""}`} />
                   <ErrorText field="phone" />
                 </div>
-                  
+
 
                 {/* NAME */}
                 <div>
@@ -919,12 +919,21 @@ const AddEditStaff = () => {
                   </button>
                 </div>
 
-              </form>
+                    </div>
 
-              <PreviewModal />
-            </div>
-          </div>
-          );
+        {/* RIGHT SIDE */}
+        <div className="space-y-6">
+          {/* We'll add the Photo, Documents and Status cards here in the next part */}
+        </div>
+
+      </form>
+
+      <PreviewModal />
+
+    </div>
+
+  </div>
+);
 };
 
-          export default AddEditStaff;
+export default AddEditStaff;
