@@ -417,8 +417,8 @@ const CreateBilling = () => {
                                 <select value={formData.status} onChange={(e) => setFormData(p => ({ ...p, status: e.target.value }))} className="w-full px-5 py-3.5 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm font-bold text-slate-700 outline-none cursor-pointer">
                                     <option value="Delivered">Delivered</option>
                                     <option value="Paid">Paid</option>
-                                    <option value="Pending">Pending</option>
                                     <option value="Overdue">Overdue</option>
+                                    <option value="Order Placed">Order Placed</option>
                                 </select>
                                 <input type="text" placeholder="Customer Name" value={formData.customer_name} onChange={(e) => setFormData(p => ({ ...p, customer_name: e.target.value }))} className="w-full px-5 py-3.5 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm font-bold md:col-span-1" />
                                 <input type="text" placeholder="Customer Phone" value={formData.customer_phone} onChange={(e) => setFormData(p => ({ ...p, customer_phone: e.target.value }))} className="w-full px-5 py-3.5 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm font-bold md:col-span-2" />
