@@ -337,7 +337,7 @@ const StockDetails = () => {
                 </div>
                 <button
                     onClick={() => navigate('/admin/products/stock/add')}
-                    className="flex items-center justify-center gap-2 bg-slate-900 border-2 border-slate-900 hover:bg-slate-800 text-white px-6 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95"
+                    className="flex items-center justify-center gap-2 bg-[#1b7f29] hover:bg-[#166321]  text-white px-6 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95"
                 >
                     <FiPlus /> Add Stock
                 </button>

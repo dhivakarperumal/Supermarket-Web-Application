@@ -658,14 +658,14 @@ const Header = ({ onMenuClick }) => {
 
                   
 
-                  {/* <Link
+                  <Link
                     to="/admin/settings"
                     className="flex items-center gap-3 px-3 py-2.5 
                     rounded-xl hover:bg-blue-50 hover:text-blue-600
                     text-sm text-slate-600 transition font-bold"
                   >
                     <Settings className="w-4 h-4 opacity-50" /> Settings
-                  </Link> */}
+                  </Link>
 
                   <button
                     onClick={handleLogout}

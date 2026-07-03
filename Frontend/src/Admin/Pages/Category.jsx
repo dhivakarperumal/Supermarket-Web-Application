@@ -283,7 +283,7 @@ const Category = () => {
                     {/* Add Button */}
                     <button
                         onClick={openAddModal}
-                        className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#1b7f29] hover:bg-[#166321] text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
                     >
                         <FiPlus className="text-lg" /> New Category
                     </button>
@@ -661,7 +661,7 @@ const Category = () => {
                             <button
                                 onClick={handleSaveCategory}
                                 disabled={!formData.name || !formData.image}
-                                className="px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-blue-200 active:scale-95 flex items-center gap-2"
+                                className="px-8 py-3 bg-[#1b7f29] hover:bg-[#166321] disabled:bg-blue-400 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-blue-200 active:scale-95 flex items-center gap-2"
                             >
                                 {isEditing ? 'Update Category' : 'Save Category'}
                             </button>

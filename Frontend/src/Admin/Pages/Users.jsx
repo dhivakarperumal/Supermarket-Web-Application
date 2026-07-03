@@ -372,7 +372,7 @@ const Users = ({ initialTab = "All" }) => {
                             </div>
                             <button
                                 onClick={() => { setIsEditing(false); setFormData({ username: "", name: "", email: "", phone: "", role: "user", password: "" }); setIsModalOpen(true); }}
-                                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
+                                className="flex items-center justify-center gap-2 bg-[#1b7f29] hover:bg-[#166321] text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
                             >
                                 <FiUserPlus /> Add New User
                             </button>

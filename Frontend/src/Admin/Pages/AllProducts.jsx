@@ -339,7 +339,7 @@ const AllProducts = () => {
                     </div>
                     <button
                         onClick={() => navigate("/admin/products/add")}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-200 active:scale-95"
+                        className="flex items-center gap-2 bg-[#1b7f29] hover:bg-[#166321] text-white px-4 py-3 rounded-md font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-200 active:scale-95"
                     >
                         <FiPlus size={14}/> New Product
                     </button>
