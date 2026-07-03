@@ -205,25 +205,6 @@ function Register() {
                 <User className="w-5 h-5" /> Create Account
               </button>
 
-              <div className="relative py-4 flex items-center justify-center">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200"></div>
-                </div>
-                <div className="relative bg-white px-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                  or sign up with
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <button type="button" className="flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-sm font-bold text-slate-700">
-                  <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-                  Google
-                </button>
-                <button type="button" className="flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-sm font-bold text-slate-700">
-                  <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" alt="Facebook" className="w-5 h-5" />
-                  Facebook
-                </button>
-              </div>
 
               <p className="text-center text-sm font-medium text-slate-600 mt-6">
                 Already have an account?{" "}
