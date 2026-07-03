@@ -229,7 +229,7 @@ const Dashboard = () => {
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div className="relative">
                     <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2">
-                        Dashboard <span>👋</span>
+                        Hello, Admin! <span>👋</span>
                     </h1>
                     <p className="text-sm text-gray-500 mt-0.5">
                         Welcome back, <span className="text-[#3a8b28] font-bold">Admin!</span> Here's what's happening with your store today.
