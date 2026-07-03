@@ -24,6 +24,7 @@ const VideoManagement = () => {
     const [loading, setLoading] = useState(!videosCache);
     const [searchTerm, setSearchTerm] = useState("");
     const [viewMode, setViewMode] = useState('table');
+    const [filterType, setFilterType] = useState('all');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [newVideo, setNewVideo] = useState({ 
@@ -63,7 +64,11 @@ const VideoManagement = () => {
         fetchVideos();
     }, []);
 
-    const filteredVideos = videos.filter(v => (v.title || "").toLowerCase().includes(searchTerm.toLowerCase()));
+    const filteredVideos = videos.filter(v => {
+        const matchesSearch = (v.title || "").toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesType = filterType === 'all' ? true : (filterType === 'youtube' ? v.type === 'youtube' : v.type === 'custom');
+        return matchesSearch && matchesType;
+    });
 
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this video?")) return;
@@ -223,10 +228,22 @@ const VideoManagement = () => {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
+                        {/* filter moved to right-side controls */}
                     </div>
                 </div>
 
                 <div className="flex items-center gap-3">
+                    <select
+                        value={filterType}
+                        onChange={(e) => setFilterType(e.target.value)}
+                        className="bg-white border border-gray-100 rounded-lg px-3 py-2 text-sm"
+                        aria-label="Filter videos"
+                    >
+                        <option value="all">All</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="custom">Uploaded</option>
+                    </select>
+
                     <button
                         onClick={() => setViewMode('table')}
                         aria-label="Table view"
@@ -244,7 +261,7 @@ const VideoManagement = () => {
                         onClick={() => handleOpenAddModal()}
                         className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
                     >
-                        <FiPlus />
+                        <FiPlus />Add New Video
                     </button>
                 </div>
             </div>
