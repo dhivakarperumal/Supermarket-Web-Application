@@ -1,4 +1,4 @@
-const { getPool } = require("../config/db");
+const { getPool, getLargePacketConnection } = require("../config/db");
 
 /* ── Auto-create banners table ── */
 const createBannersTable = async () => {
@@ -34,10 +34,19 @@ const getAllBanners = async (req, res) => {
         const connection = await pool.getConnection();
         try {
             const [rows] = await connection.execute(
-                "SELECT * FROM banners ORDER BY sort_order ASC, created_at DESC"
+                "SELECT id, title, subtitle, description, link, type, active, sort_order, created_at, updated_at, LEFT(image, 200) as image_preview, LEFT(mobile_image, 200) as mobile_image_preview FROM banners ORDER BY sort_order ASC, created_at DESC"
             );
+            // Fetch full data separately so we don't kill the list query
+            const [fullRows] = await connection.execute(
+                "SELECT id, image, mobile_image FROM banners ORDER BY sort_order ASC, created_at DESC"
+            );
+            const imageMap = {};
+            fullRows.forEach(r => { imageMap[r.id] = { image: r.image, mobile_image: r.mobile_image }; });
+
             const banners = rows.map(row => ({
                 ...row,
+                image: imageMap[row.id]?.image || "",
+                mobile_image: imageMap[row.id]?.mobile_image || "",
                 active: !!row.active
             }));
             return res.status(200).json(banners);
@@ -56,8 +65,8 @@ const createBanner = async (req, res) => {
         await createBannersTable();
         const data = req.body || {};
 
-        const pool = getPool();
-        const connection = await pool.getConnection();
+        // Use large packet connection for base64 image storage
+        const connection = await getLargePacketConnection();
         try {
             const [result] = await connection.execute(
                 `INSERT INTO banners (title, subtitle, description, image, mobile_image, link, type, active, sort_order)
@@ -84,9 +93,6 @@ const createBanner = async (req, res) => {
         }
     } catch (error) {
         console.error("Create banner failed:", error);
-        if (error.code === "ER_NET_PACKET_TOO_LARGE" || error.sqlMessage?.includes("max_allowed_packet")) {
-            return res.status(413).json({ success: false, message: "Images are too large. Please use smaller images." });
-        }
         return res.status(500).json({ success: false, message: error.message || "Failed to create banner." });
     }
 };
@@ -99,14 +105,22 @@ const updateBanner = async (req, res) => {
         const data = req.body || {};
 
         const pool = getPool();
-        const connection = await pool.getConnection();
+        const existConn = await pool.getConnection();
+        let existing;
         try {
-            const [existing] = await connection.execute("SELECT * FROM banners WHERE id = ?", [id]);
-            if (existing.length === 0) {
-                return res.status(404).json({ success: false, message: "Banner not found." });
-            }
+            [existing] = await existConn.execute("SELECT * FROM banners WHERE id = ?", [id]);
+        } finally {
+            existConn.release();
+        }
 
-            const row = existing[0];
+        if (!existing || existing.length === 0) {
+            return res.status(404).json({ success: false, message: "Banner not found." });
+        }
+
+        const row = existing[0];
+        // Use large packet connection for update with images
+        const connection = await getLargePacketConnection();
+        try {
             await connection.execute(
                 `UPDATE banners SET
                     title = ?, subtitle = ?, description = ?, image = ?, mobile_image = ?,
@@ -131,9 +145,6 @@ const updateBanner = async (req, res) => {
         }
     } catch (error) {
         console.error("Update banner failed:", error);
-        if (error.code === "ER_NET_PACKET_TOO_LARGE" || error.sqlMessage?.includes("max_allowed_packet")) {
-            return res.status(413).json({ success: false, message: "Images are too large. Please use smaller images." });
-        }
         return res.status(500).json({ success: false, message: "Failed to update banner." });
     }
 };

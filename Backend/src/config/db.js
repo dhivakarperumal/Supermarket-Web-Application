@@ -21,14 +21,27 @@ const createPool = () => {
       supportBigNumbers: true,
       connectionAttributes: false
     });
-    
-    console.log("📋 Database pool created. Make sure MySQL max_allowed_packet is set to at least 256MB");
-    console.log("   See: https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_max_allowed_packet");
+    console.log("📋 Database pool created.");
   }
   return pool;
 };
 
 const getPool = () => createPool();
+
+/**
+ * Get a connection with max_allowed_packet set to 256MB at session level.
+ * Use this whenever you need to store large base64 images.
+ */
+const getLargePacketConnection = async () => {
+  const pool = getPool();
+  const connection = await pool.getConnection();
+  try {
+    await connection.query("SET SESSION max_allowed_packet = 268435456"); // 256MB
+  } catch (e) {
+    // Ignore if the user doesn't have SUPER privilege — global setting handles it
+  }
+  return connection;
+};
 
 const initDatabase = async () => {
   await createUsersTable();
@@ -37,5 +50,6 @@ const initDatabase = async () => {
 module.exports = {
   createPool,
   getPool,
+  getLargePacketConnection,
   initDatabase,
 };

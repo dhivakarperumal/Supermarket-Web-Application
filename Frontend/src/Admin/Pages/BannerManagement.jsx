@@ -72,26 +72,55 @@ const BannerManagement = () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error("Image too large! Max 5MB.");
+        if (file.size > 10 * 1024 * 1024) {
+            toast.error("Image too large! Max 10MB.");
             return;
         }
 
         if (isMobile) setMobileUploading(true);
         else setUploading(true);
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
+        // Compress image using canvas before storing as base64
+        const compressImage = (file, maxWidth = 1200, quality = 0.75) => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement("canvas");
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext("2d");
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL("image/jpeg", quality));
+                    };
+                    img.src = reader.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        };
+
+        try {
+            const compressed = await compressImage(file, isMobile ? 800 : 1400, 0.75);
             if (isMobile) {
-                setCurrentBanner(prev => ({ ...prev, mobile_image: reader.result }));
+                setCurrentBanner(prev => ({ ...prev, mobile_image: compressed }));
                 setMobileUploading(false);
             } else {
-                setCurrentBanner(prev => ({ ...prev, image: reader.result }));
+                setCurrentBanner(prev => ({ ...prev, image: compressed }));
                 setUploading(false);
             }
             toast.success(`${isMobile ? 'Mobile' : 'Desktop'} image ready!`);
-        };
-        reader.readAsDataURL(file);
+        } catch (err) {
+            toast.error("Failed to process image.");
+            if (isMobile) setMobileUploading(false);
+            else setUploading(false);
+        }
     };
 
     const handleSubmit = async (e, shouldContinue = false) => {
