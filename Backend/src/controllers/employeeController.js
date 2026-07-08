@@ -80,7 +80,7 @@ exports.createEmployee = async (req, res) => {
 
     /* ---------- Insert User ---------- */
 
-    const [userResult] = await conn.query(
+    await conn.query(
       `
       INSERT INTO users
       (
@@ -111,7 +111,8 @@ exports.createEmployee = async (req, res) => {
       ]
     );
 
-    const userId = userResult.insertId;
+    // Use the UUID as the user_id, not the sequential ID
+    const userId = generatedUserId;
 
     /* ---------- Insert Employee ---------- */
 
