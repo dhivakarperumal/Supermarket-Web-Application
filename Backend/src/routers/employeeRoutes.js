@@ -21,6 +21,11 @@ router.get(
   employeeController.getEmployee
 );
 
+router.put(
+  "/:id",
+  employeeController.updateEmployee
+);
+
 router.post(
   "/",
   employeeController.createEmployee

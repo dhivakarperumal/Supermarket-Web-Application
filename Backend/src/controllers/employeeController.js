@@ -238,6 +238,127 @@ exports.getEmployee = async (req, res) => {
 };
 
 /* ===========================
+   Update Employee
+=========================== */
+
+exports.updateEmployee = async (req, res) => {
+  const conn = await getPool().getConnection();
+
+  try {
+    await conn.beginTransaction();
+
+    const {
+      name,
+      username,
+      email,
+      phone,
+      employee_id,
+      role,
+      gender,
+      blood_group,
+      dob,
+      joining_date,
+      qualification,
+      experience,
+      shift,
+      salary,
+      address,
+      emergency_name,
+      emergency_phone,
+      status,
+      time_in,
+      time_out,
+      photo,
+      aadhar_doc,
+      id_doc,
+      certificate_doc,
+    } = req.body || {};
+
+    const updatedBy = req.user?.user_id || req.user?.id || "system";
+
+    const [employeeRows] = await conn.query(
+      "SELECT user_id FROM employees WHERE id=?",
+      [req.params.id]
+    );
+
+    if (!employeeRows.length) {
+      await conn.rollback();
+      return res.status(404).json({
+        message: "Employee Not Found",
+      });
+    }
+
+    const userId = employeeRows[0].user_id;
+
+    await conn.query(
+      `UPDATE employees SET
+        employee_id=?, name=?, username=?, email=?, phone=?, role=?, gender=?, blood_group=?, dob=?, joining_date=?, qualification=?, experience=?, shift=?, salary=?, address=?, emergency_name=?, emergency_phone=?, status=?, time_in=?, time_out=?, photo=?, aadhar_doc=?, id_doc=?, certificate_doc=?, updated_by=?
+      WHERE id=?`,
+      [
+        employee_id || null,
+        name || null,
+        username || null,
+        email || null,
+        phone || null,
+        role || "user",
+        gender || null,
+        blood_group || null,
+        dob || null,
+        joining_date || null,
+        qualification || null,
+        experience || null,
+        shift || null,
+        salary || null,
+        address || null,
+        emergency_name || null,
+        emergency_phone || null,
+        status || "active",
+        time_in || null,
+        time_out || null,
+        photo || null,
+        aadhar_doc || null,
+        id_doc || null,
+        certificate_doc || null,
+        updatedBy,
+        req.params.id,
+      ]
+    );
+
+    await conn.query(
+      `UPDATE users SET
+        name=?, username=?, email=?, phone=?, role=?, status=?, updated_by=?
+      WHERE id=? OR user_id=?`,
+      [
+        name || null,
+        username || null,
+        email || null,
+        phone || null,
+        role || "user",
+        status || "active",
+        updatedBy,
+        userId,
+        userId,
+      ]
+    );
+
+    await conn.commit();
+
+    res.json({
+      success: true,
+      message: "Employee Updated Successfully",
+    });
+  } catch (err) {
+    await conn.rollback();
+    console.log(err);
+    res.status(500).json({
+      message: err.message,
+    });
+  } finally {
+    conn.release();
+  }
+};
+
+/* ===========================
    Delete Employee
 =========================== */
 
