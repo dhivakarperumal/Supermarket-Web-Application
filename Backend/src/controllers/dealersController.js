@@ -1,4 +1,4 @@
-const { getPool } = require("../config/db");
+const { getPool, getLargePacketConnection } = require("../config/db");
 
 // Helper to parse JSON fields
 const parseJsonField = (value) => {
@@ -99,8 +99,7 @@ const createDealer = async (req, res) => {
       });
     }
 
-    const pool = getPool();
-    const connection = await pool.getConnection();
+    const connection = await getLargePacketConnection();
 
     try {
       await createDealersTable();
@@ -258,8 +257,7 @@ const updateDealer = async (req, res) => {
       });
     }
 
-    const pool = getPool();
-    const connection = await pool.getConnection();
+    const connection = await getLargePacketConnection();
 
     try {
       await createDealersTable();

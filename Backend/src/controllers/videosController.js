@@ -39,6 +39,57 @@ const createVideosTable = async (connection) => {
       )
     `;
     await connection.query(createTableQuery);
+
+    const [columns] = await connection.query(
+      `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'videos'`
+    );
+    const existingColumns = new Set(columns.map((column) => column.COLUMN_NAME));
+
+    const alterStatements = [];
+
+    const addColumnIfMissing = (columnName, definition) => {
+      if (!existingColumns.has(columnName)) {
+        alterStatements.push(`ADD COLUMN ${columnName} ${definition}`);
+      }
+    };
+
+    if (!existingColumns.has("videoPath") && existingColumns.has("video_path")) {
+      alterStatements.push("CHANGE COLUMN video_path videoPath VARCHAR(500)");
+    } else {
+      addColumnIfMissing("videoPath", "VARCHAR(500)");
+    }
+
+    if (!existingColumns.has("videoId") && existingColumns.has("video_id")) {
+      alterStatements.push("CHANGE COLUMN video_id videoId VARCHAR(255)");
+    } else {
+      addColumnIfMissing("videoId", "VARCHAR(255)");
+    }
+
+    if (!existingColumns.has("thumbnailPath") && existingColumns.has("thumbnail_path")) {
+      alterStatements.push("CHANGE COLUMN thumbnail_path thumbnailPath VARCHAR(500)");
+    } else {
+      addColumnIfMissing("thumbnailPath", "VARCHAR(500)");
+    }
+
+    if (!existingColumns.has("createdAt") && existingColumns.has("created_at")) {
+      alterStatements.push("CHANGE COLUMN created_at createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+    } else {
+      addColumnIfMissing("createdAt", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+    }
+
+    if (!existingColumns.has("updatedAt") && existingColumns.has("updated_at")) {
+      alterStatements.push("CHANGE COLUMN updated_at updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+    } else {
+      addColumnIfMissing("updatedAt", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+    }
+
+    addColumnIfMissing("type", "ENUM('youtube', 'custom') DEFAULT 'youtube'");
+    addColumnIfMissing("created_by", "CHAR(36)");
+    addColumnIfMissing("updated_by", "CHAR(36)");
+
+    if (alterStatements.length > 0) {
+      await connection.query(`ALTER TABLE videos ${alterStatements.join(", ")}`);
+    }
   } catch (error) {
     console.error("Error creating videos table:", error);
     throw error;
@@ -48,6 +99,9 @@ const createVideosTable = async (connection) => {
 const getVideos = async (req, res) => {
   try {
     const pool = getPool();
+    const conn = await pool.getConnection();
+    await createVideosTable(conn);
+    conn.release();
     const [videos] = await pool.query(
       `SELECT id, title, videoId, videoPath, thumbnailPath, type, created_by, updated_by, createdAt, updatedAt FROM videos ORDER BY createdAt DESC`
     );
@@ -111,6 +165,12 @@ const createVideo = async (req, res) => {
     
     const files = req.files || {};
 
+    const pool = getPool();
+    // Run migration first so videoPath column always exists
+    const migrateConn = await pool.getConnection();
+    await createVideosTable(migrateConn);
+    migrateConn.release();
+
     if (!title) {
       return res.status(400).json({
         success: false,
@@ -133,8 +193,6 @@ const createVideo = async (req, res) => {
         message: "Video file is required for custom videos",
       });
     }
-
-    const pool = getPool();
 
     let videoPath = null;
     let thumbnailPath = null;

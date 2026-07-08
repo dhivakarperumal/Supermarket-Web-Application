@@ -15,22 +15,26 @@ import { FaRupeeSign } from "react-icons/fa";
 
 const Billing = () => {
     const navigate = useNavigate();
-    const [invoices, setInvoices] = useState([]);
+    const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchInvoices = async () => {
+        const fetchOrders = async () => {
             try {
-                const res = await api.get("/invoices");
-                const invoiceData = res.data?.data || [];
-                setInvoices(invoiceData);
+                const res = await api.get("/orders");
+                const orderData = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+                const shopOrders = orderData.filter((order) => {
+                    const type = (order.order_type || "Shop").toString().toLowerCase();
+                    return type === "shop";
+                });
+                setOrders(shopOrders);
             } catch (error) {
-                console.error("Failed to fetch invoices:", error);
+                console.error("Failed to fetch shop orders:", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchInvoices();
+        fetchOrders();
     }, []);
 
     const getStatusStyle = (status) => {
@@ -48,8 +52,8 @@ const Billing = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Shop Bills</h1>
-                    <p className="text-sm text-gray-500 font-medium mt-1">Manage all bills created in-store</p>
+                    <h1 className="text-2xl font-bold text-slate-800">Shop Orders</h1>
+                    <p className="text-sm text-gray-500 font-medium mt-1">Manage all shop orders created in-store</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-100 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all shadow-sm">
@@ -95,7 +99,7 @@ const Billing = () => {
             {/* Invoices Table */}
             <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden">
                 <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h3 className="text-xl font-bold text-slate-800">Recent Invoices</h3>
+                    <h3 className="text-xl font-bold text-slate-800">Recent Shop Orders</h3>
                     <div className="flex items-center gap-3">
                         <div className="relative">
                             <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -115,7 +119,7 @@ const Billing = () => {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-gray-50/50">
-                                <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Invoice</th>
+                                <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Order</th>
                                 <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Date</th>
                                 <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
                                 <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Payment Method</th>
@@ -126,25 +130,25 @@ const Billing = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {loading ? (
-                                <tr><td colSpan={7} className="text-center py-10 font-bold text-gray-400">Loading bills...</td></tr>
-                            ) : invoices.length === 0 ? (
-                                <tr><td colSpan={7} className="text-center py-10 font-bold text-gray-400">No shop bills found</td></tr>
-                            ) : invoices.map((inv) => (
-                                <tr key={inv.id} className="hover:bg-blue-50/20 transition-colors group">
-                                    <td className="px-8 py-6 font-bold text-slate-800">{inv.order_id}</td>
-                                    <td className="px-8 py-6 text-sm text-gray-500">{new Date(inv.created_at).toLocaleDateString()}</td>
-                                    <td className="px-8 py-6 font-bold text-slate-700">{inv.customer_name}</td>
+                                <tr><td colSpan={7} className="text-center py-10 font-bold text-gray-400">Loading shop orders...</td></tr>
+                            ) : orders.length === 0 ? (
+                                <tr><td colSpan={7} className="text-center py-10 font-bold text-gray-400">No shop orders found</td></tr>
+                            ) : orders.map((order) => (
+                                <tr key={order.id} className="hover:bg-blue-50/20 transition-colors group">
+                                    <td className="px-8 py-6 font-bold text-slate-800">{order.order_id}</td>
+                                    <td className="px-8 py-6 text-sm text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
+                                    <td className="px-8 py-6 font-bold text-slate-700">{order.customer_name}</td>
                                     <td className="px-8 py-6">
                                         <div className="flex items-center gap-2 text-xs font-bold text-gray-400">
-                                            <FiCreditCard /> {inv.payment_method || 'Cash'}
+                                            <FiCreditCard /> {order.payment_method || 'Cash'}
                                         </div>
                                     </td>
                                     <td className="px-8 py-6">
-                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusStyle(inv.status)}`}>
-                                            {inv.status || 'Paid'}
+                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusStyle(order.status)}`}>
+                                            {order.status || 'Paid'}
                                         </span>
                                     </td>
-                                    <td className="px-8 py-6 font-bold text-slate-800">₹{parseFloat(inv.total_amount).toFixed(2)}</td>
+                                    <td className="px-8 py-6 font-bold text-slate-800">₹{parseFloat(order.total_amount).toFixed(2)}</td>
                                     <td className="px-8 py-6">
                                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button className="p-2 text-blue-500 hover:bg-blue-100 rounded-lg transition-all" title="Download">

@@ -1,4 +1,4 @@
-const { getPool } = require("../config/db");
+const { getPool, getLargePacketConnection } = require("../config/db");
 
 const initInvoicesTable = async () => {
   const pool = getPool();
@@ -49,8 +49,7 @@ const initInvoicesTable = async () => {
 };
 
 const createInvoice = async (req, res) => {
-  const pool = getPool();
-  const connection = await pool.getConnection();
+  const connection = await getLargePacketConnection();
 
   try {
     await initInvoicesTable();

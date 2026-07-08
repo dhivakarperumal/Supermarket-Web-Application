@@ -12,6 +12,12 @@ const createUsersTable = async () => {
 
   try {
     await adminConnection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+    // Increase max_allowed_packet globally to support large base64 images
+    try {
+      await adminConnection.query(`SET GLOBAL max_allowed_packet = 268435456`); // 256MB
+    } catch (e) {
+      console.warn('⚠️  Could not set global max_allowed_packet (may need SUPER privilege). Consider adding max_allowed_packet=256M to my.ini');
+    }
   } finally {
     await adminConnection.end();
   }
