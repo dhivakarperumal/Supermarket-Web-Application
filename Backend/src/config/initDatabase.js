@@ -111,6 +111,23 @@ const createUsersTable = async () => {
     `);
 
     await createDeliveryChargesTable(connection);
+    // Fix older rows where created_by was stored as a token/string instead of a UUID
+    try {
+      await connection.query(`
+        UPDATE delivery_charges
+        SET created_by = updated_by
+        WHERE (
+          created_by IS NULL
+          OR created_by NOT RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+        )
+        AND (
+          updated_by RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+        )
+      `);
+    } catch (e) {
+      // If this fails for some reason, don't block initialization.
+      console.warn('delivery_charges migration skipped:', e?.message || e);
+    }
   } finally {
     connection.release();
     await pool.end();

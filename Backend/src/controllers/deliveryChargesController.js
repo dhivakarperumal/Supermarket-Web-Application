@@ -3,14 +3,16 @@ const { getPool } = require("../config/db");
 const resolveActorId = (req, fallback = null) => {
   const body = req?.body || {};
   const headers = req?.headers || {};
+
+  // Prefer explicit header set by authenticated client, then req.user, then fall back to body-provided values.
   const candidate =
+    headers["x-user-id"] ||
+    headers["x-access-token"] ||
     req?.user?.user_id ||
     req?.user?.id ||
     body?.created_by ||
     body?.updated_by ||
-    body?.user_id ||
-    headers["x-user-id"] ||
-    headers["x-access-token"];
+    body?.user_id;
 
   return candidate || fallback || null;
 };
@@ -115,61 +117,37 @@ exports.createOrUpdateDeliveryCharges = async (req, res) => {
         const looksLikeUuid = (val) => typeof val === 'string' && /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/.test(val);
         const shouldReplaceCreatedBy = !looksLikeUuid(currentCreatedBy) && looksLikeUuid(actorId);
 
-        if (shouldReplaceCreatedBy) {
-          await connection.query(
-            `UPDATE delivery_charges SET
-              base_delivery_charge = ?,
-              free_delivery_minimum_order_amount = ?,
-              per_km_delivery_charge = ?,
-              maximum_delivery_distance = ?,
-              delivery_area_scope = ?,
-              enable_express_delivery = ?,
-              express_delivery_charge = ?,
-              estimated_delivery_time = ?,
-              updated_by = ?,
-              created_by = ?
-            WHERE id = ?`,
-            [
-              baseDeliveryCharge,
-              freeDeliveryMinimumOrderAmount,
-              perKmDeliveryCharge,
-              maximumDeliveryDistance,
-              deliveryAreaScope,
-              enableExpressDelivery,
-              expressDeliveryCharge,
-              estimatedDeliveryTime,
-              actorId,
-              actorId,
-              existingId,
-            ]
-          );
-        } else {
-          await connection.query(
-            `UPDATE delivery_charges SET
-              base_delivery_charge = ?,
-              free_delivery_minimum_order_amount = ?,
-              per_km_delivery_charge = ?,
-              maximum_delivery_distance = ?,
-              delivery_area_scope = ?,
-              enable_express_delivery = ?,
-              express_delivery_charge = ?,
-              estimated_delivery_time = ?,
-              updated_by = ?
-            WHERE id = ?`,
-            [
-              baseDeliveryCharge,
-              freeDeliveryMinimumOrderAmount,
-              perKmDeliveryCharge,
-              maximumDeliveryDistance,
-              deliveryAreaScope,
-              enableExpressDelivery,
-              expressDeliveryCharge,
-              estimatedDeliveryTime,
-              actorId,
-              existingId,
-            ]
-          );
-        }
+        // Always set updated_by to the actorId. Also set created_by to actorId
+        // to ensure audit fields reference the actual user UUID (admin) rather
+        // than token-like strings that were stored earlier.
+        const [updateResult] = await connection.query(
+          `UPDATE delivery_charges SET
+            base_delivery_charge = ?,
+            free_delivery_minimum_order_amount = ?,
+            per_km_delivery_charge = ?,
+            maximum_delivery_distance = ?,
+            delivery_area_scope = ?,
+            enable_express_delivery = ?,
+            express_delivery_charge = ?,
+            estimated_delivery_time = ?,
+            updated_by = ?,
+            created_by = ?
+          WHERE id = ?`,
+          [
+            baseDeliveryCharge,
+            freeDeliveryMinimumOrderAmount,
+            perKmDeliveryCharge,
+            maximumDeliveryDistance,
+            deliveryAreaScope,
+            enableExpressDelivery,
+            expressDeliveryCharge,
+            estimatedDeliveryTime,
+            actorId,
+            actorId,
+            existingId,
+          ]
+        );
+        console.log('[deliveryCharges] updateResult=', updateResult);
 
         return res.status(200).json({
           success: true,
