@@ -208,6 +208,12 @@ const Dashboard = () => {
     const totalProducts = stats.find(s => s.label === "Total Products")?.value ?? 0;
     const totalProductsTrend = stats.find(s => s.label === "Total Products")?.trend ?? "Live data";
     const totalDeliveries = stats.find(s => s.label === "Total Deliveries")?.value ?? 0;
+    const summaryMetrics = dashboardData?.summaryMetrics ?? {};
+    const todaysSalesValue = summaryMetrics.todaysSales ?? totalSales;
+    const todaysOrdersValue = summaryMetrics.todaysOrders ?? ordersToday;
+    const newCustomersValue = summaryMetrics.newCustomers ?? totalCustomers;
+    const pendingOrdersValue = summaryMetrics.pendingOrders ?? 0;
+    const returnOrdersValue = summaryMetrics.returnOrders ?? 0;
     const totalDeliveriesTrend = stats.find(s => s.label === "Total Deliveries")?.trend ?? "Live data";
     const ordersToday = stats.find(s => s.label === "Orders Today")?.value ?? 0;
     const ordersTodayTrend = stats.find(s => s.label === "Orders Today")?.trend ?? "Live data";
@@ -1008,7 +1014,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                             <p className="text-[10px] text-gray-400 font-bold">Today's Sales</p>
-                            <p className="text-sm font-black text-gray-800">₹24,568.00</p>
+                            <p className="text-sm font-black text-gray-800">{String(todaysSalesValue)}</p>
                         </div>
                     </div>
                     <div className="hidden sm:block w-px h-10 bg-gray-100" />
@@ -1018,7 +1024,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                             <p className="text-[10px] text-gray-400 font-bold">Today's Orders</p>
-                            <p className="text-sm font-black text-gray-800">198</p>
+                            <p className="text-sm font-black text-gray-800">{String(todaysOrdersValue)}</p>
                         </div>
                     </div>
                     <div className="hidden sm:block w-px h-10 bg-gray-100" />
@@ -1028,7 +1034,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                             <p className="text-[10px] text-gray-400 font-bold">New Customers</p>
-                            <p className="text-sm font-black text-gray-800">32</p>
+                            <p className="text-sm font-black text-gray-800">{String(newCustomersValue)}</p>
                         </div>
                     </div>
                     <div className="hidden sm:block w-px h-10 bg-gray-100" />
@@ -1038,7 +1044,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                             <p className="text-[10px] text-gray-400 font-bold">Pending Orders</p>
-                            <p className="text-sm font-black text-gray-800">14</p>
+                            <p className="text-sm font-black text-gray-800">{String(pendingOrdersValue)}</p>
                         </div>
                     </div>
                     <div className="hidden sm:block w-px h-10 bg-gray-100" />
@@ -1048,7 +1054,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                             <p className="text-[10px] text-gray-400 font-bold">Return Orders</p>
-                            <p className="text-sm font-black text-gray-800">5</p>
+                            <p className="text-sm font-black text-gray-800">{String(returnOrdersValue)}</p>
                         </div>
                     </div>
                     <div className="hidden lg:flex items-center gap-3 bg-green-50 rounded-xl px-4 py-2.5 border border-green-100 ml-auto">

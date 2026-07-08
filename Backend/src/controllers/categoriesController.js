@@ -1,4 +1,4 @@
-const { getPool } = require("../config/db");
+const { getPool, getLargePacketConnection } = require("../config/db");
 const { createCategoryTable } = require("../config/initCategoryDatabase");
 
 const parseJsonField = (value) => {
@@ -21,8 +21,7 @@ const createCategory = async (req, res) => {
       });
     }
 
-    const pool = getPool();
-    const connection = await pool.getConnection();
+    const connection = await getLargePacketConnection();
 
     try {
       await createCategoryTable();
@@ -167,8 +166,7 @@ const updateCategory = async (req, res) => {
       });
     }
 
-    const pool = getPool();
-    const connection = await pool.getConnection();
+    const connection = await getLargePacketConnection();
 
     try {
       await createCategoryTable();

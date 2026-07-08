@@ -35,6 +35,8 @@ const getDashboard = async (req, res) => {
     let ordersTodayCount = 0;
     let todaysRevenue = 0;
     let lowStockCount = 0;
+    let pendingOrdersCount = 0;
+    let returnOrdersCount = 0;
     let previousWeekSales = 0;
     let previousWeekOrders = 0;
     let previousWeekDeliveries = 0;
@@ -72,6 +74,20 @@ const getDashboard = async (req, res) => {
         WHERE COALESCE(total_stock, stock_quantity, 0) <= 5
       `);
       lowStockCount = Number(lowStockRows[0]?.count || 0);
+
+      const [pendingRows] = await connection.query(`
+        SELECT COUNT(*) AS count
+        FROM orders
+        WHERE status NOT IN ('Delivered', 'Cancelled')
+      `);
+      pendingOrdersCount = Number(pendingRows[0]?.count || 0);
+
+      const [returnRows] = await connection.query(`
+        SELECT COUNT(*) AS count
+        FROM orders
+        WHERE status = 'Returned'
+      `);
+      returnOrdersCount = Number(returnRows[0]?.count || 0);
 
       const [salesPrevRows] = await connection.query(`
         SELECT COALESCE(SUM(total_amount), 0) AS total_sales
@@ -116,6 +132,8 @@ const getDashboard = async (req, res) => {
       ordersTodayCount = 0;
       todaysRevenue = 0;
       lowStockCount = 0;
+      pendingOrdersCount = 0;
+      returnOrdersCount = 0;
     }
 
     // ────── GET RECENT ORDERS (NON-CANCELLED) ──────
@@ -286,6 +304,13 @@ const getDashboard = async (req, res) => {
       recentOrders: displayRecentOrders,
       topProducts: displayTopProducts,
       lowStockAlerts,
+      summaryMetrics: {
+        todaysSales: totalSalesFromOrders,
+        todaysOrders: ordersTodayCount,
+        newCustomers: totalCustomerCount,
+        pendingOrders: pendingOrdersCount,
+        returnOrders: returnOrdersCount,
+      },
       categoryAnalytics,
       revenueTrends,
       regionalSales,

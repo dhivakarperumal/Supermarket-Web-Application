@@ -1,4 +1,4 @@
-const { getPool } = require("../config/db");
+const { getPool, getLargePacketConnection } = require("../config/db");
 const { createProductTable } = require("../config/initProductDatabase");
 
 const parseJsonField = (value) => {
@@ -33,8 +33,7 @@ const createProduct = async (req, res) => {
       });
     }
 
-    const pool = getPool();
-    const connection = await pool.getConnection();
+    const connection = await getLargePacketConnection();
 
     try {
       await createProductTable();
@@ -234,8 +233,7 @@ const updateProduct = async (req, res) => {
       });
     }
 
-    const pool = getPool();
-    const connection = await pool.getConnection();
+    const connection = await getLargePacketConnection();
 
     try {
       await createProductTable();
