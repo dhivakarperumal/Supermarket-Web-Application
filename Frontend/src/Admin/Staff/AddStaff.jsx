@@ -285,37 +285,19 @@ const AddEditStaff = () => {
       newErrors.employeeId = "Employee ID is required";
     }
 
-    // Role validation
+    // Role validation (required for staff creation)
     if (!form.role?.trim()) {
       newErrors.role = "Role is required";
     }
 
-    // Salary validation
-    if (!form.salary?.trim()) {
-      newErrors.salary = "Salary is required";
-    } else if (isNaN(form.salary) || form.salary <= 0) {
-      newErrors.salary = "Please enter a valid salary amount";
+    // Optional fields: only validate when values are provided
+    if (form.salary?.trim()) {
+      if (isNaN(form.salary) || Number(form.salary) <= 0) {
+        newErrors.salary = "Please enter a valid salary amount";
+      }
     }
 
-    // Shift validation
-    if (!form.shift?.trim()) {
-      newErrors.shift = "Shift is required";
-    }
-
-    // Gender validation
-    if (!form.gender?.trim()) {
-      newErrors.gender = "Gender is required";
-    }
-
-    // Blood Group validation
-    if (!form.bloodGroup?.trim()) {
-      newErrors.bloodGroup = "Blood group is required";
-    }
-
-    // Date of Birth validation
-    if (!form.dob?.trim()) {
-      newErrors.dob = "Date of Birth is required";
-    } else {
+    if (form.dob?.trim()) {
       const dobDate = new Date(form.dob);
       const today = new Date();
       const age = today.getFullYear() - dobDate.getFullYear();
@@ -324,27 +306,7 @@ const AddEditStaff = () => {
       }
     }
 
-    // Joining Date validation
-    if (!form.joiningDate?.trim()) {
-      newErrors.joiningDate = "Joining Date is required";
-    }
-
-    // Address validation
-    if (!form.address?.trim()) {
-      newErrors.address = "Address is required";
-    } else if (form.address.length < 5) {
-      newErrors.address = "Address must be at least 5 characters";
-    }
-
-    // Time In validation
-    if (!form.timeIn?.trim()) {
-      newErrors.timeIn = "Time In is required";
-    }
-
-    // Time Out validation
-    if (!form.timeOut?.trim()) {
-      newErrors.timeOut = "Time Out is required";
-    } else if (form.timeIn && form.timeOut <= form.timeIn) {
+    if (form.timeIn?.trim() && form.timeOut?.trim() && form.timeOut <= form.timeIn) {
       newErrors.timeOut = "Time Out must be after Time In";
     }
 
