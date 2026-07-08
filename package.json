@@ -16,6 +16,7 @@
     "concurrently": "^10.0.3"
   },
   "dependencies": {
-    "lucide-react": "^1.23.0"
+    "lucide-react": "^1.23.0",
+    "react-select": "^5.10.2"
   }
 }
