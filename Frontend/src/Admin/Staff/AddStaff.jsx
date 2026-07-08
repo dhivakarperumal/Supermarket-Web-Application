@@ -457,7 +457,7 @@ const AddEditStaff = () => {
 
   /* ---------------- UI ---------------- */
 
-  const ErrorText = memo(({ field, errors }) =>
+  const ErrorText = memo(({ field, errors = {} }) =>
     errors[field] ? <p className="text-red-500 text-xs mt-1">{errors[field]}</p> : null);
 
   const PreviewModal = memo(({ previewFile, onClose }) => {
