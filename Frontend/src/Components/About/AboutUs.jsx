@@ -1,10 +1,10 @@
 import React from "react";
 import Heading from "../Heading";
 import AnimatedButton from "../AnimatedButton";
-import artisanImg from "../../../public/about/artisan_weaving.png";
-import detailImg from "../../../public/about/fabric_detail.png";
-import sustainableImg from "../../../public/about/sustainable_craft.png";
-import weaverImg from "../../../public/about/master_weaver_portrait.png";
+const artisanImg = "/about/artisan_weaving.png";
+const detailImg = "/about/fabric_detail.png";
+const sustainableImg = "/about/sustainable_craft.png";
+const weaverImg = "/about/master_weaver_portrait.png";
 import PageContainer from "../CommenComponents/PageContainer";
 import PageHeader from "../CommenComponents/PageHeader";
 import { FaCertificate, FaLandmark, FaHandsHelping, FaGem } from "react-icons/fa";

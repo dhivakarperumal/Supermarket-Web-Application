@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../../api";
 import { StoreContext } from "../../PrivateRouter/StoreContext";
 import { useContext } from "react";
@@ -46,13 +47,15 @@ const TrendingProducts = () => {
 
   if (products.length === 0) {
     return (
-      <PageContainer>
-        <div className="py-5">
-          <Heading title="Trending Products" />
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
+      <section className="py-8 bg-white">
+        <PageContainer>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-xl font-black text-gray-800">Trending Products</h2>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="bg-white rounded-3xl border border-gray-100 overflow-hidden animate-pulse">
-                <div className="w-full h-80 bg-gray-100"></div>
+              <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
+                <div className="w-full h-48 bg-gray-100"></div>
                 <div className="p-4 space-y-2">
                   <div className="h-4 bg-gray-100 rounded-full w-3/4"></div>
                   <div className="h-3 bg-gray-100 rounded-full w-1/2"></div>
@@ -60,39 +63,46 @@ const TrendingProducts = () => {
               </div>
             ))}
           </div>
-        </div>
-      </PageContainer>
+        </PageContainer>
+      </section>
     );
   }
 
   return (
-    <PageContainer>
-      <div className="py-5">
-        {/* Title */}
-        <Heading title="Trending Products" />
-
+    <section className="py-8 bg-white">
+      <PageContainer>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl font-black text-gray-800">Trending Products</h2>
+          <div className="flex items-center gap-3">
+            <Link to="/shop" className="text-primary font-bold text-sm hover:underline">
+              View All
+            </Link>
+          </div>
+        </div>
         {/* Swiper */}
-        <Swiper
-          modules={[Autoplay]}
-          spaceBetween={20}
-          loop={true}
-          autoplay={{ delay: 3000 }}
-          breakpoints={{
-            320: { slidesPerView: 1 },
-            480: { slidesPerView: 2 },
-            640: { slidesPerView: 3 },
-            768: { slidesPerView: 4 },
-            1024: { slidesPerView: 5 },
-          }}
-        >
-          {Array.isArray(products) && products.map((product) => (
-            <SwiperSlide key={product.id} className="flex justify-center pb-10">
-              <ProductCard product={product} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
-    </PageContainer>
+        <div className="relative">
+          <Swiper
+            modules={[Autoplay]}
+            spaceBetween={20}
+            loop={true}
+            autoplay={{ delay: 3000 }}
+            breakpoints={{
+              320: { slidesPerView: 2 },
+              480: { slidesPerView: 3 },
+              640: { slidesPerView: 3 },
+              768: { slidesPerView: 4 },
+              1024: { slidesPerView: 5 },
+            }}
+          >
+            {Array.isArray(products) && products.map((product) => (
+              <SwiperSlide key={product.id} className="pb-2">
+                <ProductCard product={product} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+      </PageContainer>
+    </section>
   );
 };
 
