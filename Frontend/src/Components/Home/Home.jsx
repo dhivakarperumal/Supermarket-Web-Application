@@ -1,44 +1,31 @@
 import React from 'react'
-import Hero from "../Hero"
-import SareeBanner from '../SareeBanner'
-import Banner from '../Banner'
-import About from "../About/About"
-import ProductsCard from '../Products/ProductsCard'
-import VideoSwiper from './VideoSwiper'
+import SupermarketHero from "./SupermarketHero"
 import CategoryIcon from './CategoryIcon'
-import SareeSwiper from './SareeSwiper'
 import TrendingProducts from './TrendingProducts'
 import OfferProducts from '../Products/OfferProducts'
+import VideoSwiper from './VideoSwiper'
+import About from "../About/About"
 
 const Home = () => {
   return (
-    <div>
+    <div className="bg-gray-50 min-h-screen">
       <div>
-        <Hero />
+        <SupermarketHero />
       </div>
       <div>
         <CategoryIcon/>
       </div>
-      <div>
-        <SareeSwiper />
-      </div>
-      <div>
-        <About />
-      </div>
-      <div>
+      <div className="py-8">
         <TrendingProducts />
       </div>
-      <div>
-        <SareeBanner />
-      </div>
-      <div>
+      <div className="py-8">
         <OfferProducts />
       </div>
       <div>
-        <Banner />
+        <VideoSwiper />
       </div>
       <div>
-        <VideoSwiper />
+        <About />
       </div>
     </div>
   )
