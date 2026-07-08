@@ -127,8 +127,8 @@ exports.createEmployee = async (req, res) => {
       ]
     );
 
-    // employees.user_id must reference users.id (the numeric primary key)
-    const userId = userInsertResult.insertId;
+    // mysql2/promise returns [rows, fields]; the insert id is on the result object.
+    const userId = userInsertResult?.insertId;
 
     /* ---------- Insert Employee ---------- */
 
