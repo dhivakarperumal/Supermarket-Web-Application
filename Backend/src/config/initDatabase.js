@@ -50,8 +50,8 @@ const createUsersTable = async () => {
 
     await connection.query(`
       ALTER TABLE users
-      ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) DEFAULT NULL UNIQUE,
-      MODIFY COLUMN phone VARCHAR(20) DEFAULT NULL UNIQUE,
+      ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) DEFAULT NULL,
+      MODIFY COLUMN phone VARCHAR(20) DEFAULT NULL,
       MODIFY COLUMN role ENUM('admin', 'user', 'manager', 'dealer') NOT NULL DEFAULT 'user',
       MODIFY COLUMN status ENUM('active', 'inactive') NOT NULL DEFAULT 'active'
     `);

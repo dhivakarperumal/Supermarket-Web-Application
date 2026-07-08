@@ -36,6 +36,18 @@ const initOrdersTable = async () => {
             try { await connection.query(sql); } catch (e) { /* column may already exist */ }
         }
 
+        // Ensure optional logistic and cancellation columns exist
+        const extraAlters = [
+            "ALTER TABLE orders ADD COLUMN tracking_number VARCHAR(255)",
+            "ALTER TABLE orders ADD COLUMN courier_name VARCHAR(255)",
+            "ALTER TABLE orders ADD COLUMN shipped_at DATETIME",
+            "ALTER TABLE orders ADD COLUMN cancellation_reason TEXT",
+            "ALTER TABLE orders ADD COLUMN cancelled_at DATETIME"
+        ];
+        for (const sql of extraAlters) {
+            try { await connection.query(sql); } catch (e) { /* ignore if exists */ }
+        }
+
         await connection.query(`
             CREATE TABLE IF NOT EXISTS order_items (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -170,4 +182,56 @@ const getUserOrders = async (req, res) => {
     }
 };
 
-module.exports = { getAllOrders, createOrder, getUserOrders, initOrdersTable };
+const getOrderById = async (req, res) => {
+    try {
+        await initOrdersTable();
+        const pool = getPool();
+        const { id } = req.params;
+        const [orders] = await pool.query("SELECT * FROM orders WHERE id = ?", [id]);
+        if (!orders || orders.length === 0) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+        const order = orders[0];
+        const [items] = await pool.query("SELECT * FROM order_items WHERE order_id = ?", [order.order_id]);
+        res.status(200).json({ ...order, items });
+    } catch (error) {
+        console.error("Error fetching order by id:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+const updateOrderStatus = async (req, res) => {
+    try {
+        await initOrdersTable();
+        const pool = getPool();
+        const { id } = req.params;
+        const body = req.body || {};
+
+        // Build dynamic update
+        const allowed = ["status", "tracking_number", "courier_name", "shipped_at", "cancellation_reason", "cancelled_at"];
+        const sets = [];
+        const vals = [];
+        for (const key of allowed) {
+            if (body[key] !== undefined) {
+                sets.push(`${key} = ?`);
+                vals.push(body[key]);
+            }
+        }
+        if (sets.length === 0) return res.status(400).json({ message: "No valid fields to update" });
+        vals.push(id);
+        const sql = `UPDATE orders SET ${sets.join(", ")}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
+        const [result] = await pool.query(sql, vals);
+        if (result.affectedRows === 0) return res.status(404).json({ message: "Order not found" });
+
+        // Return updated order
+        const [orders] = await pool.query("SELECT * FROM orders WHERE id = ?", [id]);
+        const order = orders[0];
+        const [items] = await pool.query("SELECT * FROM order_items WHERE order_id = ?", [order.order_id]);
+        res.status(200).json({ ...order, items });
+    } catch (error) {
+        console.error("Error updating order status:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+module.exports = { getAllOrders, createOrder, getUserOrders, getOrderById, updateOrderStatus, initOrdersTable };

@@ -12,14 +12,14 @@ body {
 =========================== */
 
 /* Primary */
---color-primary: #0f766e;
---color-primary-light: #14b8a6;
---color-primary-dark: #115e59;
+--color-primary: #0a4731;
+--color-primary-light: #14805e;
+--color-primary-dark: #01352c;
 
 /* Secondary */
---color-secondary: #2563eb;
---color-secondary-light: #60a5fa;
---color-secondary-dark: #1d4ed8;
+--color-secondary: #facc15;
+--color-secondary-light: #fef08a;
+--color-secondary-dark: #eab308;
 
 /* Accent */
 --color-accent: #f97316;
