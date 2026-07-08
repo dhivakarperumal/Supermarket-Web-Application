@@ -363,7 +363,7 @@ exports.updateEmployee = async (req, res) => {
 =========================== */
 
 exports.deleteEmployee = async (req, res) => {
-  const conn = await pool.getConnection();
+  const conn = await getPool().getConnection();
 
   try {
     await conn.beginTransaction();
@@ -387,8 +387,8 @@ exports.deleteEmployee = async (req, res) => {
     );
 
     await conn.query(
-      "DELETE FROM users WHERE id=?",
-      [userId]
+      "DELETE FROM users WHERE id=? OR user_id=?",
+      [userId, userId]
     );
 
     await conn.commit();
