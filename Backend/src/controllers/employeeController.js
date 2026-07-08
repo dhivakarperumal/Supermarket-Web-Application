@@ -1,4 +1,5 @@
-const pool = require("../config/db");
+const { randomUUID } = require("crypto");
+const { getPool } = require("../config/db");
 const bcrypt = require("bcryptjs");
 
 /* ===========================
@@ -7,7 +8,7 @@ const bcrypt = require("bcryptjs");
 
 exports.generateEmployeeId = async (req, res) => {
   try {
-    const [rows] = await pool.query(
+    const [rows] = await getPool().query(
       `SELECT employee_id
        FROM employees
        ORDER BY id DESC
@@ -16,9 +17,11 @@ exports.generateEmployeeId = async (req, res) => {
 
     let next = 1;
 
-    if (rows.length) {
-      const num = parseInt(rows[0].employee_id.replace("EMP", ""));
-      next = num + 1;
+    if (rows.length && rows[0].employee_id) {
+      const match = String(rows[0].employee_id).match(/(\d+)$/);
+      if (match) {
+        next = parseInt(match[1], 10) + 1;
+      }
     }
 
     const employeeId = `EMP${String(next).padStart(5, "0")}`;
@@ -35,7 +38,7 @@ exports.generateEmployeeId = async (req, res) => {
 =========================== */
 
 exports.createEmployee = async (req, res) => {
-  const conn = await pool.getConnection();
+  const conn = await getPool().getConnection();
 
   try {
     await conn.beginTransaction();
@@ -68,9 +71,12 @@ exports.createEmployee = async (req, res) => {
       certificate_doc,
     } = req.body;
 
-    const created_by = req.user?.id || null;
-
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const generatedUserId = randomUUID();
+    const createdBy = req.user?.user_id || req.user?.id || generatedUserId;
+    const normalizedRole = role || "user";
+    const normalizedStatus = status || "active";
+    const safePassword = password || "123456";
+    const hashedPassword = await bcrypt.hash(safePassword, 10);
 
     /* ---------- Insert User ---------- */
 
@@ -78,6 +84,7 @@ exports.createEmployee = async (req, res) => {
       `
       INSERT INTO users
       (
+        user_id,
         name,
         username,
         email,
@@ -88,22 +95,23 @@ exports.createEmployee = async (req, res) => {
         created_by,
         updated_by
       )
-      VALUES (?,?,?,?,?,?,?,?,?)
+      VALUES (?,?,?,?,?,?,?,?,?,?)
       `,
       [
+        generatedUserId,
         name,
         username,
         email,
         hashedPassword,
         phone,
-        role,
-        status,
-        created_by,
-        created_by,
+        normalizedRole,
+        normalizedStatus,
+        createdBy,
+        createdBy,
       ]
     );
 
-    const userId = userResult.insertId;
+    const userId = generatedUserId;
 
     /* ---------- Insert Employee ---------- */
 
@@ -151,7 +159,7 @@ exports.createEmployee = async (req, res) => {
         username,
         email,
         phone,
-        role,
+        normalizedRole,
         gender,
         blood_group,
         dob,
@@ -163,15 +171,15 @@ exports.createEmployee = async (req, res) => {
         address,
         emergency_name,
         emergency_phone,
-        status,
+        normalizedStatus,
         time_in,
         time_out,
         photo,
         aadhar_doc,
         id_doc,
         certificate_doc,
-        created_by,
-        created_by,
+        createdBy,
+        createdBy,
       ]
     );
 
@@ -202,7 +210,7 @@ exports.createEmployee = async (req, res) => {
 
 exports.getEmployees = async (req, res) => {
   try {
-    const [rows] = await pool.query(`
+    const [rows] = await getPool().query(`
       SELECT *
       FROM employees
       ORDER BY id DESC
@@ -220,7 +228,7 @@ exports.getEmployees = async (req, res) => {
 
 exports.getEmployee = async (req, res) => {
   try {
-    const [rows] = await pool.query(
+    const [rows] = await getPool().query(
       "SELECT * FROM employees WHERE id=?",
       [req.params.id]
     );

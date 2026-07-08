@@ -34,13 +34,14 @@ const createUsersTable = async () => {
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id CHAR(36) NOT NULL UNIQUE,
+        name VARCHAR(255) DEFAULT NULL,
         username VARCHAR(100) NOT NULL,
         email VARCHAR(255) NOT NULL UNIQUE,
         phone VARCHAR(20) DEFAULT NULL UNIQUE,
         google_id VARCHAR(255) DEFAULT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
         status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
-        role ENUM('admin', 'user', 'manager', 'dealer') NOT NULL DEFAULT 'user',
+        role ENUM('admin', 'user', 'manager', 'dealer', 'store_manager', 'assistant_manager', 'cashier', 'sales_executive', 'inventory_manager', 'stock_keeper', 'billing_staff', 'customer_service', 'delivery_staff') NOT NULL DEFAULT 'user',
         created_by CHAR(36) NOT NULL,
         updated_by CHAR(36) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -49,10 +50,46 @@ const createUsersTable = async () => {
     `);
 
     await connection.query(`
+      CREATE TABLE IF NOT EXISTS employees (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL UNIQUE,
+        employee_id VARCHAR(50) DEFAULT NULL UNIQUE,
+        name VARCHAR(255) NOT NULL,
+        username VARCHAR(100) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        phone VARCHAR(20) DEFAULT NULL,
+        role VARCHAR(100) NOT NULL,
+        gender VARCHAR(20) DEFAULT NULL,
+        blood_group VARCHAR(10) DEFAULT NULL,
+        dob DATE DEFAULT NULL,
+        joining_date DATE DEFAULT NULL,
+        qualification VARCHAR(255) DEFAULT NULL,
+        experience VARCHAR(50) DEFAULT NULL,
+        shift VARCHAR(50) DEFAULT NULL,
+        salary DECIMAL(12,2) DEFAULT NULL,
+        address TEXT DEFAULT NULL,
+        emergency_name VARCHAR(255) DEFAULT NULL,
+        emergency_phone VARCHAR(20) DEFAULT NULL,
+        status VARCHAR(20) DEFAULT 'active',
+        time_in TIME DEFAULT NULL,
+        time_out TIME DEFAULT NULL,
+        photo LONGTEXT DEFAULT NULL,
+        aadhar_doc LONGTEXT DEFAULT NULL,
+        id_doc LONGTEXT DEFAULT NULL,
+        certificate_doc LONGTEXT DEFAULT NULL,
+        created_by VARCHAR(36) DEFAULT NULL,
+        updated_by VARCHAR(36) DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    await connection.query(`
       ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS name VARCHAR(255) DEFAULT NULL,
       ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) DEFAULT NULL UNIQUE,
       MODIFY COLUMN phone VARCHAR(20) DEFAULT NULL UNIQUE,
-      MODIFY COLUMN role ENUM('admin', 'user', 'manager', 'dealer') NOT NULL DEFAULT 'user',
+      MODIFY COLUMN role ENUM('admin', 'user', 'manager', 'dealer', 'store_manager', 'assistant_manager', 'cashier', 'sales_executive', 'inventory_manager', 'stock_keeper', 'billing_staff', 'customer_service', 'delivery_staff') NOT NULL DEFAULT 'user',
       MODIFY COLUMN status ENUM('active', 'inactive') NOT NULL DEFAULT 'active'
     `);
   } finally {
