@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import imageCompression from "browser-image-compression";
@@ -61,7 +61,7 @@ const AddEditStaff = () => {
   const isEdit = Boolean(id);
   const navigate = useNavigate();
 
-  const generateEmployeeId = async () => {
+  const generateEmployeeId = useCallback(async () => {
     try {
       const res = await api.get('/staff/generate-employee-id');
       if (res.data && res.data.employeeId) return res.data.employeeId;
@@ -71,7 +71,7 @@ const AddEditStaff = () => {
 
     // fallback: timestamp-based id
     return `EMP${String(Date.now()).slice(-6)}`;
-  };
+  }, []);
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -161,7 +161,7 @@ const AddEditStaff = () => {
 
   /* ---------------- INPUT HANDLER WITH AUTO-POPULATION ---------------- */
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
 
     // Auto-populate username from email
@@ -184,11 +184,11 @@ const AddEditStaff = () => {
     else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
-  };
+  }, []);
 
   /* ---------------- FILE UPLOAD ---------------- */
 
-  const handleFileUpload = async (e, field) => {
+  const handleFileUpload = useCallback(async (e, field) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -229,16 +229,16 @@ const AddEditStaff = () => {
       console.error("Upload error:", err);
       toast.error("Upload failed");
     }
-  };
+  }, []);
 
-  const openPreview = (file, fileName) => {
+  const openPreview = useCallback((file, fileName) => {
     setPreviewFile({ data: file, name: fileName });
-  };
+  }, []);
 
-  const handleDeleteFile = (field) => {
+  const handleDeleteFile = useCallback((field) => {
     setForm((prev) => ({ ...prev, [field]: "" }));
     toast.success("File removed");
-  };
+  }, []);
 
   /* ---------------- VALIDATION FUNCTION ---------------- */
 
@@ -426,7 +426,7 @@ const AddEditStaff = () => {
     }
   };
 
-  const InputBox = ({ label, required, icon, children }) => (
+  const InputBox = memo(({ label, required, icon, children }) => (
     <div>
 
       <label className="block text-[15px] font-semibold text-[#344054] mb-2">
@@ -452,15 +452,15 @@ const AddEditStaff = () => {
       </div>
 
     </div>
-  );
+  ));
 
 
   /* ---------------- UI ---------------- */
 
-  const ErrorText = ({ field }) =>
-    errors[field] ? <p className="text-red-500 text-xs mt-1">{errors[field]}</p> : null;
+  const ErrorText = memo(({ field, errors }) =>
+    errors[field] ? <p className="text-red-500 text-xs mt-1">{errors[field]}</p> : null);
 
-  const PreviewModal = () => {
+  const PreviewModal = memo(({ previewFile, onClose }) => {
     if (!previewFile) return null;
 
     const isImage = previewFile.data.startsWith('data:image');
@@ -471,7 +471,7 @@ const AddEditStaff = () => {
         <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto">
           <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white">
             <h3 className="text-lg font-semibold">{previewFile.name}</h3>
-            <button onClick={() => setPreviewFile(null)} className="text-gray-500 hover:text-gray-700 text-xl">✕</button>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-xl">✕</button>
           </div>
           <div className="p-4 flex items-center justify-center min-h-[400px]">
             {isImage ? (
@@ -490,7 +490,7 @@ const AddEditStaff = () => {
         </div>
       </div>
     );
-  };
+  });
 
   return (
     <div className="min-h-screen bg-[#f5f8f6] p-6">
@@ -601,7 +601,7 @@ const AddEditStaff = () => {
 
                 </InputBox>
 
-                <ErrorText field="name" />
+                <ErrorText field="name" errors={errors} />
                 {/* USERNAME */}
                 <InputBox
                   label="Username"
@@ -620,7 +620,7 @@ const AddEditStaff = () => {
 
                 </InputBox>
 
-                <ErrorText field="username" />
+                <ErrorText field="username" errors={errors} />
 
                 {/* EMAIL */}
                 <InputBox
@@ -642,7 +642,7 @@ const AddEditStaff = () => {
 
                 </InputBox>
 
-                <ErrorText field="email" />
+                <ErrorText field="email" errors={errors} />
 
                 {/* PASSWORD (ADD ONLY) */}
                 {!isEdit && (
@@ -666,7 +666,7 @@ const AddEditStaff = () => {
 
                     </InputBox>
 
-                    <ErrorText field="password" />
+                    <ErrorText field="password" errors={errors} />
                   </div>
                 )}
 
@@ -690,7 +690,7 @@ const AddEditStaff = () => {
 
                 </InputBox>
 
-                <ErrorText field="phone" />
+                <ErrorText field="phone" errors={errors} />
 
 
 
@@ -711,7 +711,7 @@ const AddEditStaff = () => {
 
                 </InputBox>
 
-                <ErrorText field="salary" />
+                <ErrorText field="salary" errors={errors} />
 
                 {/* SHIFT */}
                 <InputBox
@@ -731,7 +731,7 @@ const AddEditStaff = () => {
 
                 </InputBox>
 
-                <ErrorText field="shift" />
+                <ErrorText field="shift" errors={errors} />
 
                 {/* EMPLOYEE ID */}
                 <InputBox
@@ -1273,7 +1273,7 @@ const AddEditStaff = () => {
             </div>
           </div>
         </form>
-        <PreviewModal />
+        <PreviewModal previewFile={previewFile} onClose={() => setPreviewFile(null)} />
       </div>
     </div>
   );
