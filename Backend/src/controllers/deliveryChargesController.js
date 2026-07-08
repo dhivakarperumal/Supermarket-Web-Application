@@ -101,32 +101,75 @@ exports.createOrUpdateDeliveryCharges = async (req, res) => {
 
       if (existingRows.length > 0) {
         const existingId = existingRows[0].id;
-
-        await connection.query(
-          `UPDATE delivery_charges SET
-            base_delivery_charge = ?,
-            free_delivery_minimum_order_amount = ?,
-            per_km_delivery_charge = ?,
-            maximum_delivery_distance = ?,
-            delivery_area_scope = ?,
-            enable_express_delivery = ?,
-            express_delivery_charge = ?,
-            estimated_delivery_time = ?,
-            updated_by = ?
-          WHERE id = ?`,
-          [
-            baseDeliveryCharge,
-            freeDeliveryMinimumOrderAmount,
-            perKmDeliveryCharge,
-            maximumDeliveryDistance,
-            deliveryAreaScope,
-            enableExpressDelivery,
-            expressDeliveryCharge,
-            estimatedDeliveryTime,
-            actorId,
-            existingId,
-          ]
+        // Preserve created_by if it's already a proper uuid; otherwise, if the current
+        // actorId looks like a uuid and created_by does not, replace it so the audit
+        // fields reference the actual user instead of a token string.
+        const [existingFull] = await connection.query(
+          `SELECT created_by FROM delivery_charges WHERE id = ?`,
+          [existingId]
         );
+        const currentCreatedBy = existingFull[0]?.created_by || null;
+
+        console.log('[deliveryCharges] actorId=', actorId, 'currentCreatedBy=', currentCreatedBy);
+
+        const looksLikeUuid = (val) => typeof val === 'string' && /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/.test(val);
+        const shouldReplaceCreatedBy = !looksLikeUuid(currentCreatedBy) && looksLikeUuid(actorId);
+
+        if (shouldReplaceCreatedBy) {
+          await connection.query(
+            `UPDATE delivery_charges SET
+              base_delivery_charge = ?,
+              free_delivery_minimum_order_amount = ?,
+              per_km_delivery_charge = ?,
+              maximum_delivery_distance = ?,
+              delivery_area_scope = ?,
+              enable_express_delivery = ?,
+              express_delivery_charge = ?,
+              estimated_delivery_time = ?,
+              updated_by = ?,
+              created_by = ?
+            WHERE id = ?`,
+            [
+              baseDeliveryCharge,
+              freeDeliveryMinimumOrderAmount,
+              perKmDeliveryCharge,
+              maximumDeliveryDistance,
+              deliveryAreaScope,
+              enableExpressDelivery,
+              expressDeliveryCharge,
+              estimatedDeliveryTime,
+              actorId,
+              actorId,
+              existingId,
+            ]
+          );
+        } else {
+          await connection.query(
+            `UPDATE delivery_charges SET
+              base_delivery_charge = ?,
+              free_delivery_minimum_order_amount = ?,
+              per_km_delivery_charge = ?,
+              maximum_delivery_distance = ?,
+              delivery_area_scope = ?,
+              enable_express_delivery = ?,
+              express_delivery_charge = ?,
+              estimated_delivery_time = ?,
+              updated_by = ?
+            WHERE id = ?`,
+            [
+              baseDeliveryCharge,
+              freeDeliveryMinimumOrderAmount,
+              perKmDeliveryCharge,
+              maximumDeliveryDistance,
+              deliveryAreaScope,
+              enableExpressDelivery,
+              expressDeliveryCharge,
+              estimatedDeliveryTime,
+              actorId,
+              existingId,
+            ]
+          );
+        }
 
         return res.status(200).json({
           success: true,
