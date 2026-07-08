@@ -170,9 +170,7 @@ const VideoManagement = () => {
                 formData.append("thumbnail", newVideo.thumbnailFile);
             }
 
-            await api.post("/videos", formData, {
-                headers: { "Content-Type": "multipart/form-data" }
-            });
+            await api.post("/videos", formData);
             toast.success("Video added successfully");
             fetchVideos();
             setIsAddModalOpen(false);
@@ -201,9 +199,7 @@ const VideoManagement = () => {
                 formData.append("thumbnail", editingVideo.thumbnailFile);
             }
 
-            await api.put(`/videos/${editingVideo.id}`, formData, {
-                headers: { "Content-Type": "multipart/form-data" }
-            });
+            await api.put(`/videos/${editingVideo.id}`, formData);
             toast.success("Video updated successfully");
             fetchVideos();
             setIsEditModalOpen(false);
