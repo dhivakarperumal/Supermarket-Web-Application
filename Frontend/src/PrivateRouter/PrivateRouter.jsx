@@ -3,10 +3,12 @@ import { Navigate } from "react-router-dom";
 import { AuthContext } from "../PrivateRouter/AuthContext.jsx";
 
 const PrivateRoute = ({ children, allowedRoles = [] }) => {
-  const { user, loading } = useContext(AuthContext);
+  const auth = useContext(AuthContext);
+  const user = auth?.user || null;
+  const loading = auth?.loading || false;
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="p-6 text-center text-slate-600">Loading...</div>;
   }
 
   // Not logged in
@@ -14,8 +16,10 @@ const PrivateRoute = ({ children, allowedRoles = [] }) => {
     return <Navigate to="/login" replace />;
   }
 
+  const userRole = (user?.role || "admin").toString().toLowerCase();
+
   // Role check
-  if (allowedRoles.length && !allowedRoles.includes(user.role)) {
+  if (allowedRoles.length && !allowedRoles.some((role) => role.toString().toLowerCase() === userRole)) {
     return (
       <div className="p-6 text-center text-red-600">
         You are not authorized to view this page

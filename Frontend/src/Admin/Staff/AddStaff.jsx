@@ -1,8 +1,28 @@
-import { useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import imageCompression from "browser-image-compression";
 import { FaArrowLeft } from "react-icons/fa";
+import {
+  User,
+  Mail,
+  Phone,
+  Lock,
+  Briefcase,
+  Calendar,
+  Wallet,
+  MapPin,
+  Clock,
+  Users,
+  Shield,
+  Droplets,
+  Badge,
+  CreditCard,
+  Home,
+  FileText,
+  BadgeCheck,
+  FileBadge2,
+} from "lucide-react";
 
 /* ---------------- CONSTANTS ---------------- */
 
@@ -11,19 +31,39 @@ const bloodGroups = [
 ];
 
 import api from "../../api";
+import { useAuth } from "../../PrivateRouter/AuthContext";
 
 // Note: backend should provide staff endpoints. Frontend will POST/PUT to `/staff`.
 
 /* ---------------- COMPONENT ---------------- */
-const inputClass = "mt-1 w-full  rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-
+const inputClass = `
+w-full
+h-[52px]
+pl-12
+pr-4
+rounded-xl
+border
+border-[#e4e7ec]
+bg-white
+text-[#1f2937]
+text-[15px]
+placeholder:text-[#98a2b3]
+shadow-sm
+transition-all
+duration-200
+outline-none
+focus:border-[#22c55e]
+focus:ring-4
+focus:ring-[#22c55e]/10
+`;
 
 const AddEditStaff = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const generateEmployeeId = async () => {
+  const generateEmployeeId = useCallback(async () => {
     try {
       const res = await api.get('/staff/generate-employee-id');
       if (res.data && res.data.employeeId) return res.data.employeeId;
@@ -33,7 +73,7 @@ const AddEditStaff = () => {
 
     // fallback: timestamp-based id
     return `EMP${String(Date.now()).slice(-6)}`;
-  };
+  }, []);
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -123,7 +163,7 @@ const AddEditStaff = () => {
 
   /* ---------------- INPUT HANDLER WITH AUTO-POPULATION ---------------- */
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
 
     // Auto-populate username from email
@@ -146,11 +186,11 @@ const AddEditStaff = () => {
     else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
-  };
+  }, []);
 
   /* ---------------- FILE UPLOAD ---------------- */
 
-  const handleFileUpload = async (e, field) => {
+  const handleFileUpload = useCallback(async (e, field) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -163,7 +203,7 @@ const AddEditStaff = () => {
         // Compress images to ~600KB. 
         // Note: DB columns MUST be MEDIUMTEXT or LONGTEXT to handle this correctly.
         const compressed = await imageCompression(file, {
-          maxSizeMB: 0.6, 
+          maxSizeMB: 0.6,
           maxWidthOrHeight: 1024,
           useWebWorker: true,
         });
@@ -191,16 +231,16 @@ const AddEditStaff = () => {
       console.error("Upload error:", err);
       toast.error("Upload failed");
     }
-  };
+  }, []);
 
-  const openPreview = (file, fileName) => {
+  const openPreview = useCallback((file, fileName) => {
     setPreviewFile({ data: file, name: fileName });
-  };
+  }, []);
 
-  const handleDeleteFile = (field) => {
+  const handleDeleteFile = useCallback((field) => {
     setForm((prev) => ({ ...prev, [field]: "" }));
     toast.success("File removed");
-  };
+  }, []);
 
   /* ---------------- VALIDATION FUNCTION ---------------- */
 
@@ -247,37 +287,19 @@ const AddEditStaff = () => {
       newErrors.employeeId = "Employee ID is required";
     }
 
-    // Role validation
+    // Role validation (required for staff creation)
     if (!form.role?.trim()) {
       newErrors.role = "Role is required";
     }
 
-    // Salary validation
-    if (!form.salary?.trim()) {
-      newErrors.salary = "Salary is required";
-    } else if (isNaN(form.salary) || form.salary <= 0) {
-      newErrors.salary = "Please enter a valid salary amount";
+    // Optional fields: only validate when values are provided
+    if (form.salary?.trim()) {
+      if (isNaN(form.salary) || Number(form.salary) <= 0) {
+        newErrors.salary = "Please enter a valid salary amount";
+      }
     }
 
-    // Shift validation
-    if (!form.shift?.trim()) {
-      newErrors.shift = "Shift is required";
-    }
-
-    // Gender validation
-    if (!form.gender?.trim()) {
-      newErrors.gender = "Gender is required";
-    }
-
-    // Blood Group validation
-    if (!form.bloodGroup?.trim()) {
-      newErrors.bloodGroup = "Blood group is required";
-    }
-
-    // Date of Birth validation
-    if (!form.dob?.trim()) {
-      newErrors.dob = "Date of Birth is required";
-    } else {
+    if (form.dob?.trim()) {
       const dobDate = new Date(form.dob);
       const today = new Date();
       const age = today.getFullYear() - dobDate.getFullYear();
@@ -286,27 +308,7 @@ const AddEditStaff = () => {
       }
     }
 
-    // Joining Date validation
-    if (!form.joiningDate?.trim()) {
-      newErrors.joiningDate = "Joining Date is required";
-    }
-
-    // Address validation
-    if (!form.address?.trim()) {
-      newErrors.address = "Address is required";
-    } else if (form.address.length < 5) {
-      newErrors.address = "Address must be at least 5 characters";
-    }
-
-    // Time In validation
-    if (!form.timeIn?.trim()) {
-      newErrors.timeIn = "Time In is required";
-    }
-
-    // Time Out validation
-    if (!form.timeOut?.trim()) {
-      newErrors.timeOut = "Time Out is required";
-    } else if (form.timeIn && form.timeOut <= form.timeIn) {
+    if (form.timeIn?.trim() && form.timeOut?.trim() && form.timeOut <= form.timeIn) {
       newErrors.timeOut = "Time Out must be after Time In";
     }
 
@@ -362,6 +364,8 @@ const AddEditStaff = () => {
         id_doc: idDoc || null,
         certificate_doc: certificateDoc || null,
         photo: photo || null,
+        created_by: user?.user_id || user?.id || undefined,
+        updated_by: user?.user_id || user?.id || undefined,
         // include password if creating new user; backend may handle auth creation
         password: !isEdit ? password : undefined,
       };
@@ -388,13 +392,41 @@ const AddEditStaff = () => {
     }
   };
 
+  const InputBox = memo(({ label, required, icon, children }) => (
+    <div>
+
+      <label className="block text-[15px] font-semibold text-[#344054] mb-2">
+
+        {label}
+
+        {required && (
+          <span className="text-red-500 ml-1">*</span>
+        )}
+
+      </label>
+
+      <div className="relative">
+
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#ecfdf3] flex items-center justify-center text-[#22c55e]">
+
+          {icon}
+
+        </div>
+
+        {children}
+
+      </div>
+
+    </div>
+  ));
+
 
   /* ---------------- UI ---------------- */
 
-  const ErrorText = ({ field }) =>
-    errors[field] ? <p className="text-red-500 text-xs mt-1">{errors[field]}</p> : null;
+  const ErrorText = memo(({ field, errors = {} }) =>
+    errors[field] ? <p className="text-red-500 text-xs mt-1">{errors[field]}</p> : null);
 
-  const PreviewModal = () => {
+  const PreviewModal = memo(({ previewFile, onClose }) => {
     if (!previewFile) return null;
 
     const isImage = previewFile.data.startsWith('data:image');
@@ -405,7 +437,7 @@ const AddEditStaff = () => {
         <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto">
           <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white">
             <h3 className="text-lg font-semibold">{previewFile.name}</h3>
-            <button onClick={() => setPreviewFile(null)} className="text-gray-500 hover:text-gray-700 text-xl">✕</button>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-xl">✕</button>
           </div>
           <div className="p-4 flex items-center justify-center min-h-[400px]">
             {isImage ? (
@@ -424,418 +456,791 @@ const AddEditStaff = () => {
         </div>
       </div>
     );
-  };
+  });
 
   return (
+    <div className="min-h-screen bg-[#f5f8f6] p-6">
 
-     <div className="">
-              <div>
-                <button
-                  onClick={() => navigate("/admin/staff")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition"
-                >
-                  <FaArrowLeft /> Back
-                </button>
-              </div>
-    <div className="w-full p-5 max-w-6xl backdrop-blur-xl bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] border-white/10 rounded-2xl shadow-2xl p-8">
-      <h3 className="text-lg font-semibold mb-6">
-        {isEdit ? "Edit Staff" : "Add Staff"}
-      </h3>
+      {/* HEADER */}
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="max-w-7xl mx-auto mb-8">
 
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-5">
 
-        <div>
-          <label className="text-sm font-medium">Name *</label>
-          <input name="name" placeholder="Enter Name" value={form.name} onChange={handleChange}
-            className={`${inputClass} ${errors.name ? "border-red-500 focus:ring-red-500" : ""}`} />
-          <ErrorText field="name" />
-        </div>
-        {/* USERNAME */}
-        <div>
-          <label className="text-sm font-medium">Username (Auto from Email)</label>
-          <input 
-            name="username" 
-            placeholder="Username" 
-            value={form.username} 
-            onChange={handleChange}
-            className={`${inputClass} ${errors.username ? "border-red-500 focus:ring-red-500" : ""}`} 
-          />
-          <ErrorText field="username" />
-        </div>
+          <div className="flex items-center gap-4">
 
-        {/* EMAIL */}
-        <div>
-          <label className="text-sm font-medium">Email *</label>
-          <input name="email" placeholder="Enter Email Address" value={form.email} onChange={handleChange}
-            className={`${inputClass} ${errors.email ? "border-red-500 focus:ring-red-500" : ""}`} />
-          <ErrorText field="email" />
-        </div>
+            <button
+              onClick={() => navigate("/admin/staff")}
+              className="w-11 h-11 rounded-full bg-[#1b7f29] hover:bg-[#166321] text-white flex items-center justify-center shadow transition"
+            >
+              <FaArrowLeft />
+            </button>
 
-        {/* PASSWORD (ADD ONLY) */}
-        {!isEdit && (
-          <div>
-            <label className="text-sm font-medium">
-              Login Password <span className="text-xs text-gray-300">(defaults to mobile number)</span>
-            </label>
-            <div className="relative">
-              <input 
-                type="text" 
-                name="password" 
-                value={form.password}
-                onChange={handleChange} 
-                placeholder="Enter password"
-                className={`${inputClass} ${errors.password ? "border-red-500 focus:ring-red-500" : ""}`} 
-              />
+            <div>
+
+              <h1 className="text-3xl font-extrabold text-[#123524]">
+                {isEdit ? "Edit Staff" : "Add Staff"}
+              </h1>
+
+              <p className="text-gray-500 mt-1">
+                Manage employee information and documents.
+              </p>
+
             </div>
-            <p className="text-xs text-gray-400 mt-1">This will be the password for the staff account.</p>
-            <ErrorText field="password" />
+
           </div>
-        )}
 
-        {/* MOBILE */}
-        <div>
-          <label className="text-sm font-medium">Mobile Number *</label>
-          <input name="phone" placeholder="Enter Mobile Number" value={form.phone} onChange={handleChange}
-            className={`${inputClass} ${errors.phone ? "border-red-500 focus:ring-red-500" : ""}`} />
-          <ErrorText field="phone" />
+          <div className="flex gap-3">
+
+            <button
+              type="button"
+              onClick={() => navigate("/admin/staff")}
+              className="px-6 py-3 rounded-xl border border-[#dce9df] bg-white hover:bg-gray-50 font-semibold text-gray-700 transition"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              form="staffForm"
+              disabled={loading}
+              className="px-6 py-3 rounded-xl bg-[#1b7f29] hover:bg-[#166321] text-white font-bold shadow-lg transition"
+            >
+              {loading
+                ? "Saving..."
+                : isEdit
+                  ? "Update Staff"
+                  : "Save Staff"}
+            </button>
+
+          </div>
+
         </div>
 
-        {/* NAME */}
-        <div>
-          <label className="text-sm font-medium">Salary *</label>
-          <input name="salary" placeholder="Enter Salary" value={form.salary} onChange={handleChange}
-            className={`${inputClass} ${errors.salary ? "border-red-500 focus:ring-red-500" : ""}`} />
-          <ErrorText field="salary" />
-        </div>
+      </div>
 
-        {/* SHIFT */}
-        <div>
-          <label className="text-sm font-medium">Shift *</label>
-          <input name="shift" placeholder="Enter Shift" value={form.shift} onChange={handleChange}
-            className={`${inputClass} ${errors.shift ? "border-red-500 focus:ring-red-500" : ""}`} />
-          <ErrorText field="shift" />
-        </div>
+      <div className="max-w-7xl mx-auto">
 
-        {/* EMPLOYEE ID */}
-        <div>
-          <label className="text-sm font-medium">Employee ID * (Auto-generated on submit)</label>
-          <input name="employeeId" value={form.employeeId} onChange={handleChange}
-            placeholder="Will be generated when adding"
-            className={`${inputClass} ${errors.employeeId ? "border-red-500 focus:ring-red-500" : ""}`} disabled readOnly />
-          <ErrorText field="employeeId" />
-        </div>
+        <form
+          id="staffForm"
+          onSubmit={handleSubmit}
+          className="grid lg:grid-cols-3 gap-6 items-start"
+        >
 
-        {/* ROLE */}
-        <div>
-          <label className="text-sm text-white/70 mb-1 block">
-            Role *
-          </label>
+          {/* LEFT SIDE */}
 
-          <select
-            name="role"
-            value={form.role}
-            onChange={handleChange}
-            className={`${inputClass} text-white ${errors.role ? "border-red-500 focus:ring-red-500" : ""}`}
-          >
-            <option value="" className="text-gray-400 bg-[#0f172a]">
-              Select role
-            </option>
+          <div className="lg:col-span-2 space-y-6">
 
-            <option value="trainer" className="text-black bg-white">
-              Trainer
-            </option>
-            <option value="personal_trainer" className="text-black bg-white">
-              Personal Trainer
-            </option>
-            <option value="gym_manager" className="text-black bg-white">
-              Gym Manager
-            </option>
-            <option value="receptionist" className="text-black bg-white">
-              Receptionist
-            </option>
-            <option value="nutritionist" className="text-black bg-white">
-              Nutritionist
-            </option>
-            <option value="security" className="text-black bg-white">
-              Security
-            </option>
-          </select>
+            {/* BASIC INFORMATION */}
 
-          <ErrorText field="role" />
-        </div>
+            <div className="bg-white rounded-2xl border border-[#dce9df] shadow-sm overflow-hidden">
 
-        {/* GENDER */}
-        <div>
-          <label className="text-sm font-medium">Gender *</label>
-          <select name="gender" value={form.gender} onChange={handleChange}
-            className={`${inputClass} text-white ${errors.gender ? "border-red-500 focus:ring-red-500" : ""}`}>
-            <option className="text-gray-400 bg-[#0f172a]" value="">Select gender</option>
-            <option className="text-gray-400 bg-[#0f172a]" >Male</option>
-            <option className="text-gray-400 bg-[#0f172a]" >Female</option>
-            <option className="text-gray-400 bg-[#0f172a]" >Other</option>
-          </select>
-          <ErrorText field="gender" />
-        </div>
+              <div className="px-6 py-4 border-b border-[#edf3ee] bg-gradient-to-r from-[#eef8ef] to-white">
 
-        {/* BLOOD GROUP */}
-        <div>
-          <label className="text-sm text-white/70 mb-1 block">
-            Blood Group *
-          </label>
+                <h2 className="text-lg font-bold text-[#123524]">
+                  Basic Information
+                </h2>
 
-          <select
-            name="bloodGroup"
-            value={form.bloodGroup}
-            onChange={handleChange}
-            className={`${inputClass} text-white ${errors.bloodGroup ? "border-red-500 focus:ring-red-500" : ""
-              }`}
-          >
-            {/* Placeholder */}
-            <option value="" className="text-gray-400 bg-[#0f172a]">
-              Select blood group
-            </option>
+                <p className="text-sm text-gray-500 mt-1">
+                  Employee personal login details.
+                </p>
 
-            {/* Options */}
-            {bloodGroups.map((bg) => (
-              <option
-                key={bg}
-                value={bg}
-                className="text-black bg-white"
-              >
-                {bg}
-              </option>
-            ))}
-          </select>
+              </div>
 
-          <ErrorText field="bloodGroup" />
-        </div>
+              <div className="p-6 grid md:grid-cols-2 gap-5">
+                <InputBox
+                  label="Full Name"
+                  required
+                  icon={<User size={16} />}
+                >
 
+                  <input
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    placeholder="Enter employee name"
+                    className={`${inputClass} ${errors.name
+                      ? "border-red-500"
+                      : ""
+                      }`}
+                  />
 
-        {/* DOB */}
-        <div>
-          <label className="text-sm font-medium">Date of Birth *</label>
-          <input type="date" name="dob" value={form.dob} onChange={handleChange}
-            className={`${inputClass} ${errors.dob ? "border-red-500 focus:ring-red-500" : ""}`} />
-          <ErrorText field="dob" />
-        </div>
+                </InputBox>
 
-        {/* JOINING DATE */}
-        <div>
-          <label className="text-sm font-medium">Joining Date *</label>
-          <input type="date" name="joiningDate" value={form.joiningDate} onChange={handleChange}
-            className={`${inputClass} ${errors.joiningDate ? "border-red-500 focus:ring-red-500" : ""}`} />
-          <ErrorText field="joiningDate" />
-        </div>
+                <ErrorText field="name" errors={errors} />
+                {/* USERNAME */}
+                <InputBox
+                  label="Username"
+                  required
+                  icon={<Users size={16} />}
+                >
 
-        {/* TIME IN */}
-        <div>
-          <label className="text-sm font-medium">Time In (HH:MM) *</label>
-          <input type="time" name="timeIn" value={form.timeIn} onChange={handleChange}
-            className={`${inputClass} ${errors.timeIn ? "border-red-500 focus:ring-red-500" : ""}`} />
-          <ErrorText field="timeIn" />
-        </div>
+                  <input
+                    name="username"
+                    value={form.username}
+                    onChange={handleChange}
+                    placeholder="Enter username"
+                    className={`${inputClass} ${errors.username ? "border-red-500" : ""
+                      }`}
+                  />
 
-        {/* TIME OUT */}
-        <div>
-          <label className="text-sm font-medium">Time Out (HH:MM) *</label>
-          <input type="time" name="timeOut" value={form.timeOut} onChange={handleChange}
-            className={`${inputClass} ${errors.timeOut ? "border-red-500 focus:ring-red-500" : ""}`} />
-          <ErrorText field="timeOut" />
-        </div>
+                </InputBox>
 
-        {/* ADDRESS */}
-        <div className="col-span-2">
-          <label className="text-sm font-medium">Address *</label>
-          <textarea name="address" placeholder="Enter Address" value={form.address} onChange={handleChange}
-            className={`${inputClass} ${errors.address ? "border-red-500 focus:ring-red-500" : ""}`} />
-          <ErrorText field="address" />
-        </div>
+                <ErrorText field="username" errors={errors} />
 
-        {/* PHOTO */}
-        <div className="relative">
-          <label className="text-sm font-medium">Photo</label>
-          <div className="relative group">
-            <input type="file" accept="image/*"
-              key={`photo-${form.photo ? 'filled' : 'empty'}`}
-              onChange={(e) => handleFileUpload(e, "photo")}
-              className={inputClass} />
-            
-            {form.photo && (
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-black/40 backdrop-blur-md p-1.5 rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                {form.photo.startsWith('data:image') ? (
-                  <img src={form.photo} alt="Preview" className="h-10 w-10 rounded object-cover border border-white/20" />
-                ) : (
-                  <div className="h-10 w-10 flex items-center justify-center bg-white/5 rounded border border-white/10 text-[8px] text-gray-400">DOC</div>
+                {/* EMAIL */}
+                <InputBox
+                  label="Email"
+                  required
+                  icon={<Mail size={16} />}
+                >
+
+                  <input
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    placeholder="Enter email address"
+                    className={`${inputClass} ${errors.email
+                      ? "border-red-500"
+                      : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="email" errors={errors} />
+
+                {/* PASSWORD (ADD ONLY) */}
+                {!isEdit && (
+                  <div>
+
+                    <InputBox
+                      label="Password"
+                      required
+                      icon={<Lock size={16} />}
+                    >
+
+                      <input
+                        type="text"
+                        name="password"
+                        value={form.password}
+                        onChange={handleChange}
+                        placeholder="Password"
+                        className={`${inputClass} ${errors.password ? "border-red-500" : ""
+                          }`}
+                      />
+
+                    </InputBox>
+
+                    <ErrorText field="password" errors={errors} />
+                  </div>
                 )}
-                <div className="flex flex-col gap-1">
-                  <button type="button" onClick={() => openPreview(form.photo, "photo.jpg")}
-                    className="px-2 py-0.5 bg-blue-500/80 text-white rounded text-[10px] hover:bg-blue-600">
-                    View
+
+                {/* MOBILE */}
+                <InputBox
+                  label="Mobile Number"
+                  required
+                  icon={<Phone size={16} />}
+                >
+
+                  <input
+                    name="phone"
+                    value={form.phone}
+                    onChange={handleChange}
+                    placeholder="Enter mobile number"
+                    className={`${inputClass} ${errors.phone
+                      ? "border-red-500"
+                      : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="phone" errors={errors} />
+
+
+
+                <InputBox
+                  label="Salary"
+                  required
+                  icon={<Wallet size={16} />}
+                >
+
+                  <input
+                    name="salary"
+                    value={form.salary}
+                    onChange={handleChange}
+                    placeholder="Enter salary"
+                    className={`${inputClass} ${errors.salary ? "border-red-500" : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="salary" errors={errors} />
+
+                {/* SHIFT */}
+                <InputBox
+                  label="Shift"
+                  required
+                  icon={<Clock size={16} />}
+                >
+
+                  <input
+                    name="shift"
+                    value={form.shift}
+                    onChange={handleChange}
+                    placeholder="Morning / Evening"
+                    className={`${inputClass} ${errors.shift ? "border-red-500" : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="shift" errors={errors} />
+
+                {/* EMPLOYEE ID */}
+                <InputBox
+                  label="Employee ID"
+                  icon={<Badge size={16} />}
+                >
+
+                  <input
+                    value={form.employeeId}
+                    readOnly
+                    disabled
+                    placeholder="Auto Generated"
+                    className={inputClass}
+                  />
+
+                </InputBox>
+
+                {/* ROLE */}
+                <InputBox
+                  label="Role"
+                  required
+                  icon={<Briefcase size={16} />}
+                >
+
+                  <select
+                    name="role"
+                    value={form.role}
+                    onChange={handleChange}
+                    className={`${inputClass} appearance-none ${errors.role ? "border-red-500" : ""
+                      }`}
+                  >
+                    <option value="">Select Role</option>
+
+                    <option value="store_manager">
+                      Store Manager
+                    </option>
+
+                    <option value="assistant_manager">
+                      Assistant Manager
+                    </option>
+
+                    <option value="cashier">
+                      Cashier
+                    </option>
+
+                    <option value="sales_executive">
+                      Sales Executive
+                    </option>
+
+                    <option value="inventory_manager">
+                      Inventory Manager
+                    </option>
+
+                    <option value="stock_keeper">
+                      Stock Keeper
+                    </option>
+
+                    <option value="billing_staff">
+                      Billing Staff
+                    </option>
+
+                    <option value="customer_service">
+                      Customer Service
+                    </option>
+
+                    <option value="delivery_staff">
+                      Delivery Staff
+                    </option>
+
+                    <option value="warehouse_staff">
+                      Warehouse Staff
+                    </option>
+
+                    <option value="quality_checker">
+                      Quality Checker
+                    </option>
+
+                    <option value="cleaning_staff">
+                      Cleaning Staff
+                    </option>
+
+                    <option value="security">
+                      Security
+                    </option>
+
+                  </select>
+
+                </InputBox>
+
+                <ErrorText field="role" />
+
+                {/* GENDER */}
+                <InputBox
+                  label="Gender"
+                  required
+                  icon={<Users size={16} />}
+                >
+
+                  <select
+                    name="gender"
+                    value={form.gender}
+                    onChange={handleChange}
+                    className={`${inputClass} appearance-none ${errors.gender ? "border-red-500" : ""
+                      }`}
+                  >
+
+                    <option value="">Select Gender</option>
+
+                    <option>Male</option>
+
+                    <option>Female</option>
+
+                    <option>Other</option>
+
+                  </select>
+
+                </InputBox>
+
+                <ErrorText field="gender" />
+
+                {/* BLOOD GROUP */}
+                <InputBox
+                  label="Blood Group"
+                  required
+                  icon={<Droplets size={16} />}
+                >
+
+                  <select
+                    name="bloodGroup"
+                    value={form.bloodGroup}
+                    onChange={handleChange}
+                    className={`${inputClass} appearance-none ${errors.bloodGroup ? "border-red-500" : ""
+                      }`}
+                  >
+
+                    <option value="">
+                      Select Blood Group
+                    </option>
+
+                    {bloodGroups.map(bg => (
+                      <option
+                        key={bg}
+                        value={bg}
+                      >
+                        {bg}
+                      </option>
+                    ))}
+
+                  </select>
+
+                </InputBox>
+
+                <ErrorText field="bloodGroup" />
+
+
+                {/* DOB */}
+                <InputBox
+                  label="Date of Birth"
+                  required
+                  icon={<Calendar size={16} />}
+                >
+
+                  <input
+                    type="date"
+                    name="dob"
+                    value={form.dob}
+                    onChange={handleChange}
+                    className={`${inputClass} ${errors.dob ? "border-red-500" : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="dob" />
+
+                {/* JOINING DATE */}
+                <InputBox
+                  label="Joining Date"
+                  required
+                  icon={<Calendar size={16} />}
+                >
+
+                  <input
+                    type="date"
+                    name="joiningDate"
+                    value={form.joiningDate}
+                    onChange={handleChange}
+                    className={`${inputClass} ${errors.joiningDate ? "border-red-500" : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="joiningDate" />
+
+                {/* TIME IN */}
+                <InputBox
+                  label="Time In"
+                  required
+                  icon={<Clock size={16} />}
+                >
+
+                  <input
+                    type="time"
+                    name="timeIn"
+                    value={form.timeIn}
+                    onChange={handleChange}
+                    className={`${inputClass} ${errors.timeIn ? "border-red-500" : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="timeIn" />
+
+                {/* TIME OUT */}
+                <InputBox
+                  label="Time Out"
+                  required
+                  icon={<Clock size={16} />}
+                >
+
+                  <input
+                    type="time"
+                    name="timeOut"
+                    value={form.timeOut}
+                    onChange={handleChange}
+                    className={`${inputClass} ${errors.timeOut ? "border-red-500" : ""
+                      }`}
+                  />
+
+                </InputBox>
+
+                <ErrorText field="timeOut" />
+
+                {/* Address */}
+                <InputBox
+                  label="Address"
+                  required
+                  icon={<Home size={16} />}
+                  textarea
+                >
+                  <textarea
+                    name="address"
+                    rows={4}
+                    value={form.address}
+                    onChange={handleChange}
+                    placeholder="Enter address"
+                    className="
+      w-full
+      pl-12
+      pr-4
+      pt-4
+      pb-4
+      rounded-xl
+      border
+      border-[#e4e7ec]
+      bg-white
+      text-[#1f2937]
+      placeholder:text-[#98a2b3]
+      shadow-sm
+      resize-none
+      focus:outline-none
+      focus:border-[#22c55e]
+      focus:ring-4
+      focus:ring-[#22c55e]/10
+    "
+                  />
+                </InputBox>
+
+                {/* ACTIONS */}
+                <div className="col-span-2 flex justify-end gap-4 mt-6">
+
+                  <button
+                    type="button"
+                    onClick={() => navigate("/admin/staff")}
+                    className="
+      px-6 py-3
+      rounded-xl
+      border
+      border-[#dce9df]
+      bg-white
+      text-[#344054]
+      font-semibold
+      shadow-sm
+      hover:bg-gray-50
+      transition-all
+      duration-200
+    "
+                  >
+                    Cancel
                   </button>
-                  <button type="button" onClick={() => handleDeleteFile("photo")}
-                    className="px-2 py-0.5 bg-red-500/80 text-white rounded text-[10px] hover:bg-red-600">
-                    Del
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="
+      flex items-center
+      gap-2
+      px-7
+      py-3
+      rounded-xl
+      font-semibold
+      text-white
+      bg-gradient-to-r
+      from-[#22c55e]
+      to-[#16a34a]
+      hover:from-[#16a34a]
+      hover:to-[#15803d]
+      shadow-lg
+      hover:shadow-xl
+      transition-all
+      duration-300
+      disabled:opacity-50
+      disabled:cursor-not-allowed
+    "
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        {isEdit ? "Update Staff" : "Save Staff"}
+                      </>
+                    )}
                   </button>
+
                 </div>
-              </div>
-            )}
-            
-            {/* Persistent Thumbnail when not hovering */}
-            {form.photo && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none group-hover:hidden transition-all">
-                 {form.photo.startsWith('data:image') ? (
-                  <img src={form.photo} alt="Preview" className="h-8 w-8 rounded-full object-cover border-2 border-orange-500/50 shadow-lg" />
-                ) : (
-                  <div className="h-8 w-8 flex items-center justify-center bg-orange-500/20 rounded-full border border-orange-500/50 text-[8px] text-orange-200">📄</div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* AADHAR */}
-        <div className="relative">
-          <label className="text-sm font-medium">Aadhar (Image/PDF)</label>
-          <div className="relative group">
-            <input type="file" accept="image/*,.pdf,.doc,.docx"
-              key={`aadhar-${form.aadharDoc ? 'filled' : 'empty'}`}
-              onChange={(e) => handleFileUpload(e, "aadharDoc")}
-              className={inputClass} />
-            
-            {form.aadharDoc && (
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-black/40 backdrop-blur-md p-1.5 rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                {form.aadharDoc.startsWith('data:image') ? (
-                  <img src={form.aadharDoc} alt="Preview" className="h-10 w-10 rounded object-cover border border-white/20" />
-                ) : (
-                  <div className="h-10 w-10 flex items-center justify-center bg-white/5 rounded border border-white/10 text-[8px] text-gray-400">PDF</div>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT SIDE */}
+
+          <div className="space-y-6">
+
+            {/* STAFF PHOTO */}
+
+            <div className="bg-white rounded-2xl border border-[#dce9df] shadow-sm overflow-hidden">
+
+              <div className="px-6 py-4 border-b border-[#edf3ee] bg-gradient-to-r from-[#eef8ef] to-white">
+
+                <h2 className="font-bold text-[#1b7f29] text-lg">
+                  Staff Photo
+                </h2>
+
+                <p className="text-sm text-gray-500 mt-1">
+                  Upload profile image
+                </p>
+
+              </div>
+
+              <div className="p-6">
+
+                <label
+                  htmlFor="photoUpload"
+                  className="border-2 border-dashed border-[#dce9df] rounded-2xl h-56 flex flex-col items-center justify-center cursor-pointer hover:bg-[#faf8ff] transition"
+                >
+
+                  <div className="text-5xl mb-3">
+                    📤
+                  </div>
+
+                  <p className="font-semibold text-[#1b7f29]">
+                    Click to upload
+                  </p>
+
+                  <p className="text-sm text-gray-500">
+                    PNG, JPG, JPEG
+                  </p>
+
+                </label>
+
+                <input
+                  id="photoUpload"
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => handleFileUpload(e, "photo")}
+                />
+
+                {form.photo && (
+
+                  <div className="mt-5">
+
+                    <img
+                      src={form.photo}
+                      className="w-full h-56 rounded-xl object-cover border"
+                    />
+
+                    <div className="flex gap-3 mt-3">
+
+                      <button
+                        type="button"
+                        onClick={() => openPreview(form.photo, "Photo")}
+                        className="flex-1 py-2 rounded-lg bg-blue-100 text-blue-700 font-semibold"
+                      >
+                        Preview
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteFile("photo")}
+                        className="flex-1 py-2 rounded-lg bg-red-100 text-red-600 font-semibold"
+                      >
+                        Remove
+                      </button>
+
+                    </div>
+
+                  </div>
+
                 )}
-                <div className="flex flex-col gap-1">
-                  <button type="button" onClick={() => openPreview(form.aadharDoc, "aadhar")}
-                    className="px-2 py-0.5 bg-blue-500/80 text-white rounded text-[10px] hover:bg-blue-600">
-                    View
-                  </button>
-                  <button type="button" onClick={() => handleDeleteFile("aadharDoc")}
-                    className="px-2 py-0.5 bg-red-500/80 text-white rounded text-[10px] hover:bg-red-600">
-                    Del
-                  </button>
+
+              </div>
+
+            </div>
+
+            {/* DOCUMENTS */}
+
+            <div className="bg-white rounded-2xl border border-[#dce9df] shadow-sm overflow-hidden">
+
+              <div className="px-6 py-4  bg-gradient-to-r from-[#eef8ef] to-white">
+
+                <h2 className="font-bold text-[#123524] text-lg">
+                  Documents
+                </h2>
+
+              </div>
+
+              <div className="p-6 space-y-5">
+
+                {/* AADHAAR */}
+
+                <div>
+                  <label className="block text-[15px] font-semibold text-[#344054] mb-2">
+                    Aadhaar
+                  </label>
+
+                  <label
+                    htmlFor="aadharUpload"
+                    className="flex items-center gap-4 border border-[#e4e7ec] rounded-xl bg-white p-4 cursor-pointer hover:border-[#22c55e] hover:bg-[#f8fffa] transition"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-[#ecfdf3] flex items-center justify-center">
+                      <BadgeCheck size={18} className="text-[#22c55e]" />
+                    </div>
+
+                    <div className="flex-1">
+                      <p className="font-medium text-[#344054]">
+                        {form.aadharDoc ? "Aadhaar Uploaded" : "Choose Aadhaar File"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        JPG, PNG or PDF
+                      </p>
+                    </div>
+                  </label>
+
+                  <input
+                    id="aadharUpload"
+                    type="file"
+                    accept="image/*,.pdf"
+                    hidden
+                    onChange={(e) => handleFileUpload(e, "aadharDoc")}
+                  />
                 </div>
-              </div>
-            )}
 
-            {/* Persistent Thumbnail */}
-            {form.aadharDoc && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none group-hover:hidden transition-all">
-                 {form.aadharDoc.startsWith('data:image') ? (
-                  <img src={form.aadharDoc} alt="Preview" className="h-8 w-8 rounded-full object-cover border-2 border-orange-500/50 shadow-lg" />
-                ) : (
-                  <div className="h-8 w-8 flex items-center justify-center bg-orange-500/20 rounded-full border border-orange-500/50 text-[8px] text-orange-200">📄</div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+                {/* ID PROOF */}
 
-        {/* ID */}
-        <div className="relative">
-          <label className="text-sm font-medium">ID Proof (Image/PDF)</label>
-          <div className="relative group">
-            <input type="file" accept="image/*,.pdf,.doc,.docx"
-              key={`idDoc-${form.idDoc ? 'filled' : 'empty'}`}
-              onChange={(e) => handleFileUpload(e, "idDoc")}
-              className={inputClass} />
-            
-            {form.idDoc && (
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-black/40 backdrop-blur-md p-1.5 rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                {form.idDoc.startsWith('data:image') ? (
-                  <img src={form.idDoc} alt="Preview" className="h-10 w-10 rounded object-cover border border-white/20" />
-                ) : (
-                  <div className="h-10 w-10 flex items-center justify-center bg-white/5 rounded border border-white/10 text-[8px] text-gray-400">ID</div>
-                )}
-                <div className="flex flex-col gap-1">
-                  <button type="button" onClick={() => openPreview(form.idDoc, "idproof")}
-                    className="px-2 py-0.5 bg-blue-500/80 text-white rounded text-[10px] hover:bg-blue-600">
-                    View
-                  </button>
-                  <button type="button" onClick={() => handleDeleteFile("idDoc")}
-                    className="px-2 py-0.5 bg-red-500/80 text-white rounded text-[10px] hover:bg-red-600">
-                    Del
-                  </button>
+                <div>
+                  <label className="block text-[15px] font-semibold text-[#344054] mb-2">
+                    ID Proof
+                  </label>
+
+                  <label
+                    htmlFor="idUpload"
+                    className="flex items-center gap-4 border border-[#e4e7ec] rounded-xl bg-white p-4 cursor-pointer hover:border-[#22c55e] hover:bg-[#f8fffa] transition"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-[#ecfdf3] flex items-center justify-center">
+                      <FileBadge2 size={18} className="text-[#22c55e]" />
+                    </div>
+
+                    <div className="flex-1">
+                      <p className="font-medium text-[#344054]">
+                        {form.idDoc ? "ID Proof Uploaded" : "Choose ID Proof"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        JPG, PNG or PDF
+                      </p>
+                    </div>
+                  </label>
+
+                  <input
+                    id="idUpload"
+                    type="file"
+                    accept="image/*,.pdf"
+                    hidden
+                    onChange={(e) => handleFileUpload(e, "idDoc")}
+                  />
                 </div>
-              </div>
-            )}
 
-            {/* Persistent Thumbnail */}
-            {form.idDoc && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none group-hover:hidden transition-all">
-                 {form.idDoc.startsWith('data:image') ? (
-                  <img src={form.idDoc} alt="Preview" className="h-8 w-8 rounded-full object-cover border-2 border-orange-500/50 shadow-lg" />
-                ) : (
-                  <div className="h-8 w-8 flex items-center justify-center bg-orange-500/20 rounded-full border border-orange-500/50 text-[8px] text-orange-200">📄</div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+                {/* CERTIFICATE */}
 
-        {/* CERTIFICATE */}
-        <div className="relative">
-          <label className="text-sm font-medium">Certificate (Image/PDF)</label>
-          <div className="relative group">
-            <input type="file" accept="image/*,.pdf,.doc,.docx"
-              key={`cert-${form.certificateDoc ? 'filled' : 'empty'}`}
-              onChange={(e) => handleFileUpload(e, "certificateDoc")}
-              className={inputClass} />
-            
-            {form.certificateDoc && (
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-black/40 backdrop-blur-md p-1.5 rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                {form.certificateDoc.startsWith('data:image') ? (
-                  <img src={form.certificateDoc} alt="Preview" className="h-10 w-10 rounded object-cover border border-white/20" />
-                ) : (
-                  <div className="h-10 w-10 flex items-center justify-center bg-white/5 rounded border border-white/10 text-[8px] text-gray-400">CERT</div>
-                )}
-                <div className="flex flex-col gap-1">
-                  <button type="button" onClick={() => openPreview(form.certificateDoc, "certificate")}
-                    className="px-2 py-0.5 bg-blue-500/80 text-white rounded text-[10px] hover:bg-blue-600">
-                    View
-                  </button>
-                  <button type="button" onClick={() => handleDeleteFile("certificateDoc")}
-                    className="px-2 py-0.5 bg-red-500/80 text-white rounded text-[10px] hover:bg-red-600">
-                    Del
-                  </button>
+                <div>
+                  <label className="block text-[15px] font-semibold text-[#344054] mb-2">
+                    Certificate
+                  </label>
+
+                  <label
+                    htmlFor="certificateUpload"
+                    className="flex items-center gap-4 border border-[#e4e7ec] rounded-xl bg-white p-4 cursor-pointer hover:border-[#22c55e] hover:bg-[#f8fffa] transition"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-[#ecfdf3] flex items-center justify-center">
+                      <FileText size={18} className="text-[#22c55e]" />
+                    </div>
+
+                    <div className="flex-1">
+                      <p className="font-medium text-[#344054]">
+                        {form.certificateDoc ? "Certificate Uploaded" : "Choose Certificate"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        JPG, PNG or PDF
+                      </p>
+                    </div>
+                  </label>
+
+                  <input
+                    id="certificateUpload"
+                    type="file"
+                    accept="image/*,.pdf"
+                    hidden
+                    onChange={(e) => handleFileUpload(e, "certificateDoc")}
+                  />
                 </div>
-              </div>
-            )}
 
-            {/* Persistent Thumbnail */}
-            {form.certificateDoc && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none group-hover:hidden transition-all">
-                 {form.certificateDoc.startsWith('data:image') ? (
-                  <img src={form.certificateDoc} alt="Preview" className="h-8 w-8 rounded-full object-cover border-2 border-orange-500/50 shadow-lg" />
-                ) : (
-                  <div className="h-8 w-8 flex items-center justify-center bg-orange-500/20 rounded-full border border-orange-500/50 text-[8px] text-orange-200">📄</div>
-                )}
               </div>
-            )}
+            </div>
           </div>
-        </div>
-
-        {/* ACTIONS */}
-        <div className="col-span-2 flex justify-end gap-4 mt-6">
-          <button type="button" onClick={() => navigate("/admin/staff")}
-            className="border border-orange-400 px-6 py-2 rounded">
-            Cancel
-          </button>
-          <button type="submit" disabled={loading}
-            className="flex items-center gap-2 px-5 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:scale-105 transition-all shadow-lg">
-            {loading ? "Saving..." : isEdit ? "Update" : "Save"}
-          </button>
-        </div>
-
-      </form>
-
-      <PreviewModal />
-    </div>
+        </form>
+        <PreviewModal previewFile={previewFile} onClose={() => setPreviewFile(null)} />
+      </div>
     </div>
   );
 };

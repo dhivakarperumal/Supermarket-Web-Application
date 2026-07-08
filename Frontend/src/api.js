@@ -12,9 +12,19 @@ api.interceptors.request.use(
     const token = typeof rawToken === 'string' ? rawToken.trim() : "";
     if (token && token !== 'undefined' && token !== 'null') {
       config.headers = config.headers || {};
-      config.headers["Authorization"] = `Bearer ${token}`;
-      // Some backend consumers also check this header
-      config.headers['x-access-token'] = token;
+          config.headers["Authorization"] = `Bearer ${token}`;
+          // Some backend consumers also check this header
+          config.headers['x-access-token'] = token;
+          // Also include the user's user_id so backend can record created_by/updated_by
+          try {
+            const rawUser = localStorage.getItem('user') || sessionStorage.getItem('user') || '';
+            const user = rawUser ? JSON.parse(rawUser) : null;
+            if (user && user.user_id) {
+              config.headers['x-user-id'] = user.user_id;
+            }
+          } catch (e) {
+            // ignore JSON errors
+          }
     }
     return config;
   },

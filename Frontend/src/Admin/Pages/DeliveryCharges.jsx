@@ -1,8 +1,88 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./Coupons.css"; // Reuse the glassmorphism styles we just built
 import { Truck, Save, RotateCcw } from "lucide-react";
+import api from "../../api";
 
 const DeliveryCharges = () => {
+  const [formData, setFormData] = useState({
+    base_delivery_charge: 50,
+    free_delivery_minimum_order_amount: 500,
+    per_km_delivery_charge: 10,
+    maximum_delivery_distance: 15,
+    delivery_area_scope: "City",
+    enable_express_delivery: true,
+    express_delivery_charge: 100,
+    estimated_delivery_time: "30 Mins",
+  });
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        setLoading(true);
+        const { data } = await api.get("/delivery-charges");
+        if (data?.success && data?.data) {
+          setFormData({
+            base_delivery_charge: data.data.base_delivery_charge ?? 50,
+            free_delivery_minimum_order_amount: data.data.free_delivery_minimum_order_amount ?? 500,
+            per_km_delivery_charge: data.data.per_km_delivery_charge ?? 10,
+            maximum_delivery_distance: data.data.maximum_delivery_distance ?? 15,
+            delivery_area_scope: data.data.delivery_area_scope || "City",
+            enable_express_delivery: Boolean(data.data.enable_express_delivery),
+            express_delivery_charge: data.data.express_delivery_charge ?? 100,
+            estimated_delivery_time: data.data.estimated_delivery_time || "30 Mins",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load delivery charges", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setSaving(true);
+      const payload = {
+        ...formData,
+        enable_express_delivery: formData.enable_express_delivery ? 1 : 0,
+      };
+      await api.post("/delivery-charges", payload);
+      alert("Delivery charges saved successfully.");
+    } catch (error) {
+      console.error("Failed to save delivery charges", error);
+      alert(error?.response?.data?.message || "Failed to save delivery charges.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReset = () => {
+    setFormData({
+      base_delivery_charge: 50,
+      free_delivery_minimum_order_amount: 500,
+      per_km_delivery_charge: 10,
+      maximum_delivery_distance: 15,
+      delivery_area_scope: "City",
+      enable_express_delivery: true,
+      express_delivery_charge: 100,
+      estimated_delivery_time: "30 Mins",
+    });
+  };
+
   return (
     <div className="coupons-page">
       <div className="page-header">
@@ -12,7 +92,7 @@ const DeliveryCharges = () => {
         </div>
       </div>
 
-      <div className="glass-container form-view" style={{ maxWidth: '900px', margin: '0 auto' }}>
+      <form className="glass-container form-view" style={{ maxWidth: '900px', margin: '0 auto' }} onSubmit={handleSubmit}>
         
         {/* Standard Delivery Settings */}
         <div className="form-section">
@@ -20,23 +100,23 @@ const DeliveryCharges = () => {
           <div className="form-grid">
             <div className="form-group">
               <label className="form-label">Base Delivery Charge (₹)</label>
-              <input type="number" className="form-input" placeholder="e.g. 50" defaultValue="50" />
+              <input type="number" className="form-input" name="base_delivery_charge" placeholder="e.g. 50" value={formData.base_delivery_charge} onChange={handleChange} />
             </div>
             <div className="form-group">
               <label className="form-label">Free Delivery Minimum Order Amount (₹)</label>
-              <input type="number" className="form-input" placeholder="e.g. 500" defaultValue="500" />
+              <input type="number" className="form-input" name="free_delivery_minimum_order_amount" placeholder="e.g. 500" value={formData.free_delivery_minimum_order_amount} onChange={handleChange} />
             </div>
             <div className="form-group">
               <label className="form-label">Per KM Delivery Charge (₹)</label>
-              <input type="number" className="form-input" placeholder="e.g. 10" defaultValue="10" />
+              <input type="number" className="form-input" name="per_km_delivery_charge" placeholder="e.g. 10" value={formData.per_km_delivery_charge} onChange={handleChange} />
             </div>
             <div className="form-group">
               <label className="form-label">Maximum Delivery Distance (KM)</label>
-              <input type="number" className="form-input" placeholder="e.g. 15" defaultValue="15" />
+              <input type="number" className="form-input" name="maximum_delivery_distance" placeholder="e.g. 15" value={formData.maximum_delivery_distance} onChange={handleChange} />
             </div>
             <div className="form-group">
               <label className="form-label">Delivery Area Scope</label>
-              <select className="form-select" defaultValue="City">
+              <select className="form-select" name="delivery_area_scope" value={formData.delivery_area_scope} onChange={handleChange}>
                 <option value="Local">Local</option>
                 <option value="City">City</option>
                 <option value="Custom Radius">Custom Radius</option>
@@ -52,33 +132,33 @@ const DeliveryCharges = () => {
               <Truck className="icon" style={{ color: '#0284c7' }} /> Express Delivery
             </h3>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 'bold', color: '#0284c7' }}>
-              <input type="checkbox" style={{ width: '1.2rem', height: '1.2rem' }} defaultChecked />
+              <input type="checkbox" name="enable_express_delivery" style={{ width: '1.2rem', height: '1.2rem' }} checked={Boolean(formData.enable_express_delivery)} onChange={handleChange} />
               Enable Express Delivery
             </label>
           </div>
           <div className="form-grid">
             <div className="form-group">
               <label className="form-label" style={{ color: '#0369a1' }}>Express Delivery Charge (₹)</label>
-              <input type="number" className="form-input" placeholder="e.g. 100" defaultValue="100" />
+              <input type="number" className="form-input" name="express_delivery_charge" placeholder="e.g. 100" value={formData.express_delivery_charge} onChange={handleChange} />
             </div>
             <div className="form-group">
               <label className="form-label" style={{ color: '#0369a1' }}>Estimated Delivery Time</label>
-              <input type="text" className="form-input" placeholder="e.g. 30 Mins" defaultValue="30 Mins" />
+              <input type="text" className="form-input" name="estimated_delivery_time" placeholder="e.g. 30 Mins" value={formData.estimated_delivery_time} onChange={handleChange} />
             </div>
           </div>
         </div>
 
         {/* Actions */}
         <div className="form-actions" style={{ borderTop: 'none', marginTop: '1rem' }}>
-          <button className="btn-secondary">
+          <button type="button" className="btn-secondary" onClick={handleReset}>
             <RotateCcw size={18} /> Reset Settings
           </button>
-          <button className="btn-primary">
-            <Save size={18} /> Save Changes
+          <button type="submit" className="btn-primary" disabled={saving || loading}>
+            <Save size={18} /> {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
 
-      </div>
+      </form>
     </div>
   );
 };
