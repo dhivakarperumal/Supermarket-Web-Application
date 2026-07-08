@@ -16,7 +16,8 @@ import {
     FiStar,
     FiClock,
     FiList,
-    FiGrid
+    FiGrid,
+    FiRefreshCw
 } from "react-icons/fi";
 import { toast, Toaster } from "react-hot-toast";
 
@@ -31,6 +32,9 @@ const Users = ({ initialTab = "All" }) => {
 
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+    const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
+    const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds
+    const [lastUpdated, setLastUpdated] = useState(new Date());
 
     const handleSearchChange = (value) => {
         setSearchTerm(value);
@@ -62,7 +66,7 @@ const Users = ({ initialTab = "All" }) => {
     const [submitLoading, setSubmitLoading] = useState(false);
 
     useEffect(() => {
-        const fetchUsers = async () => {
+        const fetchUsersInitial = async () => {
             try {
                 const response = await api.get("/auth/users");
                 // Transform data if needed for UI
@@ -79,17 +83,27 @@ const Users = ({ initialTab = "All" }) => {
                     avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username || u.name || 'User')}&background=random`
                 }));
                 setUsers(fetchedUsers);
+                setLastUpdated(new Date());
             } catch (error) {
                 console.error("Failed to fetch users:", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchUsers();
+        fetchUsersInitial();
     }, []);
 
-    const fetchUsers = async () => {
-        setLoading(true);
+    // Auto-refresh effect
+    useEffect(() => {
+        if (!autoRefreshEnabled) return;
+        const timer = setInterval(() => {
+            fetchUsers();
+        }, refreshInterval);
+        return () => clearInterval(timer);
+    }, [autoRefreshEnabled, refreshInterval]);
+
+    const fetchUsers = async (showLoader = false) => {
+        if (showLoader) setLoading(true);
         try {
             const response = await api.get("/auth/users");
             const fetchedUsers = response.data.map(u => ({
@@ -105,10 +119,13 @@ const Users = ({ initialTab = "All" }) => {
                 avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username || u.name || 'User')}&background=random`
             }));
             setUsers(fetchedUsers);
+            setLastUpdated(new Date());
+            if (showLoader) toast.success("Users updated", { duration: 1500 });
         } catch (error) {
             console.error("Failed to fetch users:", error);
+            if (showLoader) toast.error("Failed to fetch users");
         } finally {
-            setLoading(false);
+            if (showLoader) setLoading(false);
         }
     };
 
@@ -139,7 +156,7 @@ const Users = ({ initialTab = "All" }) => {
             setFormData({ username: "", name: "", email: "", phone: "", role: "user", password: "" });
             setIsEditing(false);
             setEditUserId(null);
-            fetchUsers();
+            fetchUsers(true);
         } catch (error) {
             console.error("Operation failed:", error);
             toast.error(error.response?.data?.message || "Operation failed");
@@ -153,7 +170,7 @@ const Users = ({ initialTab = "All" }) => {
         try {
             await api.delete(`/auth/users/${id}`);
             toast.success("User eliminated from system.");
-            fetchUsers();
+            fetchUsers(true);
         } catch (error) {
             toast.error("Failed to delete user");
         }
@@ -169,7 +186,7 @@ const Users = ({ initialTab = "All" }) => {
             };
             await api.put(`/auth/users/${id}`, { ...payload, role: newRole.toLowerCase() });
             toast.success(`Role updated to ${newRole.toLowerCase()}`);
-            fetchUsers();
+            fetchUsers(true);
         } catch (error) {
             toast.error("Failed to update role");
         }
@@ -188,7 +205,7 @@ const Users = ({ initialTab = "All" }) => {
             };
             await api.put(`/auth/users/${user.id}`, payload);
             toast.success(`User status changed to ${newStatus}`);
-            fetchUsers();
+            fetchUsers(true);
         } catch (error) {
             toast.error("Failed to update status");
         }
@@ -326,17 +343,23 @@ const Users = ({ initialTab = "All" }) => {
             {/* Table Container */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden text-slate-800">
                 <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="relative flex-1 max-w-md">
-                        <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Find by name or email..."
-                            value={searchTerm}
-                            onChange={(e) => handleSearchChange(e.target.value)}
-                            className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition-all text-sm"
-                        />
+                    <div className="flex-1 flex flex-col gap-2">
+                        <div className="relative flex-1 max-w-md">
+                            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Find by name or email..."
+                                value={searchTerm}
+                                onChange={(e) => handleSearchChange(e.target.value)}
+                                className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition-all text-sm"
+                            />
+                        </div>
+                        <p className="text-xs text-gray-400 flex items-center gap-2">
+                            <span className={`w-1.5 h-1.5 rounded-full ${autoRefreshEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
+                            Last updated: {lastUpdated.toLocaleTimeString()} {autoRefreshEnabled ? '(Auto-refresh on)' : ''}
+                        </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                         <div className="relative">
                             <FiFilter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                             <select
@@ -351,6 +374,27 @@ const Users = ({ initialTab = "All" }) => {
                                 <option value="user">user</option>
                             </select>
                         </div>
+                        <select
+                            value={refreshInterval}
+                            onChange={(e) => setRefreshInterval(Number(e.target.value))}
+                            className="px-3 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition-all text-xs font-semibold text-gray-600 cursor-pointer"
+                        >
+                            <option value={10000}>10s</option>
+                            <option value={30000}>30s</option>
+                            <option value={60000}>1m</option>
+                            <option value={300000}>5m</option>
+                        </select>
+                        <button
+                            onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+                            className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                                autoRefreshEnabled
+                                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                                    : 'bg-gray-100 text-gray-500 border border-gray-200'
+                            }`}
+                            title={autoRefreshEnabled ? 'Disable auto-refresh' : 'Enable auto-refresh'}
+                        >
+                            {autoRefreshEnabled ? '🔄 Auto' : '⏸ Paused'}
+                        </button>
                         <div className="flex items-center gap-2 ml-auto">
                             <div className="flex bg-gray-100 p-1 rounded-xl">
                                 <button
@@ -370,6 +414,13 @@ const Users = ({ initialTab = "All" }) => {
                                     <FiGrid size={16} />
                                 </button>
                             </div>
+                            <button
+                                onClick={() => fetchUsers(true)}
+                                className="flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-semibold transition-all"
+                                title="Refresh users list"
+                            >
+                                <FiRefreshCw size={16} /> Refresh
+                            </button>
                             <button
                                 onClick={() => { setIsEditing(false); setFormData({ username: "", name: "", email: "", phone: "", role: "user", password: "" }); setIsModalOpen(true); }}
                                 className="flex items-center justify-center gap-2 bg-[#1b7f29] hover:bg-[#166321] text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"

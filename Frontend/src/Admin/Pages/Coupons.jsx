@@ -189,19 +189,19 @@ const Coupons = () => {
   const inactiveCount = coupons.filter(c => c.status === 'inactive').length;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 min-h-screen">
+    <div className="space-y-6 pb-10 font-sans text-gray-900">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8">
         <div className="flex items-center gap-5">
           <div>
-            <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tight">Coupons Management</h1>
-            <p className="max-w-2xl text-sm text-slate-400 mt-2">Premium dashboard for managing discount codes, validity, and usage limits.</p>
+            <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2">Coupons Management</h1>
+            <p className="max-w-2xl text-sm text-gray-500 mt-0.5">Premium dashboard for managing discount codes, validity, and usage limits.</p>
           </div>
         </div>
 
         <button
           onClick={() => handleOpenModal()}
-          className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-500/20 transition active:scale-95 self-start sm:self-auto"
+          className="inline-flex items-center justify-center gap-2 bg-[#3a8b28] hover:bg-[#317a22] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm transition active:scale-95 self-start sm:self-auto"
         >
           <FiPlus className="w-4 h-4" /> Add New Coupon
         </button>
@@ -241,36 +241,36 @@ const Coupons = () => {
       </div>
 
       {/* Toolbar: Search and Refresh */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-slate-900/95 border border-slate-800 p-5 rounded-[1.75rem] shadow-2xl shadow-slate-950/30">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white border border-gray-200 p-4 rounded-2xl shadow-sm mb-6">
         <div className="relative flex-1 max-w-xl w-full">
-          <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             placeholder="Search coupons by code or name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl outline-none font-medium text-slate-100 text-sm focus:bg-slate-900 focus:border-blue-500/70 transition-all placeholder:text-slate-500"
+            className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none font-medium text-gray-900 text-sm focus:bg-white focus:border-[#3a8b28] focus:ring-2 focus:ring-[#3a8b28]/20 transition-all placeholder:text-gray-400"
           />
         </div>
 
         <div className="flex items-center gap-3 self-end xl:self-auto">
-          <div className="flex bg-slate-950 border border-slate-800 p-1 rounded-2xl">
+          <div className="flex bg-gray-100 border border-gray-200 p-1 rounded-xl">
             <button
               onClick={() => setViewMode("table")}
-              className={`p-3 rounded-xl transition ${viewMode === "table" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20" : "text-slate-400 hover:text-slate-100"}`}
+              className={`p-2.5 rounded-lg transition ${viewMode === "table" ? "bg-white text-[#3a8b28] shadow-sm font-bold" : "text-gray-500 hover:text-gray-700"}`}
               title="Table View"
             >
               <FiList className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode("card")}
-              className={`p-3 rounded-xl transition ${viewMode === "card" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20" : "text-slate-400 hover:text-slate-100"}`}
+              className={`p-2.5 rounded-lg transition ${viewMode === "card" ? "bg-white text-[#3a8b28] shadow-sm font-bold" : "text-gray-500 hover:text-gray-700"}`}
               title="Card View"
             >
               <FiGrid className="w-4 h-4" />
             </button>
           </div>
-          <button onClick={fetchCoupons} className="p-3 bg-slate-950 border border-slate-800 text-slate-400 hover:text-white rounded-xl transition" title="Refresh">
+          <button onClick={fetchCoupons} className="p-3 bg-white border border-gray-200 text-gray-500 hover:text-[#3a8b28] rounded-xl transition shadow-sm hover:bg-green-50" title="Refresh">
             <FiRefreshCw className="w-5 h-5" />
           </button>
         </div>
@@ -282,15 +282,15 @@ const Coupons = () => {
         <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-700">
-                <th className="px-6 py-5 text-[10px] font-black text-slate-100 uppercase tracking-[0.2em]">Code</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-100 uppercase tracking-[0.2em]">Name</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-100 uppercase tracking-[0.2em]">Discount</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-100 uppercase tracking-[0.2em]">Validity</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-100 uppercase tracking-[0.2em]">Usage</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-100 uppercase tracking-[0.2em]">Scope</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-100 uppercase tracking-[0.2em] text-center">Status</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-100 uppercase tracking-[0.2em] text-right">Actions</th>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Code</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Discount</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Validity</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Usage</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Scope</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">Status</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -302,9 +302,9 @@ const Coupons = () => {
                 </tr>
               ) : (
                 filteredCoupons.map((coupon) => (
-                  <tr key={coupon.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={coupon.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4">
-                      <span className="inline-flex px-3 py-1 bg-slate-900 text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-sm border border-slate-800">
+                      <span className="inline-flex px-3 py-1 bg-gray-100 text-gray-800 font-bold text-xs rounded-lg border border-gray-200">
                         {coupon.code}
                       </span>
                     </td>
@@ -360,7 +360,7 @@ const Coupons = () => {
               <div key={coupon.id} className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition border border-slate-100 flex flex-col gap-4">
                 <div className="flex justify-between items-start gap-4">
                   <div>
-                    <span className="inline-flex px-3 py-1 bg-slate-900 text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-sm border border-slate-800 mb-3">
+                    <span className="inline-flex px-3 py-1 bg-gray-100 text-gray-800 font-bold text-xs rounded-lg border border-gray-200 mb-3">
                       {coupon.code}
                     </span>
                     <h3 className="font-black text-slate-800 text-lg leading-tight">{coupon.name}</h3>

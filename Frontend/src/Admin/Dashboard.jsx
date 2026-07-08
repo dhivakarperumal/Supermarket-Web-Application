@@ -199,13 +199,24 @@ const Dashboard = () => {
     const revenueTrends = dashboardData?.revenueTrends?.length ? dashboardData.revenueTrends : SAMPLE_TRENDS;
 
     /* stat values */
-    const totalSales = stats.find(s => s.label === "Total Revenue")?.value ?? "₹1,48,256.50";
-    const totalOrders = stats.find(s => s.label === "Active Orders" || s.label === "Total Orders")?.value ?? 1248;
-    const totalCustomers = stats.find(s => s.label === "Total Customers")?.value ?? 856;
-    const totalProducts = stats.find(s => s.label === "Total Products")?.value ?? 1230;
-    const lowStockCount = lowStockAlerts.length || stats.find(s => s.label === "Low Stock")?.value || 23;
+    const totalSales = stats.find(s => s.label === "Total Sales")?.value ?? "₹0";
+    const totalSalesTrend = stats.find(s => s.label === "Total Sales")?.trend ?? "Live data";
+    const totalOrders = stats.find(s => s.label === "Total Orders")?.value ?? 0;
+    const totalOrdersTrend = stats.find(s => s.label === "Total Orders")?.trend ?? "Live data";
+    const totalCustomers = stats.find(s => s.label === "Total Customers")?.value ?? 0;
+    const totalCustomersTrend = stats.find(s => s.label === "Total Customers")?.trend ?? "Live data";
+    const totalProducts = stats.find(s => s.label === "Total Products")?.value ?? 0;
+    const totalProductsTrend = stats.find(s => s.label === "Total Products")?.trend ?? "Live data";
+    const totalDeliveries = stats.find(s => s.label === "Total Deliveries")?.value ?? 0;
+    const totalDeliveriesTrend = stats.find(s => s.label === "Total Deliveries")?.trend ?? "Live data";
+    const ordersToday = stats.find(s => s.label === "Orders Today")?.value ?? 0;
+    const ordersTodayTrend = stats.find(s => s.label === "Orders Today")?.trend ?? "Live data";
+    const todaysRevenue = stats.find(s => s.label === "Today's Revenue")?.value ?? "₹0";
+    const todaysRevenueTrend = stats.find(s => s.label === "Today's Revenue")?.trend ?? "Live data";
+    const lowStockCount = stats.find(s => s.label === "Low Stock")?.value ?? 0;
+    const lowStockTrend = stats.find(s => s.label === "Low Stock")?.trend ?? "Live data";
 
-    const orderNum = parseInt(String(totalOrders).replace(/,/g, "")) || 1248;
+    const orderNum = parseInt(String(totalOrders).replace(/,/g, "")) || 0;
     const orderSegs = [
         { label: "Delivered", count: Math.round(orderNum * 0.522), pct: 52.2 },
         { label: "Processing", count: Math.round(orderNum * 0.25), pct: 25.0 },
@@ -213,12 +224,12 @@ const Dashboard = () => {
         { label: "Cancelled", count: Math.round(orderNum * 0.081), pct: 8.1 },
     ];
 
-    const displayTop = topProducts.length ? topProducts.slice(0, 5) : SAMPLE_TOP;
-    const displayLow = lowStockAlerts.length ? lowStockAlerts.slice(0, 4) : SAMPLE_LOW;
+    const displayTop = topProducts.length ? topProducts.slice(0, 5) : [];
+    const displayLow = lowStockAlerts.length ? lowStockAlerts.slice(0, 4) : [];
     const displayOrders = recentOrders.length ? recentOrders.slice(0, 4).map(o => ({
         id: o.id, date: o.date, customer: o.customer, amount: o.amount?.toString().replace("$", "₹"), status: o.status
-    })) : SAMPLE_ORDERS;
-    const displayCat = categoryAnalytics.length ? categoryAnalytics.slice(0, 5) : SAMPLE_CAT;
+    })) : [];
+    const displayCat = categoryAnalytics.length ? categoryAnalytics.slice(0, 5) : [];
 
     /* ── RENDER ── */
     return (
@@ -381,7 +392,7 @@ const Dashboard = () => {
                             ))}
                         </div>
                         <span className="stat-badge-up">
-                            <TrendingUp style={{ width: 11, height: 11 }} /> +12.5% vs last week
+                            <TrendingUp style={{ width: 11, height: 11 }} /> {totalSalesTrend}
                         </span>
                     </div>
                 </div>
@@ -413,7 +424,7 @@ const Dashboard = () => {
                             ))}
                         </div>
                         <span className="stat-badge-up">
-                            <TrendingUp style={{ width: 11, height: 11 }} /> +8.3% vs last week
+                            <TrendingUp style={{ width: 11, height: 11 }} /> {totalOrdersTrend}
                         </span>
                     </div>
                 </div>
@@ -445,7 +456,7 @@ const Dashboard = () => {
                             ))}
                         </div>
                         <span className="stat-badge-up">
-                            <TrendingUp style={{ width: 11, height: 11 }} /> +6.7% vs last week
+                            <TrendingUp style={{ width: 11, height: 11 }} /> {totalCustomersTrend}
                         </span>
                     </div>
                 </div>
@@ -477,7 +488,7 @@ const Dashboard = () => {
                             ))}
                         </div>
                         <span className="stat-badge-down" style={{ color: "rgba(0,0,0,0.65)", background: "rgba(0,0,0,0.1)", border: "1px solid rgba(0,0,0,0.12)" }}>
-                            <TrendingDown style={{ width: 11, height: 11 }} /> -4.3% vs last week
+                            <TrendingDown style={{ width: 11, height: 11 }} /> {totalProductsTrend}
                         </span>
                     </div>
                 </div>
@@ -507,16 +518,14 @@ const Dashboard = () => {
                                 <Truck style={{ width: 22, height: 22, color: "#fff" }} />
                             </div>
                         </div>
-                        <p className="stat-card-value stat-value">
-                            {Math.round((parseInt(String(totalOrders).replace(/,/g, "")) || 1248) * 0.522).toLocaleString("en-IN")}
-                        </p>
+                        <p className="stat-card-value stat-value">{String(totalDeliveries)}</p>
                         <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
                             {[55,70,60,80,65,75,90].map((h,i) => (
                                 <span key={i} style={{ height: `${h}%`, background: "rgba(255,255,255,0.6)" }} />
                             ))}
                         </div>
                         <span className="stat-badge-up">
-                            <TrendingUp style={{ width: 11, height: 11 }} /> +9.1% vs last week
+                            <TrendingUp style={{ width: 11, height: 11 }} /> {totalDeliveriesTrend}
                         </span>
                     </div>
                 </div>
@@ -541,16 +550,14 @@ const Dashboard = () => {
                                 <Clock style={{ width: 22, height: 22, color: "#fff" }} />
                             </div>
                         </div>
-                        <p className="stat-card-value stat-value">
-                            {Math.round((parseInt(String(totalOrders).replace(/,/g, "")) || 1248) * 0.035).toLocaleString("en-IN")}
-                        </p>
+                        <p className="stat-card-value stat-value">{String(ordersToday)}</p>
                         <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
                             {[20,45,30,60,50,55,72].map((h,i) => (
                                 <span key={i} style={{ height: `${h}%`, background: "rgba(255,255,255,0.6)" }} />
                             ))}
                         </div>
                         <span className="stat-badge-up">
-                            <TrendingUp style={{ width: 11, height: 11 }} /> +14.2% vs yesterday
+                            <TrendingUp style={{ width: 11, height: 11 }} /> {ordersTodayTrend}
                         </span>
                     </div>
                 </div>
@@ -575,16 +582,14 @@ const Dashboard = () => {
                                 <DollarSign style={{ width: 22, height: 22, color: "#a5d6a7" }} />
                             </div>
                         </div>
-                        <p className="stat-card-value stat-value">
-                            {fmtINR(((parseFloat(String(totalSales).replace(/[^0-9.]/g,"")) || 148256.5) / 30).toFixed(2))}
-                        </p>
+                        <p className="stat-card-value stat-value">{String(todaysRevenue)}</p>
                         <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
                             {[45,65,55,80,60,75,88].map((h,i) => (
                                 <span key={i} style={{ height: `${h}%`, background: "rgba(165,214,167,0.7)" }} />
                             ))}
                         </div>
                         <span className="stat-badge-up" style={{ background: "rgba(165,214,167,0.2)", border: "1px solid rgba(165,214,167,0.35)" }}>
-                            <TrendingUp style={{ width: 11, height: 11 }} /> +7.8% vs yesterday
+                            <TrendingUp style={{ width: 11, height: 11 }} /> {todaysRevenueTrend}
                         </span>
                     </div>
                 </div>
@@ -616,7 +621,7 @@ const Dashboard = () => {
                             ))}
                         </div>
                         <span className="stat-badge-down">
-                            <TrendingDown style={{ width: 11, height: 11 }} /> -5.2% vs last week
+                            <TrendingDown style={{ width: 11, height: 11 }} /> {lowStockTrend}
                         </span>
                     </div>
                 </div>
