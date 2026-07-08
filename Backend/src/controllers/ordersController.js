@@ -64,6 +64,15 @@ const initOrdersTable = async () => {
                 FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE
             )
         `);
+
+        // Add missing columns to order_items table (safe migration)
+        const orderItemAlters = [
+            "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS variant_color VARCHAR(100) DEFAULT NULL",
+            "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS variant_size VARCHAR(100) DEFAULT NULL"
+        ];
+        for (const sql of orderItemAlters) {
+            try { await connection.query(sql); } catch (e) { /* column may already exist */ }
+        }
     } catch (e) {
         console.error("Error creating orders table:", e);
     } finally {
@@ -117,8 +126,8 @@ const createOrder = async (req, res) => {
         if (items && items.length > 0) {
             for (const item of items) {
                 await connection.query(`
-                    INSERT INTO order_items (order_id, product_id, name, variant_info, variant_color, variant_size, price, quantity, total, image)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO order_items (order_id, product_id, name, variant_info, variant_color, variant_size, price, quantity, total)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `, [
                     order_id,
                     item.product_id || item.id,
@@ -128,8 +137,7 @@ const createOrder = async (req, res) => {
                     item.variant_size || item.size || null,
                     item.price,
                     item.quantity,
-                    item.total || (parseFloat(item.price) * item.quantity),
-                    item.image || null
+                    item.total || (parseFloat(item.price) * item.quantity)
                 ]);
             }
         }
@@ -139,7 +147,7 @@ const createOrder = async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error("Error creating order:", error);
-        res.status(500).json({ success: false, message: "Server error" });
+        res.status(500).json({ success: false, message: "Server error", error: error.message, stack: error.stack, sqlMessage: error.sqlMessage });
     } finally {
         connection.release();
     }

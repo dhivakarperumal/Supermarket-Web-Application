@@ -15,6 +15,8 @@ const addressRouter = require("./src/routers/addressRouter");
 const dealersRouter = require("./src/routers/dealersRouter");
 const invoicesRouter = require("./src/routers/invoicesRouter");
 const videosRouter = require("./src/routers/videosRouter");
+const cartRouter = require('./src/routers/cartRouter');
+const wishlistRouter = require('./src/routers/wishlistRouter');
 
 dotenv.config();
 
@@ -61,6 +63,8 @@ app.use("/api/addresses", addressRouter);
 app.use("/api/dealers", dealersRouter);
 app.use("/api/invoices", invoicesRouter);
 app.use("/api/videos", videosRouter);
+app.use("/api/cart", cartRouter);
+app.use("/api/wishlist", wishlistRouter);
 
 // Port
 const PORT = process.env.PORT || 5000;

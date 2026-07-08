@@ -163,6 +163,7 @@ const Checkout = () => {
 
       const orderItems = checkoutItems.map((item) => ({
         product_id: item.product_id || item.id,
+        name: item.name,
         quantity: item.quantity,
         variant_color: item.variant_color || item.colorName || "",
         variant_size: item.variant_size || item.size || "",
