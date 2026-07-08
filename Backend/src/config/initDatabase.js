@@ -2,6 +2,26 @@ const mysql = require("mysql2/promise");
 
 const dbName = process.env.DB_NAME || "supermarket_db";
 
+const createDeliveryChargesTable = async (connection) => {
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS delivery_charges (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      base_delivery_charge DECIMAL(10,2) DEFAULT 0.00,
+      free_delivery_minimum_order_amount DECIMAL(10,2) DEFAULT 0.00,
+      per_km_delivery_charge DECIMAL(10,2) DEFAULT 0.00,
+      maximum_delivery_distance DECIMAL(10,2) DEFAULT 0.00,
+      delivery_area_scope VARCHAR(50) DEFAULT 'City',
+      enable_express_delivery TINYINT(1) DEFAULT 0,
+      express_delivery_charge DECIMAL(10,2) DEFAULT 0.00,
+      estimated_delivery_time VARCHAR(100) DEFAULT '',
+      created_by VARCHAR(36) DEFAULT NULL,
+      updated_by VARCHAR(36) DEFAULT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )
+  `);
+};
+
 const createUsersTable = async () => {
   const adminConnection = await mysql.createConnection({
     host: process.env.DB_HOST || "127.0.0.1",
@@ -89,6 +109,8 @@ const createUsersTable = async () => {
       ADD COLUMN IF NOT EXISTS name VARCHAR(255) DEFAULT NULL,
       ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) DEFAULT NULL
     `);
+
+    await createDeliveryChargesTable(connection);
   } finally {
     connection.release();
     await pool.end();
@@ -97,4 +119,5 @@ const createUsersTable = async () => {
 
 module.exports = {
   createUsersTable,
+  createDeliveryChargesTable,
 };

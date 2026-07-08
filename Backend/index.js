@@ -13,6 +13,7 @@ const addressRouter = require("./src/routers/addressRouter");
 const dealersRouter = require("./src/routers/dealersRouter");
 const invoicesRouter = require("./src/routers/invoicesRouter");
 const employeeRoutes = require("./src/routers/employeeRoutes");
+const deliveryChargesRouter = require("./src/routers/deliveryChargesRouter");
 
 dotenv.config();
 
@@ -53,6 +54,7 @@ app.use("/api/addresses", addressRouter);
 app.use("/api/dealers", dealersRouter);
 app.use("/api/invoices", invoicesRouter);
 app.use("/api/staff", employeeRoutes);
+app.use("/api/delivery-charges", deliveryChargesRouter);
 
 // Port
 const PORT = process.env.PORT || 5000;
