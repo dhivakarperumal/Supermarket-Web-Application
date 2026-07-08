@@ -31,6 +31,7 @@ const bloodGroups = [
 ];
 
 import api from "../../api";
+import { useAuth } from "../../PrivateRouter/AuthContext";
 
 // Note: backend should provide staff endpoints. Frontend will POST/PUT to `/staff`.
 
@@ -60,6 +61,7 @@ const AddEditStaff = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const generateEmployeeId = useCallback(async () => {
     try {
@@ -362,6 +364,8 @@ const AddEditStaff = () => {
         id_doc: idDoc || null,
         certificate_doc: certificateDoc || null,
         photo: photo || null,
+        created_by: user?.user_id || user?.id || undefined,
+        updated_by: user?.user_id || user?.id || undefined,
         // include password if creating new user; backend may handle auth creation
         password: !isEdit ? password : undefined,
       };

@@ -2,6 +2,21 @@ const { randomUUID } = require("crypto");
 const { getPool } = require("../config/db");
 const bcrypt = require("bcryptjs");
 
+const resolveActorId = (req, fallback = null) => {
+  const body = req?.body || {};
+  const headers = req?.headers || {};
+  const candidate =
+    req?.user?.user_id ||
+    req?.user?.id ||
+    body?.created_by ||
+    body?.updated_by ||
+    body?.user_id ||
+    headers["x-user-id"] ||
+    headers["x-access-token"];
+
+  return candidate || fallback || null;
+};
+
 /* ===========================
    Generate Employee ID
 =========================== */
@@ -72,7 +87,8 @@ exports.createEmployee = async (req, res) => {
     } = req.body;
 
     const generatedUserId = randomUUID();
-    const createdBy = req.user?.user_id || req.user?.id || generatedUserId;
+    const actorId = resolveActorId(req, generatedUserId);
+    const createdBy = actorId || generatedUserId;
     const normalizedRole = role || "user";
     const normalizedStatus = status || "active";
     const safePassword = password || "123456";
@@ -80,7 +96,7 @@ exports.createEmployee = async (req, res) => {
 
     /* ---------- Insert User ---------- */
 
-    await conn.query(
+    const [userInsertResult] = await conn.query(
       `
       INSERT INTO users
       (
@@ -111,8 +127,8 @@ exports.createEmployee = async (req, res) => {
       ]
     );
 
-    // Use the UUID as the user_id, not the sequential ID
-    const userId = generatedUserId;
+    // employees.user_id must reference users.id (the numeric primary key)
+    const userId = userInsertResult.insertId;
 
     /* ---------- Insert Employee ---------- */
 
@@ -275,7 +291,7 @@ exports.updateEmployee = async (req, res) => {
       certificate_doc,
     } = req.body || {};
 
-    const updatedBy = req.user?.user_id || req.user?.id || "system";
+    const updatedBy = resolveActorId(req, "system") || "system";
 
     const [employeeRows] = await conn.query(
       "SELECT user_id FROM employees WHERE id=?",
