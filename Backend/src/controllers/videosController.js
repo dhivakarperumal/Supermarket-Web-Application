@@ -6,6 +6,12 @@ const { randomUUID } = require("crypto");
 const VIDEOS_DIR = path.join(__dirname, "../../uploads/videos");
 const THUMBNAILS_DIR = path.join(__dirname, "../../uploads/thumbnails");
 
+const normalizeNullableString = (value) => {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+};
+
 // Ensure directories exist
 const ensureDirectories = async () => {
   try {
@@ -69,6 +75,18 @@ const createVideosTable = async (connection) => {
       alterStatements.push("CHANGE COLUMN thumbnail_path thumbnailPath VARCHAR(500)");
     } else {
       addColumnIfMissing("thumbnailPath", "VARCHAR(500)");
+    }
+
+    if (existingColumns.has("videoId") || existingColumns.has("video_id")) {
+      alterStatements.push("MODIFY COLUMN videoId VARCHAR(255) NULL");
+    }
+
+    if (existingColumns.has("videoPath") || existingColumns.has("video_path")) {
+      alterStatements.push("MODIFY COLUMN videoPath VARCHAR(500) NULL");
+    }
+
+    if (existingColumns.has("thumbnailPath") || existingColumns.has("thumbnail_path")) {
+      alterStatements.push("MODIFY COLUMN thumbnailPath VARCHAR(500) NULL");
     }
 
     if (!existingColumns.has("createdAt") && existingColumns.has("created_at")) {
@@ -159,7 +177,7 @@ const createVideo = async (req, res) => {
   try {
     // FormData fields are in req.body when using express-fileupload
     let title = req.body.title;
-    let videoId = req.body.videoId;
+    let videoId = normalizeNullableString(req.body.videoId);
     let type = req.body.type || "youtube";
     let created_by = req.body.created_by;  // User UUID from login
     
@@ -220,7 +238,7 @@ const createVideo = async (req, res) => {
     const [result] = await pool.query(
       `INSERT INTO videos (title, videoId, videoPath, thumbnailPath, type, created_by, updated_by) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [title, videoId || null, videoPath || null, thumbnailPath || null, type, created_by || null, created_by || null]
+      [title, videoId, videoPath || null, thumbnailPath || null, type, created_by || null, created_by || null]
     );
 
     res.status(201).json({
@@ -250,7 +268,7 @@ const updateVideo = async (req, res) => {
   try {
     const { id } = req.params;
     let title = req.body.title;
-    let videoId = req.body.videoId;
+    let videoId = normalizeNullableString(req.body.videoId);
     let type = req.body.type || "youtube";
     let updated_by = req.body.updated_by;  // User UUID from login
     
@@ -319,7 +337,7 @@ const updateVideo = async (req, res) => {
 
     const [result] = await pool.query(
       "UPDATE videos SET title = ?, videoId = ?, videoPath = ?, thumbnailPath = ?, type = ?, updated_by = ? WHERE id = ?",
-      [title, videoId || null, videoPath || null, thumbnailPath || null, type || "youtube", updated_by || null, id]
+      [title, videoId, videoPath || null, thumbnailPath || null, type || "youtube", updated_by || null, id]
     );
 
     if (result.affectedRows === 0) {
