@@ -111,14 +111,12 @@ exports.createEmployee = async (req, res) => {
       ]
     );
 
-    const userId = generatedUserId;
+    const userId = userResult.insertId;
 
     /* ---------- Insert Employee ---------- */
 
     const [employeeResult] = await conn.query(
-      `
-      INSERT INTO employees
-      (
+      `INSERT INTO employees (
         user_id,
         employee_id,
         name,
@@ -146,12 +144,7 @@ exports.createEmployee = async (req, res) => {
         certificate_doc,
         created_by,
         updated_by
-      )
-      VALUES
-      (
-      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
-      )
-      `,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )`,
       [
         userId,
         employee_id,
