@@ -9,7 +9,7 @@ const banners = [
     subtitle: "Fresh & Healthy",
     desc: "Farm Fresh Vegetables",
     button: "Shop Organic",
-    image: "/banner/vegetables.png",
+    image: "/bannersm1.png",
     bg: "from-green-50 to-green-100",
     btn: "bg-green-700 hover:bg-green-800",
   },
@@ -20,7 +20,7 @@ const banners = [
     desc: "More Savings",
     badge: "SAVE ₹250",
     button: "Shop Now",
-    image: "/banner/combo.png",
+    image: "/banner2.png",
     bg: "from-yellow-50 to-orange-100",
     btn: "bg-yellow-500 hover:bg-yellow-600 text-black",
   },
@@ -30,7 +30,7 @@ const banners = [
     subtitle: "On Orders Above",
     desc: "₹499",
     button: "Order Now",
-    image: "/banner/delivery.png",
+    image: "/bannersm3.png",
     bg: "from-blue-50 to-indigo-100",
     btn: "bg-primary hover:bg-primary-dark",
   },
@@ -40,7 +40,7 @@ const banners = [
     subtitle: "Top Grocery Brands",
     desc: "Best Prices Everyday",
     button: "Shop Deals",
-    image: "/banner/grocery.png",
+    image: "/bannersm4.png",
     bg: "from-orange-50 to-yellow-100",
     btn: "bg-yellow-500 hover:bg-yellow-600 text-black",
   },
@@ -87,7 +87,7 @@ export default function OfferBanner() {
               <img
                 src={item.image}
                 alt={item.title}
-                className="absolute bottom-0 right-0 w-44 group-hover:scale-110 transition-transform duration-500"
+                className="absolute bottom-0 right-0 w-45 group-hover:scale-110 transition-transform duration-500"
               />
 
               <div className="absolute -right-12 -bottom-12 w-40 h-40 rounded-full bg-white/20"></div>

@@ -36,74 +36,76 @@ export default function Banner() {
   const offer = offers[0];
 
   return (
-    <section className="w-full h-[70vh] md:h-[60vh] relative overflow-hidden mt-10 mb-10">
+    <section className="w-full py-8">
+      <div className="max-w-7xl mx-auto px-4">
 
-      {/* Background Image */}
-      <picture className="absolute inset-0 w-full h-full">
-        {offer.mobile_image && (
-          <source media="(max-width:768px)" srcSet={offer.mobile_image} />
-        )}
+        <div className="relative overflow-hidden rounded-2xl h-[170px] md:h-[220px]">
 
-        <img
-          src={offer.image}
-          alt={offer.title}
-          className="w-full h-full object-cover scale-105 animate-[bannerZoom_18s_linear_infinite]"
-        />
-      </picture>
+          {/* Background */}
+          <picture>
+            {offer.mobile_image && (
+              <source
+                media="(max-width:768px)"
+                srcSet={offer.mobile_image}
+              />
+            )}
 
-      {/* Premium Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+            <img
+              src={offer.image}
+              alt={offer.title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </picture>
 
-      {/* Decorative Glow */}
-      <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-rose-500/20 blur-[180px]"></div>
+          {/* Content */}
+          <div className="relative z-10 flex items-center justify-between h-full px-6 md:px-10">
 
-      {/* Content */}
-      <div className="relative z-10 h-full flex items-center px-6 md:px-24">
+            {/* Left */}
+            <div className="max-w-lg text-white">
 
-        <div className="max-w-3xl text-white space-y-6">
+              <h2 className="text-2xl md:text-5xl font-extrabold uppercase leading-tight">
+                {offer.title}
+              </h2>
 
-          {/* Subtitle */}
-          <span className="inline-block text-[11px] md:text-xs font-bold tracking-[0.4em] text-rose-400 uppercase bg-white/10 px-4 py-2 rounded-full backdrop-blur-md">
-            {offer.subtitle || "Exclusive Saree Collection"}
-          </span>
+              <p className="text-sm md:text-xl text-green-100 mt-2">
+                {offer.description}
+              </p>
 
-          {/* Title */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-light leading-tight tracking-tight">
-            {offer.title}
-          </h1>
+              <Link
+                to={offer.link || "/shop"}
+                className="inline-block mt-5 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-6 py-3 rounded-lg transition"
+              >
+                {offer.button_text || "Explore All Offers"}
+              </Link>
 
-          {/* Description */}
-          {offer.description && (
-            <p className="max-w-xl text-gray-200 text-sm md:text-lg leading-relaxed">
-              {offer.description}
-            </p>
-          )}
+            </div>
 
-          {/* CTA */}
-          <div className="pt-4 flex items-center gap-6">
+            {/* Right Offer Badge */}
+            <div className="hidden md:flex items-center justify-center">
 
-            <Link
-              to={offer.link || "/shop"}
-              className="px-10 py-4 bg-white text-black font-bold text-xs tracking-[0.3em] rounded-sm hover:bg-secondary hover:text-white transition-all duration-500 shadow-xl"
-            >
-              VIEW COLLECTION
-            </Link>
+              <div className="w-32 h-32 rounded-full bg-yellow-400 flex flex-col justify-center items-center text-center shadow-2xl">
+
+                <span className="text-sm font-bold uppercase">
+                  UP TO
+                </span>
+
+                <span className="text-5xl font-black leading-none">
+                  60%
+                </span>
+
+                <span className="text-lg font-bold uppercase">
+                  OFF
+                </span>
+
+              </div>
+
+            </div>
 
           </div>
 
         </div>
 
       </div>
-
-      {/* Custom Animation */}
-      <style>{`
-        @keyframes bannerZoom {
-          0% { transform: scale(1.05); }
-          50% { transform: scale(1.15); }
-          100% { transform: scale(1.05); }
-        }
-      `}</style>
-
     </section>
   );
 }
