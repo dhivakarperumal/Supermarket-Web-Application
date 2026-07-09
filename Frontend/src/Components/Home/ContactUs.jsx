@@ -58,6 +58,21 @@ const serviceCards = [
   },
 ];
 
+const supportHighlights = [
+  {
+    title: "Order updates",
+    text: "Track your delivery window, pickup status, and any special requests with ease.",
+  },
+  {
+    title: "Bulk shopping",
+    text: "Ask about family packs, party supplies, and weekly pantry restocking options.",
+  },
+  {
+    title: "Store offers",
+    text: "Get help with discounts, seasonal deals, and loyalty benefits available in-store.",
+  },
+];
+
 const ContactUs = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -150,6 +165,26 @@ const ContactUs = () => {
                 </div>
               );
             })}
+          </div>
+
+          <div className="mt-8 rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_40px_rgba(14,104,39,0.08)] sm:p-8">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#0e6827]">More ways to help</p>
+                <h3 className="mt-2 text-2xl font-semibold text-slate-900">Everything you need for a smoother grocery experience</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-500">
+                  Whether you are planning a weekly shop, checking on a delivery, or looking for seasonal offers, our team is here to make every visit feel easy and convenient.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[480px]">
+                {supportHighlights.map((item) => (
+                  <div key={item.title} className="rounded-[1.25rem] bg-[#f7f8f3] p-4">
+                    <p className="font-semibold text-slate-900">{item.title}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-500">{item.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="mt-8 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
