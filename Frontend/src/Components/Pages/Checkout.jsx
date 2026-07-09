@@ -5,7 +5,7 @@ import { AuthContext } from "../../PrivateRouter/AuthContext";
 import api from "../../api";
 import PageHeader from "../CommenComponents/PageHeader";
 import toast from "react-hot-toast";
-import { FiMapPin, FiPackage, FiCreditCard, FiShieldCheck, FiCheckCircle } from "react-icons/fi";
+import { FiMapPin, FiPackage, FiCreditCard, FiShield, FiCheckCircle } from "react-icons/fi";
 
 const Checkout = () => {
   const { cart, clearCart } = useContext(StoreContext);
@@ -416,7 +416,7 @@ const Checkout = () => {
                 </div>
 
                 <div className="mt-4 flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
-                  <FiShieldCheck />
+                  <FiShield />
                   <span>Secure payments and trusted delivery support.</span>
                 </div>
 
