@@ -82,9 +82,6 @@ const ViewStaff = () => {
               <h2 className="text-3xl font-black uppercase italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">
                 {staff.name}
               </h2>
-              <p className="text-orange-500 font-bold tracking-widest text-[10px] mt-1">
-                ID: {staff.employee_id}
-              </p>
             </div>
 
             <div className="w-full mt-10 space-y-4">
@@ -117,16 +114,11 @@ const ViewStaff = () => {
               </InfoSection>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-1 gap-8">
               <InfoSection title="Personal Details">
                 <DataRow label="GENDER" value={staff.gender} />
                 <DataRow label="BLOOD GROUP" value={staff.blood_group} />
                 <DataRow label="DOB" value={staff.dob} />
-              </InfoSection>
-
-              <InfoSection title="Emergency Contact" accent="red">
-                <DataRow label="NAME" value={staff.emergency_name} />
-                <DataRow label="PHONE" value={staff.emergency_phone} />
               </InfoSection>
             </div>
 

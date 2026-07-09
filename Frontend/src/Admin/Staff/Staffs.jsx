@@ -354,12 +354,6 @@ const Staffs = () => {
 
                         </h4>
 
-                        <p className="text-xs text-gray-500">
-
-                          #{s.employeeId || s.id}
-
-                        </p>
-
                       </div>
 
                     </div>
@@ -506,12 +500,6 @@ const Staffs = () => {
                       {s.name}
 
                     </h3>
-
-                    <p className="text-xs text-green-100">
-
-                      #{s.employeeId || s.id}
-
-                    </p>
 
                   </div>
 
