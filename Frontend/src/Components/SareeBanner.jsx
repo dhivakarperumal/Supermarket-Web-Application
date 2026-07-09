@@ -30,7 +30,7 @@ const banners = [
     subtitle: "On Orders Above",
     desc: "₹499",
     button: "Order Now",
-    image: "/bannersm3.png",
+    image: "/withoubgbanner3.png",
     bg: "from-blue-50 to-indigo-100",
     btn: "bg-primary hover:bg-primary-dark",
   },
