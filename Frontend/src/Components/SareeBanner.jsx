@@ -1,81 +1,98 @@
 import React from "react";
-import AnimatedButton from "./AnimatedButton";
-import PageContainer from "./CommenComponents/PageContainer";
 import { Link } from "react-router-dom";
+import PageContainer from "./CommenComponents/PageContainer";
 
-export default function SareeBanner() {
-  const sareeCategories = [
-    {
-      id: 1,
-      name: "Silk Sarees",
-      image: "/SareeBanner/subh_(147).jpg",
-    },
-    {
-      id: 2,
-      name: "Wedding Sarees",
-      image: "/SareeBanner/subh_(180).jpg",
-    },
-    {
-      id: 3,
-      name: "Designer Sarees",
-      image: "/SareeBanner/subh_(462).jpg",
-    },
-    {
-      id: 4,
-      name: "Party Wear",
-      image: "/SareeBanner/subh_(569).jpg",
-    },
-  ];
+const banners = [
+  {
+    id: 1,
+    title: "100% ORGANIC",
+    subtitle: "Fresh & Healthy",
+    desc: "Farm Fresh Vegetables",
+    button: "Shop Organic",
+    image: "/banner/vegetables.png",
+    bg: "from-green-50 to-green-100",
+    btn: "bg-green-700 hover:bg-green-800",
+  },
+  {
+    id: 2,
+    title: "COMBO OFFERS",
+    subtitle: "More Essentials",
+    desc: "More Savings",
+    badge: "SAVE ₹250",
+    button: "Shop Now",
+    image: "/banner/combo.png",
+    bg: "from-yellow-50 to-orange-100",
+    btn: "bg-yellow-500 hover:bg-yellow-600 text-black",
+  },
+  {
+    id: 3,
+    title: "FREE DELIVERY",
+    subtitle: "On Orders Above",
+    desc: "₹499",
+    button: "Order Now",
+    image: "/banner/delivery.png",
+    bg: "from-blue-50 to-indigo-100",
+    btn: "bg-primary hover:bg-primary-dark",
+  },
+  {
+    id: 4,
+    title: "SUPER SAVER",
+    subtitle: "Top Grocery Brands",
+    desc: "Best Prices Everyday",
+    button: "Shop Deals",
+    image: "/banner/grocery.png",
+    bg: "from-orange-50 to-yellow-100",
+    btn: "bg-yellow-500 hover:bg-yellow-600 text-black",
+  },
+];
 
+export default function OfferBanner() {
   return (
-    <section className="w-full py-15">
+    <section className="py-16">
       <PageContainer>
-        <div className="grid lg:grid-cols-2 gap-14 items-center">
-          {/* LEFT IMAGE GRID */}
-          <div className="grid grid-cols-2 gap-6">
-            {sareeCategories.map((item) => (
-              <div
-                key={item.id}
-                className="relative group overflow-hidden rounded-2xl shadow-lg"
-              >
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-50 md:h-60 object-top object-cover transition duration-500 group-hover:scale-110"
-                />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          {banners.map((item) => (
+            <div
+              key={item.id}
+              className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${item.bg} p-6 h-[260px] shadow-md hover:shadow-2xl transition-all duration-500 group`}
+            >
+              {/* Offer Badge */}
+              {item.badge && (
+                <div className="absolute top-4 right-4 bg-red-500 text-white rounded-full w-20 h-20 flex items-center justify-center text-sm font-bold text-center shadow-lg rotate-12">
+                  {item.badge}
+                </div>
+              )}
 
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent"></div>
+              <div className="relative z-10 w-[55%]">
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {item.title}
+                </h3>
 
-                <span className="absolute bottom-4 left-4 text-white text-lg font-semibold tracking-wide">
-                  {item.name}
-                </span>
+                <p className="mt-3 text-lg font-semibold text-gray-700">
+                  {item.subtitle}
+                </p>
+
+                <p className="text-gray-600 mt-1">
+                  {item.desc}
+                </p>
+
+                <Link
+                  to="/shop"
+                  className={`${item.btn} inline-block mt-6 px-5 py-2 rounded-full text-white font-semibold transition`}
+                >
+                  {item.button}
+                </Link>
               </div>
-            ))}
-          </div>
 
-          {/* RIGHT CONTENT */}
-          <div className="text-center lg:text-left">
-            <p className="text-primary font-semibold tracking-widest uppercase">
-              Premium Collection
-            </p>
+              <img
+                src={item.image}
+                alt={item.title}
+                className="absolute bottom-0 right-0 w-44 group-hover:scale-110 transition-transform duration-500"
+              />
 
-            <h2 className="mt-3 text-4xl md:text-5xl font-bold text-primary-light leading-tight">
-              Discover Elegant <br /> Saree Styles
-            </h2>
-
-            <p className="mt-6 text-gray-600 text-lg max-w-lg">
-              Explore our exclusive saree collections crafted with tradition,
-              luxury fabrics, and timeless elegance designed for every special
-              moment.
-            </p>
-
-            {/* BUTTON */}
-            <div className="mt-8">
-              <Link to="/shop">
-                <AnimatedButton text="View Collections" />
-              </Link>
+              <div className="absolute -right-12 -bottom-12 w-40 h-40 rounded-full bg-white/20"></div>
             </div>
-          </div>
+          ))}
         </div>
       </PageContainer>
     </section>
