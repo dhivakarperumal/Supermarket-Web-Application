@@ -107,7 +107,7 @@ exports.createEmployee = async (req, res) => {
     );
 
     // mysql2/promise returns [rows, fields]; the insert id is on the result object.
-    const userId = userInsertResult?.insertId;
+    const userId = generatedUserId;
     console.log("createEmployee debug", { generatedUserId, userId, createdBy, normalizedRole, normalizedStatus });
 
     /* ---------- Insert Employee ---------- */
