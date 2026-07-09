@@ -57,6 +57,58 @@ focus:ring-4
 focus:ring-[#22c55e]/10
 `;
 
+const InputBox = memo(({ label, required, icon, children }) => (
+  <div>
+    <label className="block text-[15px] font-semibold text-[#344054] mb-2">
+      {label}
+      {required && (
+        <span className="text-red-500 ml-1">*</span>
+      )}
+    </label>
+    <div className="relative">
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#ecfdf3] flex items-center justify-center text-[#22c55e]">
+        {icon}
+      </div>
+      {children}
+    </div>
+  </div>
+));
+
+const ErrorText = memo(({ field, errors = {} }) =>
+  errors[field] ? <p className="text-red-500 text-xs mt-1">{errors[field]}</p> : null);
+
+const PreviewModal = memo(({ previewFile, onClose }) => {
+  if (!previewFile) return null;
+
+  const isImage = previewFile.data.startsWith('data:image');
+  const isPdf = previewFile.data.startsWith('data:application/pdf');
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto">
+        <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white">
+          <h3 className="text-lg font-semibold">{previewFile.name}</h3>
+          <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700 text-xl">✕</button>
+        </div>
+        <div className="p-4 flex items-center justify-center min-h-[400px]">
+          {isImage ? (
+            <img src={previewFile.data} alt="Preview" className="max-w-full max-h-[70vh] rounded" />
+          ) : isPdf ? (
+            <iframe src={previewFile.data} className="w-full h-[70vh] rounded border" />
+          ) : (
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">📄 Document Preview</p>
+              <a href={previewFile.data} download={previewFile.name} className="text-blue-600 hover:underline">
+                Download Document
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
 const AddEditStaff = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
@@ -423,72 +475,6 @@ const AddEditStaff = () => {
       setLoading(false);
     }
   };
-
-  const InputBox = memo(({ label, required, icon, children }) => (
-    <div>
-
-      <label className="block text-[15px] font-semibold text-[#344054] mb-2">
-
-        {label}
-
-        {required && (
-          <span className="text-red-500 ml-1">*</span>
-        )}
-
-      </label>
-
-      <div className="relative">
-
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#ecfdf3] flex items-center justify-center text-[#22c55e]">
-
-          {icon}
-
-        </div>
-
-        {children}
-
-      </div>
-
-    </div>
-  ));
-
-
-  /* ---------------- UI ---------------- */
-
-  const ErrorText = memo(({ field, errors = {} }) =>
-    errors[field] ? <p className="text-red-500 text-xs mt-1">{errors[field]}</p> : null);
-
-  const PreviewModal = memo(({ previewFile, onClose }) => {
-    if (!previewFile) return null;
-
-    const isImage = previewFile.data.startsWith('data:image');
-    const isPdf = previewFile.data.startsWith('data:application/pdf');
-
-    return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto">
-          <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white">
-            <h3 className="text-lg font-semibold">{previewFile.name}</h3>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-xl">✕</button>
-          </div>
-          <div className="p-4 flex items-center justify-center min-h-[400px]">
-            {isImage ? (
-              <img src={previewFile.data} alt="Preview" className="max-w-full max-h-[70vh] rounded" />
-            ) : isPdf ? (
-              <iframe src={previewFile.data} className="w-full h-[70vh] rounded border" />
-            ) : (
-              <div className="text-center">
-                <p className="text-gray-600 mb-4">📄 Document Preview</p>
-                <a href={previewFile.data} download={previewFile.name} className="text-blue-600 hover:underline">
-                  Download Document
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  });
 
   return (
     <div className="min-h-screen bg-[#f5f8f6] p-6">
