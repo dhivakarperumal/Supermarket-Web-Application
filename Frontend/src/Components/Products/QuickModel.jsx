@@ -253,7 +253,7 @@ const QuickViewModal = ({ product, onClose }) => {
 
             {/* Features */}
 
-            <div className="grid grid-cols-3 gap-3 mt-6">
+            {/* <div className="grid grid-cols-3 gap-3 mt-6">
 
               <div className="bg-white rounded-2xl border border-green-100 p-4 text-center shadow-sm">
                 <div className="text-2xl mb-2">🌿</div>
@@ -276,7 +276,7 @@ const QuickViewModal = ({ product, onClose }) => {
                 </p>
               </div>
 
-            </div>
+            </div> */}
 
           </div>
 
@@ -619,7 +619,7 @@ const QuickViewModal = ({ product, onClose }) => {
               </div>
 
               {/* Trust Badges */}
-              <div className="mt-5 grid grid-cols-3 gap-3">
+              {/* <div className="mt-5 grid grid-cols-3 gap-3">
 
                 <div className="bg-green-50 border border-green-100 rounded-xl p-3 text-center">
                   <div className="text-2xl">🌿</div>
@@ -642,7 +642,7 @@ const QuickViewModal = ({ product, onClose }) => {
                   </p>
                 </div>
 
-              </div>
+              </div> */}
 
             </div>
 
