@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 
 /* ================= STYLES ================= */
 const card =
-  "bg-white rounded-2xl border border-[#dce9df] shadow-sm";"bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all";
+  "bg-white rounded-2xl border border-[#dce9df] shadow-sm"; "bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all";
 
 const ViewStaff = () => {
   const { id } = useParams();
@@ -84,7 +84,7 @@ const ViewStaff = () => {
             </button>
 
             <button
-              onClick={() => navigate(`/admin/staff/edit/${staff.id}`)}
+              onClick={() => navigate(`/admin/addstaff/${staff.id}`)}
               className="px-6 py-3 rounded-xl bg-[#1b7f29] hover:bg-[#166321] text-white font-bold shadow-lg transition"
             >
               Edit Staff
@@ -96,86 +96,292 @@ const ViewStaff = () => {
 
       </div>
 
-      <div className={`max-w-6xl mx-auto ${glass}`}>
+      <div className="max-w-7xl mx-auto bg-white rounded-2xl border border-[#dce9df] shadow-sm overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-3">
 
           {/* LEFT PANEL - Profile Header */}
-          <div className="bg-gradient-to-br from-red-600/20 to-orange-500/20 p-10 flex flex-col items-center border-r border-white/10">
-            <div className="relative group">
+          {/* ================= LEFT PROFILE ================= */}
+
+          <div className="bg-white border-r border-[#dce9df] p-8 flex flex-col">
+
+            {/* Profile Image */}
+
+            <div className="flex flex-col items-center">
+
               {staff.photo ? (
                 <img
                   src={staff.photo}
                   alt={staff.name}
-                  className="h-48 w-48 rounded-[3rem] object-cover border-4 border-white/20 shadow-2xl group-hover:scale-105 transition-transform duration-500"
+                  className="w-40 h-40 rounded-3xl object-cover border-4 border-[#ecfdf3] shadow-lg"
                 />
               ) : (
-                <div className="h-48 w-48 rounded-[3rem] bg-white/5 flex items-center justify-center border-2 border-dashed border-white/20">
-                  <FaUserTie className="text-7xl text-white/10" />
+                <div className="w-40 h-40 rounded-3xl bg-[#f5f8f6] border-2 border-dashed border-[#dce9df] flex items-center justify-center">
+                  <FaUserTie className="text-6xl text-[#22c55e]" />
                 </div>
               )}
-              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-orange-600 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">
-                {staff.role}
-              </div>
-            </div>
 
-            <div className="mt-8 text-center">
-              <h2 className="text-3xl font-black uppercase italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">
+              <h2 className="mt-6 text-2xl font-extrabold text-[#123524] text-center">
                 {staff.name}
               </h2>
+
+              <span className="mt-3 px-5 py-2 rounded-full bg-[#ecfdf3] text-[#22c55e] font-semibold text-sm capitalize">
+                {staff.role}
+              </span>
+
             </div>
 
-            <div className="w-full mt-10 space-y-4">
-              <ProfileQuickLink icon={FaMobileAlt} label="MOBILE" value={staff.phone} />
-              <ProfileQuickLink icon={FaEnvelope} label="EMAIL" value={staff.email} color="orange" />
-              <div className="pt-4 border-t border-white/10">
-                <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-2">ACCOUNT STATUS</p>
-                <span className={`px-4 py-1 rounded-lg text-xs font-black uppercase tracking-widest ${staff.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+            {/* Status */}
+
+            <div className="mt-8">
+
+              <div className="rounded-xl bg-[#f8faf8] border border-[#dce9df] p-4">
+
+                <p className="text-xs uppercase tracking-wide text-gray-500 mb-2">
+                  Account Status
+                </p>
+
+                <span
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold ${staff.status === "active"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                    }`}
+                >
                   {staff.status}
                 </span>
+
               </div>
+
             </div>
+
+            <div className="space-y-4 mt-8">
+
+              <div className="bg-[#f8faf8] border border-[#dce9df] rounded-xl p-4">
+
+                <p className="text-xs text-gray-500 uppercase mb-1">
+                  Mobile Number
+                </p>
+
+                <div className="flex items-center gap-3">
+
+                  <FaMobileAlt className="text-[#22c55e]" />
+
+                  <span className="font-semibold text-[#344054]">
+                    {staff.phone || "--"}
+                  </span>
+
+                </div>
+
+              </div>
+
+              <div className="bg-[#f8faf8] border border-[#dce9df] rounded-xl p-4">
+
+                <p className="text-xs text-gray-500 uppercase mb-1">
+                  Email Address
+                </p>
+
+                <div className="flex items-center gap-3">
+
+                  <FaEnvelope className="text-[#22c55e]" />
+
+                  <span className="font-semibold text-[#344054] break-all">
+                    {staff.email || "--"}
+                  </span>
+
+                </div>
+
+              </div>
+
+              <div className="bg-[#f8faf8] border border-[#dce9df] rounded-xl p-4">
+
+                <p className="text-xs text-gray-500 uppercase mb-1">
+                  Salary
+                </p>
+
+                <span className="text-lg font-bold text-[#123524]">
+                  ₹{staff.salary || "--"}
+                </span>
+
+              </div>
+
+              <div className="bg-[#f8faf8] border border-[#dce9df] rounded-xl p-4">
+
+                <p className="text-xs text-gray-500 uppercase mb-1">
+                  Shift
+                </p>
+
+                <span className="font-semibold text-[#344054]">
+                  {staff.shift || "--"}
+                </span>
+
+              </div>
+
+            </div>
+
           </div>
 
           {/* RIGHT PANEL - Detailed Info */}
-          <div className="lg:col-span-2 p-10 space-y-10">
+          <div className="lg:col-span-2 p-8 bg-[#f8faf8] space-y-6">
 
-            <div className="grid md:grid-cols-2 gap-8">
-              <InfoSection title="Work Schedule">
-                <DataRow label="SHIFT" value={staff.shift} />
-                <DataRow label="TIME IN" value={staff.time_in} />
-                <DataRow label="TIME OUT" value={staff.time_out} />
-                <DataRow label="SALARY" value={`₹${staff.salary}`} />
-              </InfoSection>
+            <div className="grid lg:grid-cols-2 gap-6">
 
-              <InfoSection title="Experience">
-                <DataRow label="EXPERIENCE" value={staff.experience} />
-                <DataRow label="QUALIFICATION" value={staff.qualification} />
-                <DataRow label="JOINED" value={staff.joining_date} />
-              </InfoSection>
+              {/* Work Details */}
+
+              <div className="bg-white rounded-2xl border border-[#dce9df] shadow-sm overflow-hidden">
+
+                <div className="px-6 py-4 border-b bg-gradient-to-r from-[#eef8ef] to-white">
+
+                  <h2 className="text-lg font-bold text-[#123524]">
+                    Work Details
+                  </h2>
+
+                  <p className="text-sm text-gray-500">
+                    Employee work information
+                  </p>
+
+                </div>
+
+                <div className="p-6 space-y-4">
+
+                  <DataRow label="Shift" value={staff.shift} />
+
+                  <DataRow label="Time In" value={staff.time_in} />
+
+                  <DataRow label="Time Out" value={staff.time_out} />
+
+                  <DataRow label="Salary" value={`₹ ${staff.salary || "--"}`} />
+
+                </div>
+
+              </div>
+
+              {/* Experience */}
+
+              <div className="bg-white rounded-2xl border border-[#dce9df] shadow-sm overflow-hidden">
+
+                <div className="px-6 py-4 border-b bg-gradient-to-r from-[#eef8ef] to-white">
+
+                  <h2 className="text-lg font-bold text-[#123524]">
+                    Experience
+                  </h2>
+
+                  <p className="text-sm text-gray-500">
+                    Qualification & joining details
+                  </p>
+
+                </div>
+
+                <div className="p-6 space-y-4">
+
+                  <DataRow label="Experience" value={staff.experience} />
+
+                  <DataRow label="Qualification" value={staff.qualification} />
+
+                  <DataRow label="Joining Date" value={staff.joining_date} />
+
+                </div>
+
+              </div>
+
             </div>
 
             <div className="grid md:grid-cols-1 gap-8">
-              <InfoSection title="Personal Details">
-                <DataRow label="GENDER" value={staff.gender} />
-                <DataRow label="BLOOD GROUP" value={staff.blood_group} />
-                <DataRow label="DOB" value={staff.dob} />
-              </InfoSection>
+              <div className="bg-white rounded-2xl border border-[#dce9df] shadow-sm overflow-hidden">
+
+                <div className="px-6 py-4 border-b bg-gradient-to-r from-[#eef8ef] to-white">
+
+                  <h2 className="text-lg font-bold text-[#123524]">
+                    Personal Details
+                  </h2>
+
+                  <p className="text-sm text-gray-500">
+                    Employee personal information
+                  </p>
+
+                </div>
+
+                <div className="p-6 grid md:grid-cols-3 gap-6">
+
+                  <DataRow label="Gender" value={staff.gender} />
+
+                  <DataRow label="Blood Group" value={staff.blood_group} />
+
+                  <DataRow label="Date of Birth" value={staff.dob} />
+
+                </div>
+
+              </div>
             </div>
 
-            <InfoSection title="Address & Location">
-              <div className="flex gap-4 p-4 bg-white/5 rounded-2xl border border-white/10">
-                <FaMapMarkerAlt className="text-2xl text-orange-500 shrink-0" />
-                <p className="text-sm font-medium leading-relaxed text-white/80">{staff.address || "No address recorded"}</p>
-              </div>
-            </InfoSection>
+            <div className="bg-white rounded-2xl border border-[#dce9df] shadow-sm overflow-hidden">
 
-            <InfoSection title="Identity Documents">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <DocLink label="AADHAR CARD" file={staff.aadhar_doc} />
-                <DocLink label="ID PROOF" file={staff.id_doc} />
-                <DocLink label="CERTIFICATE" file={staff.certificate_doc} />
+              <div className="px-6 py-4 border-b bg-gradient-to-r from-[#eef8ef] to-white">
+
+                <h2 className="text-lg font-bold text-[#123524]">
+                  Address
+                </h2>
+
               </div>
-            </InfoSection>
+
+              <div className="p-6">
+
+                <div className="flex gap-4 rounded-xl bg-[#f8faf8] border border-[#dce9df] p-5">
+
+                  <div className="w-12 h-12 rounded-full bg-[#ecfdf3] flex items-center justify-center">
+
+                    <FaMapMarkerAlt className="text-[#22c55e]" />
+
+                  </div>
+
+                  <div>
+
+                    <p className="text-sm font-semibold text-[#344054]">
+                      {staff.address || "No address available"}
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* ================= DOCUMENTS ================= */}
+
+            <div className="bg-white rounded-2xl border border-[#dce9df] shadow-sm overflow-hidden">
+
+              <div className="px-6 py-4 border-b border-[#edf3ee] bg-gradient-to-r from-[#eef8ef] to-white">
+
+                <h2 className="text-lg font-bold text-[#123524]">
+                  Documents
+                </h2>
+
+                <p className="text-sm text-gray-500 mt-1">
+                  Uploaded employee documents
+                </p>
+
+              </div>
+
+              <div className="p-6 grid md:grid-cols-3 gap-5">
+
+                <DocumentCard
+                  title="Aadhaar Card"
+                  file={staff.aadhar_doc}
+                />
+
+                <DocumentCard
+                  title="ID Proof"
+                  file={staff.id_doc}
+                />
+
+                <DocumentCard
+                  title="Certificate"
+                  file={staff.certificate_doc}
+                />
+
+              </div>
+
+            </div>
 
           </div>
         </div>
@@ -208,30 +414,104 @@ const InfoSection = ({ title, children }) => (
 );
 
 const DataRow = ({ label, value }) => (
-  <div className="flex justify-between items-center py-2 border-b border-white/5">
-    <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">{label}</span>
-    <span className="text-sm font-black text-white">{value || "--"}</span>
+
+  <div className="bg-[#f8faf8] rounded-xl border border-[#edf3ee] p-4">
+
+    <p className="text-xs uppercase tracking-wide text-gray-500 mb-2">
+      {label}
+    </p>
+
+    <p className="text-[15px] font-semibold text-[#344054] break-words">
+      {value || "--"}
+    </p>
+
   </div>
+
 );
 
-const DocLink = ({ label, file }) => (
-  <div className="p-5 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center gap-3 group hover:border-orange-500/50 transition-all cursor-pointer">
-    {file ? (
-      file.startsWith('data:image') ? (
-        <img src={file} className="h-12 w-12 rounded object-cover opacity-50 group-hover:opacity-100 transition-all" alt={label} />
-      ) : (
-        <FaIdCard className="text-4xl text-white/20 group-hover:text-orange-500 transition-all" />
-      )
-    ) : (
-      <FaIdCard className="text-4xl text-white/5" />
-    )}
-    <span className="text-[10px] font-black text-white/40 uppercase tracking-widest group-hover:text-white transition-all text-center leading-tight">
-      {label}
-    </span>
-    {file && (
-      <a href={file} download={`${label}.png`} className="text-[9px] font-black text-orange-500 uppercase hover:underline">Download</a>
-    )}
-  </div>
-);
+const DocumentCard = ({ title, file }) => {
+
+  const isImage = file?.startsWith("data:image");
+
+  return (
+
+    <div className="bg-[#f8faf8] border border-[#dce9df] rounded-2xl p-5 hover:border-[#22c55e] transition-all duration-300">
+
+      <div className="flex justify-center mb-5">
+
+        {file ? (
+
+          isImage ? (
+
+            <img
+              src={file}
+              alt={title}
+              className="w-24 h-24 object-cover rounded-xl border"
+            />
+
+          ) : (
+
+            <div className="w-24 h-24 rounded-xl bg-[#ecfdf3] flex items-center justify-center">
+
+              <FaIdCard className="text-5xl text-[#22c55e]" />
+
+            </div>
+
+          )
+
+        ) : (
+
+          <div className="w-24 h-24 rounded-xl bg-gray-100 flex items-center justify-center">
+
+            <FaIdCard className="text-5xl text-gray-400" />
+
+          </div>
+
+        )}
+
+      </div>
+
+      <h4 className="text-center font-bold text-[#123524]">
+
+        {title}
+
+      </h4>
+
+      <p className="text-center text-sm text-gray-500 mt-1">
+
+        {file ? "Uploaded" : "Not Uploaded"}
+
+      </p>
+
+      {file && (
+
+        <div className="flex gap-2 mt-5">
+
+          <a
+            href={file}
+            target="_blank"
+            rel="noreferrer"
+            className="flex-1 text-center py-2 rounded-lg bg-[#ecfdf3] text-[#22c55e] font-semibold hover:bg-[#dcfce7]"
+          >
+            Preview
+          </a>
+
+          <a
+            href={file}
+            download={title}
+            className="flex-1 text-center py-2 rounded-lg bg-[#22c55e] text-white font-semibold hover:bg-[#16a34a]"
+          >
+            Download
+          </a>
+
+        </div>
+
+      )}
+
+    </div>
+
+  );
+
+};
 
 export default ViewStaff;
