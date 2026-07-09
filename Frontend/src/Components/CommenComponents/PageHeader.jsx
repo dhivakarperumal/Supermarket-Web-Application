@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import defaultBg from "/logo.png";
+import defaultBg from "/hi.jpg";
 
 const PageHeader = ({ title, background }) => {
 
@@ -17,7 +17,7 @@ const PageHeader = ({ title, background }) => {
       }}
     >
       {/* Overlay */}
-      <div className="absolute inset-0"></div>
+      <div className="absolute inset-0 bg-black/25"></div>
 
       {/* Content */}
       <div className="relative text-center px-4">
