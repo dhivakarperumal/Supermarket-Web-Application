@@ -90,7 +90,7 @@ const Navbar = () => {
   }, 0);
 
   return (
-    <nav className="w-full shadow-sm">
+    <nav className="w-full sticky top-0 z-50 shadow-sm">
 
       {/* Top Header - White */}
       <div className="relative z-40 bg-white py-4 border-b border-gray-100">
@@ -216,7 +216,7 @@ const Navbar = () => {
 
       {/* Bottom Header - Green Navbar */}
       <div className="hidden md:block">
-        <div className="fixed inset-x-0 top-0 z-[60] bg-[#0e6827] border-b-4 border-[#0b511d] shadow-md">
+        <div className="sticky top-0 z-[60] bg-[#0e6827] border-b-4 border-[#0b511d] shadow-md">
           <PageContainer>
             <div className="flex items-center justify-between h-12">
               
@@ -289,7 +289,6 @@ const Navbar = () => {
             </div>
           </PageContainer>
         </div>
-        <div className="h-12" />
       </div>
 
       {/* Logout Modal */}
