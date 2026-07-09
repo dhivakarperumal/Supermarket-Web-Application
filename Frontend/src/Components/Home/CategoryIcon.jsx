@@ -40,46 +40,48 @@ const CategoryIcon = () => {
       <PageContainer>
         {/* Section Heading */}
 
-        <Heading title="Shop By Category" align="center" />
+        <Heading title="Shop By Category" align="left" />
         {/* Categories container */}
         {loading ? (
-          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="flex flex-col items-center justify-between p-3 w-28 h-32 md:w-32 md:h-40 rounded-2xl bg-white border border-gray-100 shadow-sm animate-pulse">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-200 rounded-lg mt-2" />
-                <div className="w-16 h-3 bg-gray-200 rounded-full mb-1" />
-              </div>
-            ))}
-          </div>
+          <div className="flex flex-wrap justify-start gap-4 md:gap-6">
+  {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+    <div
+      key={i}
+      className="flex flex-col items-center justify-between p-3 w-28 h-32 md:w-32 md:h-40 rounded-2xl bg-white border border-gray-100 shadow-sm animate-pulse"
+    >
+      <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-200 rounded-lg mt-2" />
+      <div className="w-16 h-3 bg-gray-200 rounded-full mb-1" />
+    </div>
+  ))}
+</div>
         ) : (
-          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-            {Array.isArray(categories) && categories.map((cat) => (
-              <Link
-                key={cat.id}
-                to={`/category/${cat.name.toLowerCase()}`}
-                className="group flex flex-col items-center justify-between p-3 w-28 h-32 md:w-32 md:h-40 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
-              >
-                {/* Image Container */}
-                <div className="w-full flex-1 flex items-center justify-center p-1 overflow-hidden">
-                  <img
-                    src={
-                      cat.images?.[0] ||
-                      "https://images.unsplash.com/photo-1610030469983-98e550d6193c"
-                    }
-                    alt={cat.name}
-                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 ease-in-out"
-                  />
-                </div>
+          <div className="flex flex-wrap justify-start gap-4 md:gap-6">
+  {Array.isArray(categories) &&
+    categories.map((cat) => (
+      <Link
+        key={cat.id}
+        to={`/category/${cat.name.toLowerCase()}`}
+        className="group flex flex-col items-center justify-between p-3 w-28 h-32 md:w-32 md:h-40 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
+      >
+        <div className="w-full flex-1 flex items-center justify-center p-1 overflow-hidden">
+          <img
+            src={
+              cat.images?.[0] ||
+              "https://images.unsplash.com/photo-1610030469983-98e550d6193c"
+            }
+            alt={cat.name}
+            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 ease-in-out"
+          />
+        </div>
 
-                {/* Category Name */}
-                <div className="w-full text-center mt-2 h-auto">
-                  <p className="text-xs md:text-sm font-semibold text-gray-800 group-hover:text-primary transition-colors duration-300 line-clamp-1">
-                    {cat.name}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
+        <div className="w-full text-center mt-2">
+          <p className="text-xs md:text-sm font-semibold text-gray-800 group-hover:text-primary transition-colors duration-300 line-clamp-1">
+            {cat.name}
+          </p>
+        </div>
+      </Link>
+    ))}
+</div>
         )}
       </PageContainer>
     </section>
