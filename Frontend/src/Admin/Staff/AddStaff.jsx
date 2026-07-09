@@ -165,6 +165,9 @@ const AddEditStaff = () => {
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
+    const input = e.target;
+    const selectionStart = input.selectionStart;
+    const selectionEnd = input.selectionEnd;
 
     // Auto-populate username from email
     if (name === "email") {
@@ -186,6 +189,20 @@ const AddEditStaff = () => {
     else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
+
+    requestAnimationFrame(() => {
+      if (!input || !input.isConnected) return;
+
+      input.focus();
+
+      if (
+        typeof selectionStart === "number" &&
+        typeof selectionEnd === "number" &&
+        typeof input.setSelectionRange === "function"
+      ) {
+        input.setSelectionRange(selectionStart, selectionEnd);
+      }
+    });
   }, []);
 
   /* ---------------- FILE UPLOAD ---------------- */
