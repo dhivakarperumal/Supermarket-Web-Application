@@ -8,13 +8,14 @@ import {
   User,
   Heart,
   ShoppingCart,
-  Package
+  Package,
+  Search,
+  ChevronDown
 } from "lucide-react";
 import logo from "/logo.png";
 import PageContainer from "./PageContainer";
 import api from "../../api";
-import { FiHome, FiShoppingBag, FiGrid, FiFileText, FiPhone, FiChevronDown } from "react-icons/fi";
-import { FiChevronRight, FiTag } from "react-icons/fi";
+import { FiHome, FiShoppingBag, FiGrid, FiFileText, FiPhone, FiChevronDown, FiChevronRight, FiTag } from "react-icons/fi";
 
 const Navbar = () => {
 
@@ -82,537 +83,355 @@ const Navbar = () => {
 
   }, []);
 
-const navClass = ({ isActive }) =>
-  `px-4 py-1.5 rounded-lg text-sm font-medium transition
-  ${
-    isActive
-      ? "bg-gradient-to-r from-primary-light to-secondary text-white shadow"
-      : "text-gray-600 hover:bg-primary-light/10 hover:text-primary"
-  }`;
+  const cartTotal = cart.reduce((acc, item) => {
+    const price = item.offer_price || item.price || 0;
+    const qty = item.quantity || 1;
+    return acc + price * qty;
+  }, 0);
 
   return (
+    <nav className="w-full z-50 shadow-sm relative">
 
-    <nav className="sticky top-0 z-50 bg-white shadow-md border-b py-1 md:py-0">
+      {/* Top Header - White */}
+      <div className="bg-white py-4 border-b border-gray-100">
+        <PageContainer>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8">
+            
+            {/* Logo */}
+            <Link to="/" className="flex-shrink-0 flex items-center justify-between w-full md:w-auto">
+              <img
+                src={logo}
+                alt="Supermarket Logo"
+                className="h-10 md:h-14 object-contain"
+              />
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMobileMenu(!mobileMenu)}
+                className="md:hidden text-green-800"
+              >
+                {mobileMenu ? <X size={28} /> : <Menu size={28} />}
+              </button>
+            </Link>
 
-      <PageContainer>
+            {/* Search Bar */}
+            <div className="flex-1 w-full max-w-3xl flex items-center border-2 border-green-800 rounded-md overflow-hidden">
+              <input
+                type="text"
+                placeholder="Search for products, brands and more..."
+                className="flex-1 px-4 py-2.5 text-sm outline-none w-full"
+              />
+              <div className="border-l border-gray-300 hidden md:flex items-center px-4 bg-gray-50 h-full cursor-pointer hover:bg-gray-100 transition">
+                <span className="text-sm text-gray-600 mr-2 whitespace-nowrap">All Categories</span>
+                <ChevronDown size={16} className="text-gray-500" />
+              </div>
+              <button className="bg-green-800 text-white px-6 py-2.5 hover:bg-green-900 transition flex items-center justify-center">
+                <Search size={20} />
+              </button>
+            </div>
 
-        <div className="flex items-center justify-between">
+            {/* Right Action Icons (Hidden on Mobile) */}
+            <div className="hidden md:flex items-center gap-8 flex-shrink-0">
+              
+              {/* Account Dropdown */}
+              <div className="relative" ref={menuRef}>
+                <div 
+                  className="flex items-center gap-3 cursor-pointer group"
+                  onClick={() => setUserMenu(!userMenu)}
+                >
+                  <User className="text-gray-700 group-hover:text-green-800 transition" size={26} />
+                  <div>
+                    <p className="text-sm font-bold text-gray-800 flex items-center gap-1 group-hover:text-green-800 transition">
+                      My Account <ChevronDown size={14} className="text-gray-500" />
+                    </p>
+                    <p className="text-xs text-gray-500">Hello, {user ? user.username : 'Sign In'}</p>
+                  </div>
+                </div>
 
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <img
-              src={logo}
-              alt="Saree Palace"
-              className="h-10 md:h-18 object-contain"
-            />
+                {userMenu && (
+                  <div className="absolute right-0 top-full mt-3 w-48 bg-white border border-gray-100 rounded-lg shadow-lg overflow-hidden z-50">
+                    {user ? (
+                      <>
+                        <Link to="/account" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-800" onClick={() => setUserMenu(false)}>
+                          My Profile
+                        </Link>
+                        <Link to="/ordersmain" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-800" onClick={() => setUserMenu(false)}>
+                          Orders
+                        </Link>
+                        {user.role === "admin" && (
+                          <Link to="admin" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-800" onClick={() => setUserMenu(false)}>
+                            Admin Panel
+                          </Link>
+                        )}
+                        <button onClick={() => setLogoutConfirm(true)} className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 font-medium">
+                          Logout
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link to="/login" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-800" onClick={() => setUserMenu(false)}>
+                          Sign In
+                        </Link>
+                        <Link to="/register" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-800" onClick={() => setUserMenu(false)}>
+                          Create Account
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
 
-            {/* <div className="capitalize">
-              <p className="text-primary text-lg md:text-xl font-bold">
-                Saree
-              </p>
-              <p className="text-primary-light text-sm md:text-base font-semibold">
-                World
-              </p>
-            </div> */}
-          </Link>
+              {/* Wishlist */}
+              <Link to="/wishlist" className="flex items-center gap-3 group">
+                <div className="relative">
+                  <Heart className="text-gray-700 group-hover:text-green-800 transition" size={26} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-800 group-hover:text-green-800 transition">Wishlist</p>
+                  <p className="text-xs text-gray-500">{wishlist.length} items</p>
+                </div>
+              </Link>
 
-          {/* Desktop Links */}
+              {/* Cart */}
+              <Link to="/cart" className="flex items-center gap-3 group">
+                <div className="relative">
+                  <ShoppingCart className="text-gray-700 group-hover:text-green-800 transition" size={26} />
+                  {cart.length > 0 && (
+                    <span className="absolute -top-3 -right-3 bg-orange-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
+                      {cart.length}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-800 flex items-center gap-1 group-hover:text-green-800 transition">
+                    Cart
+                  </p>
+                  <p className="text-xs text-gray-500">₹{cartTotal.toLocaleString()}</p>
+                </div>
+              </Link>
 
-          <div className="hidden md:flex flex-1 justify-center">
+            </div>
+          </div>
+        </PageContainer>
+      </div>
 
-            <div className="flex items-center gap-6 text-base">
-
-              <NavLink to="/" className={navClass}>
-                Home
-              </NavLink>
-
-              <NavLink to="/shop" className={navClass}>
-                Shop
-              </NavLink>
-
-              {/* Categories */}
-
-              <div className="relative" ref={categoryRef}>
-
+      {/* Bottom Header - Green Navbar */}
+      <div className="bg-[#0e6827] hidden md:block border-b-4 border-[#0b511d]">
+        <PageContainer>
+          <div className="flex items-center justify-between h-12">
+            
+            <div className="flex items-center h-full gap-8">
+              {/* Categories Dropdown Button */}
+              <div className="relative h-full" ref={categoryRef}>
                 <button
                   onClick={() => {
                     setCategoryMenu(!categoryMenu);
                     setPagesMenu(false);
                   }}
-                  className="flex cursor-pointer items-center gap-1 text-gray-600 hover:text-primary transition"
+                  className="bg-[#ffc107] text-black flex items-center gap-3 px-5 h-full font-bold hover:bg-[#e0a800] transition cursor-pointer"
                 >
-                  Categories
-                  <FiChevronDown
-                    className={`transition-transform ${categoryMenu ? "rotate-180" : ""}`}
-                  />
+                  <Menu size={20} />
+                  All Categories
+                  <ChevronDown size={18} className={`transition-transform ${categoryMenu ? "rotate-180" : ""}`} />
                 </button>
 
                 {categoryMenu && (
-
-                  <div className="absolute  top-10 left-0 w-48 bg-white border border-primary rounded-xl shadow-xl overflow-hidden animate-dropdown">
-
-                    {categories.map((cat) => (
-
+                  <div className="absolute top-full left-0 w-64 bg-white border border-gray-200 shadow-xl overflow-hidden z-50">
+                    {categories.length > 0 ? categories.map((cat) => (
                       <NavLink
                         key={cat.id}
                         to={`/category/${cat.slug || cat.name}`}
                         onClick={() => setCategoryMenu(false)}
-                        className={({ isActive }) =>
-                          `block px-4 py-3 text-sm transition
-    ${isActive
-                            ? "bg-gradient-to-r from-primary-light via-secondary to-secondary-light text-white"
-                            : "text-gray-700 hover:bg-gradient-to-r from-primary-light via-secondary to-secondary-light hover:text-white"
-                          }`
-                        }
+                        className="block px-5 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-800 border-b border-gray-100 last:border-none transition"
                       >
                         {cat.name}
                       </NavLink>
-
-                    ))}
-
+                    )) : (
+                      <div className="px-5 py-3 text-sm text-gray-500">No categories found</div>
+                    )}
                   </div>
-
                 )}
-
               </div>
 
-              {/* Pages */}
-
-              <div className="relative" ref={pagesRef}>
-
-                <button
-                  onClick={() => {
-                    setPagesMenu(!pagesMenu);
-                    setCategoryMenu(false);
-                  }}
-                  className="flex items-center cursor-pointer gap-1 text-gray-600 hover:text-primary transition"
-                >
-                  Pages
-                  <FiChevronDown
-                    className={`transition-transform ${pagesMenu ? "rotate-180" : ""}`}
-                  />
-                </button>
-
-                {pagesMenu && (
-
-                  <div className="absolute top-10 left-0 w-44 bg-white border border-primary rounded-xl shadow-xl overflow-hidden animate-dropdown">
-
-                    <NavLink
-                      to="/about"
-                      onClick={() => setPagesMenu(false)}
-                      className={({ isActive }) =>
-                        `block px-4 py-3 text-sm transition
-    ${isActive
-                          ? "bg-gradient-to-r from-primary-light via-secondary to-secondary-light text-white"
-                          : "text-gray-700 hover:bg-gradient-to-r from-primary-light via-secondary to-secondary-light hover:text-white"
-                        }`
-                      }
-                    >
-                      About
-                    </NavLink>
-                    <NavLink
-                      to="/termsandconditions"
-                      onClick={() => setPagesMenu(false)}
-                      className={({ isActive }) =>
-                        `block px-4 py-3 text-sm transition
-    ${isActive
-                          ? "bg-gradient-to-r from-primary-light via-secondary to-secondary-light text-white"
-                          : "text-gray-700 hover:bg-gradient-to-r from-primary-light via-secondary to-secondary-light hover:text-white"
-                        }`
-                      }
-                    >
-                      Terms And Conditions
-                    </NavLink>
-
-                    <NavLink
-                      to="/contactus"
-                      onClick={() => setPagesMenu(false)}
-                      className={({ isActive }) =>
-                        `block px-4 py-3 text-sm transition
-    ${isActive
-                          ? "bg-gradient-to-r from-primary-light via-secondary to-secondary-light text-white"
-                          : "text-gray-700 hover:bg-gradient-to-r from-primary-light via-secondary to-secondary-light hover:text-white"
-                        }`
-                      }
-                    >
-                      Contact Us
-                    </NavLink>
-
-                  </div>
-
-                )}
-
+              {/* Navigation Links */}
+              <div className="flex items-center gap-6 text-[13px] font-semibold text-white tracking-wide">
+                <NavLink to="/" className={({ isActive }) => isActive ? "text-yellow-400" : "hover:text-yellow-400 transition"}>Home</NavLink>
+                <Link to="/shop" className="hover:text-yellow-400 transition">Fruits & Vegetables</Link>
+                <Link to="/shop" className="hover:text-yellow-400 transition">Grocery & Staples</Link>
+                <Link to="/shop" className="hover:text-yellow-400 transition">Dairy & Bakery</Link>
+                <Link to="/shop" className="hover:text-yellow-400 transition">Beverages</Link>
+                <Link to="/shop" className="hover:text-yellow-400 transition">Snacks & Branded Foods</Link>
+                <Link to="/shop" className="hover:text-yellow-400 transition">Personal Care</Link>
+                <Link to="/shop" className="hover:text-yellow-400 transition">Household</Link>
+                <div className="flex items-center gap-1 cursor-pointer hover:text-yellow-400 transition" ref={pagesRef}>
+                   <button 
+                      onClick={() => { setPagesMenu(!pagesMenu); setCategoryMenu(false); }}
+                      className="flex items-center gap-1"
+                   >
+                     More <ChevronDown size={14} />
+                   </button>
+                   {pagesMenu && (
+                    <div className="absolute top-full right-auto mt-0 w-44 bg-white shadow-xl z-50 border border-gray-100">
+                      <NavLink to="/about" onClick={() => setPagesMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">About</NavLink>
+                      <NavLink to="/contactus" onClick={() => setPagesMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Contact Us</NavLink>
+                      <NavLink to="/termsandconditions" onClick={() => setPagesMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Terms</NavLink>
+                    </div>
+                  )}
+                </div>
               </div>
-
             </div>
 
-          </div>
-
-          {/* Right Icons */}
-
-          <div className="flex items-center gap-4">
-
-            <Link
-              to="/wishlist"
-              className="relative text-primary hover:text-primary-light hover:scale-110 transition duration-200"
-            >
-              <Heart size={22} />
-              {wishlist.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-rose-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
-                  {wishlist.length > 9 ? '9+' : wishlist.length}
-                </span>
-              )}
+            {/* Hot Deals */}
+            <Link to="/shop" className="bg-[#e53935] text-white flex items-center gap-1.5 px-4 py-1.5 rounded text-[13px] font-bold hover:bg-red-700 transition shadow-sm h-8">
+              Hot Deals <span className="text-sm">🔥</span>
             </Link>
-
-            <Link
-              to="/ordersmain"
-              className="text-primary hover:text-primary-light hover:scale-110 transition"
-            >
-              <Package size={22} />
-            </Link>
-
-            <Link
-              to="cart"
-              className="relative text-primary hover:text-primary-light hover:scale-110 transition"
-            >
-              <ShoppingCart size={22} />
-              {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
-                  {cart.length > 9 ? '9+' : cart.length}
-                </span>
-              )}
-            </Link>
-
-            {/* User Dropdown */}
-
-            {user ? (
-
-              <div className="relative" ref={menuRef}>
-
-                <button
-                  onClick={() => setUserMenu(!userMenu)}
-                  className="w-9 h-9 cursor-pointer rounded-full bg-gradient-to-r from-primary to-primary-light text-white flex items-center justify-center font-semibold shadow-md hover:scale-110 transition"
-                >
-                  {user.username?.charAt(0).toUpperCase()}
-                </button>
-
-                {userMenu && (
-
-                  <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden animate-dropdown">
-
-                    <Link
-                      to="/account"
-                      className="block px-4 py-3 text-sm hover:bg-gray-100"
-                      onClick={() => setUserMenu(false)}
-                    >
-                      My Account
-                    </Link>
-
-                    {user.role === "admin" && (
-                      <Link
-                        to="admin"
-                        className="block px-4 py-3 text-sm hover:bg-gray-100"
-                        onClick={() => setUserMenu(false)}
-                      >
-                        Admin Panel
-                      </Link>
-                    )}
-
-                    <button
-                      onClick={() => setLogoutConfirm(true)}
-                      className="w-full cursor-pointer text-left px-4 py-3 text-sm hover:bg-gray-100 text-red-500"
-                    >
-                      Logout
-                    </button>
-
-                  </div>
-
-                )}
-
-              </div>
-
-            ) : (
-
-              <Link to="/login">
-                <User className="text-primary hover:text-primary-light transition" />
-              </Link>
-
-            )}
-
-            {/* Mobile Menu Button */}
-
-            <button
-              onClick={() => setMobileMenu(!mobileMenu)}
-              className="md:hidden text-primary"
-            >
-              {mobileMenu ? <X size={26} /> : <Menu size={26} />}
-            </button>
 
           </div>
-
-        </div>
-
-      </PageContainer>
+        </PageContainer>
+      </div>
 
       {/* Logout Modal */}
-
       {logoutConfirm && (
-
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-xl shadow-xl w-[320px] p-6 text-center">
-
-            <h2 className="text-lg font-semibold text-gray-800 mb-2">
-              Confirm Logout
-            </h2>
-
-            <p className="text-sm text-gray-500 mb-6">
-              Are you sure you want to logout?
-            </p>
-
-            <div className="flex justify-center gap-4">
-
-              <button
-                onClick={() => setLogoutConfirm(false)}
-                className="px-4 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-100"
-              >
+            <h2 className="text-lg font-bold text-gray-800 mb-2">Confirm Logout</h2>
+            <p className="text-sm text-gray-500 mb-6">Are you sure you want to logout?</p>
+            <div className="flex justify-center gap-3">
+              <button onClick={() => setLogoutConfirm(false)} className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-50 transition">
                 Cancel
               </button>
-
-              <button
-                onClick={confirmLogout}
-                className="px-4 py-2 rounded-lg bg-red-500 text-white text-sm hover:bg-red-600"
-              >
+              <button onClick={confirmLogout} className="px-5 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition">
                 Logout
               </button>
+            </div>
+          </div>
+        </div>
+      )}
 
+      {/* Mobile Menu Sidebar */}
+      {mobileMenu && (
+        <div className="fixed inset-0 z-[100] md:hidden">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileMenu(false)} />
+          
+          <div className="absolute top-0 left-0 h-full w-[85%] max-w-[320px] bg-white shadow-2xl overflow-y-auto flex flex-col">
+            
+            {/* Mobile Menu Header */}
+            <div className="flex items-center justify-between px-5 py-4 bg-green-800 text-white">
+              <div className="flex items-center gap-3">
+                <User size={24} />
+                <div>
+                  <h3 className="font-bold text-sm">{user ? user.username : 'Guest'}</h3>
+                  <p className="text-xs text-green-200">{user ? 'My Account' : 'Sign in to sync'}</p>
+                </div>
+              </div>
+              <X size={24} className="cursor-pointer" onClick={() => setMobileMenu(false)} />
             </div>
 
-          </div>
-
-        </div>
-
-      )}
-      {mobileMenu && (
-        <div className="fixed inset-0 z-50 md:hidden">
-
-          {/* Overlay */}
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setMobileMenu(false)}
-          />
-
-          {/* Drawer */}
-          <div className="absolute top-0 left-0 h-full w-[85%] max-w-[340px] bg-white shadow-xl overflow-hidden">
-
-            {/* MENU SCREEN */}
-            {!mobileCategory && !mobilePages && (
-              <>
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 bg-primary text-white">
-                  <h2 className="text-lg font-semibold tracking-wide">Menu</h2>
-                  <X
-                    size={24}
-                    className="cursor-pointer"
-                    onClick={() => setMobileMenu(false)}
-                  />
-                </div>
-
-                {/* Links */}
-                <div className="flex flex-col p-5 space-y-3">
-
-                  <NavLink
-                    to="/"
-                    onClick={() => setMobileMenu(false)}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition
-      ${isActive
-                        ? "bg-primary text-white shadow"
-                        : "bg-gray-100 text-gray-700 hover:bg-primary-light hover:text-white"
-                      }`
-                    }
-                  >
-                    <FiHome size={16} />
-                    Home
+            <div className="flex-1 overflow-y-auto">
+              {/* Mobile Main Menu */}
+              {!mobileCategory && !mobilePages && (
+                <div className="p-4 flex flex-col gap-2">
+                  <NavLink to="/" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-green-50 hover:text-green-800 transition font-medium">
+                    <FiHome size={18} /> Home
                   </NavLink>
-
-                  <NavLink
-                    to="/shop"
-                    onClick={() => setMobileMenu(false)}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition
-      ${isActive
-                        ? "bg-primary text-white shadow"
-                        : "bg-gray-100 text-gray-700 hover:bg-primary-light hover:text-white"
-                      }`
-                    }
-                  >
-                    <FiShoppingBag size={16} />
-                    Shop
+                  
+                  <NavLink to="/shop" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-green-50 hover:text-green-800 transition font-medium">
+                    <FiShoppingBag size={18} /> Shop
                   </NavLink>
-
-                  <button
-                    onClick={() => setMobileCategory(true)}
-                    className="flex items-center justify-between px-4 py-3 rounded-lg text-sm bg-gray-100 hover:bg-primary-light hover:text-white transition"
-                  >
+                  
+                  <button onClick={() => setMobileCategory(true)} className="flex items-center justify-between px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-green-50 hover:text-green-800 transition font-medium w-full">
                     <div className="flex items-center gap-3">
-                      <FiGrid size={16} />
-                      Categories
+                      <FiGrid size={18} /> Categories
                     </div>
-
-                    <FiChevronRight size={16} />
+                    <FiChevronRight size={18} />
                   </button>
 
-                  <button
-                    onClick={() => setMobilePages(true)}
-                    className="flex items-center justify-between px-4 py-3 rounded-lg text-sm bg-gray-100 hover:bg-primary-light hover:text-white transition"
-                  >
+                  <button onClick={() => setMobilePages(true)} className="flex items-center justify-between px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-green-50 hover:text-green-800 transition font-medium w-full">
                     <div className="flex items-center gap-3">
-                      <FiFileText size={16} />
-                      Pages
+                      <FiFileText size={18} /> Pages
                     </div>
-
-                    <FiChevronRight size={16} />
+                    <FiChevronRight size={18} />
                   </button>
 
+                  <div className="my-2 border-t border-gray-100"></div>
+
+                  <Link to="/cart" onClick={() => setMobileMenu(false)} className="flex items-center justify-between px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-green-50 hover:text-green-800 transition font-medium">
+                    <div className="flex items-center gap-3">
+                      <ShoppingCart size={18} /> Cart
+                    </div>
+                    {cart.length > 0 && <span className="bg-orange-500 text-white px-2 py-0.5 rounded-full text-xs">{cart.length}</span>}
+                  </Link>
+                  
+                  <Link to="/wishlist" onClick={() => setMobileMenu(false)} className="flex items-center justify-between px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-green-50 hover:text-green-800 transition font-medium">
+                    <div className="flex items-center gap-3">
+                      <Heart size={18} /> Wishlist
+                    </div>
+                    {wishlist.length > 0 && <span className="bg-green-800 text-white px-2 py-0.5 rounded-full text-xs">{wishlist.length}</span>}
+                  </Link>
+
+                  <div className="my-2 border-t border-gray-100"></div>
+
+                  {user ? (
+                    <button onClick={() => setLogoutConfirm(true)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-red-600 hover:bg-red-50 transition font-medium w-full">
+                      <User size={18} /> Logout
+                    </button>
+                  ) : (
+                    <Link to="/login" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-green-700 bg-green-50 hover:bg-green-100 transition font-medium">
+                      <User size={18} /> Sign In
+                    </Link>
+                  )}
                 </div>
-              </>
-            )}
+              )}
 
-            {/* CATEGORY SCREEN */}
-            {mobileCategory && (
-              <>
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 bg-primary text-white">
-
-                  {/* Back button */}
-                  <button
-                    onClick={() => setMobileCategory(false)}
-                    className="text-xl"
-                  >
-                    ←
-                  </button>
-
-                  <h2 className="text-sm font-semibold">Categories</h2>
-
-                  <X
-                    size={24}
-                    className="cursor-pointer"
-                    onClick={() => setMobileMenu(false)}
-                  />
-
+              {/* Mobile Category Menu */}
+              {mobileCategory && (
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-100 font-medium text-gray-700">
+                    <button onClick={() => setMobileCategory(false)} className="p-1 hover:bg-gray-200 rounded-md">←</button>
+                    All Categories
+                  </div>
+                  <div className="p-2">
+                    {categories.map((cat) => (
+                      <NavLink
+                        key={cat.id}
+                        to={`/category/${cat.slug || cat.name}`}
+                        onClick={() => setMobileMenu(false)}
+                        className="flex items-center justify-between px-4 py-3 text-sm text-gray-700 border-b border-gray-50 hover:bg-green-50 hover:text-green-800 transition"
+                      >
+                        <div className="flex items-center gap-3">
+                          <FiTag size={16} /> {cat.name}
+                        </div>
+                        <FiChevronRight size={16} className="text-gray-400" />
+                      </NavLink>
+                    ))}
+                  </div>
                 </div>
+              )}
 
-                {/* Category List */}
-                <div className="flex flex-col p-5 space-y-3">
-
-                  {categories.map((cat) => (
-
-                    <NavLink
-                      key={cat.id}
-                      to={`/category/${cat.slug || cat.name}`}
-                      onClick={() => setMobileMenu(false)}
-                      className={({ isActive }) =>
-                        `flex items-center justify-between px-4 py-3 rounded-lg text-sm transition
-        ${isActive
-                          ? "bg-primary text-white shadow"
-                          : "bg-gray-100 text-gray-700 hover:bg-primary-light hover:text-white"
-                        }`
-                      }
-                    >
-
-                      <div className="flex items-center gap-3">
-                        <FiTag size={16} />
-                        {cat.name}
-                      </div>
-
-                      <FiChevronRight size={16} />
-
+              {/* Mobile Pages Menu */}
+              {mobilePages && (
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-100 font-medium text-gray-700">
+                    <button onClick={() => setMobilePages(false)} className="p-1 hover:bg-gray-200 rounded-md">←</button>
+                    Pages
+                  </div>
+                  <div className="p-2">
+                    <NavLink to="/about" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 border-b border-gray-50 hover:bg-green-50 hover:text-green-800 transition">
+                      <FiFileText size={16} /> About Us
                     </NavLink>
-
-                  ))}
-
+                    <NavLink to="/contactus" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 border-b border-gray-50 hover:bg-green-50 hover:text-green-800 transition">
+                      <FiPhone size={16} /> Contact Us
+                    </NavLink>
+                    <NavLink to="/termsandconditions" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-800 transition">
+                      <FiFileText size={16} /> Terms And Conditions
+                    </NavLink>
+                  </div>
                 </div>
-              </>
-            )}
-            {/* PAGES SCREEN */}
-            {mobilePages && (
-              <>
-                <div className="flex items-center justify-between px-6 py-4 bg-primary text-white">
-
-                  <button
-                    onClick={() => setMobilePages(false)}
-                    className="text-xl"
-                  >
-                    ←
-                  </button>
-
-                  <h2 className="text-lg font-semibold">Pages</h2>
-
-                  <X
-                    size={24}
-                    className="cursor-pointer"
-                    onClick={() => setMobileMenu(false)}
-                  />
-
-                </div>
-
-                <div className="flex flex-col p-5 space-y-3">
-
-                  <NavLink
-                    to="/about"
-                    onClick={() => setMobileMenu(false)}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition
-      ${isActive
-                        ? "bg-primary text-white shadow"
-                        : "bg-gray-100 text-gray-700 hover:bg-primary-light hover:text-white"
-                      }`
-                    }
-                  >
-                    <FiFileText size={16} />
-                    About
-                  </NavLink>
-
-                    <NavLink
-                    to="/termsandconditions"
-                    onClick={() => setMobileMenu(false)}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition
-      ${isActive
-                        ? "bg-primary text-white shadow"
-                        : "bg-gray-100 text-gray-700 hover:bg-primary-light hover:text-white"
-                      }`
-                    }
-                  >
-                    <FiFileText size={16} />
-                    Terms And Conditions
-                  </NavLink>
-
-                    
-                  <NavLink
-                    to="/contactus"
-                    onClick={() => setMobileMenu(false)}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition
-      ${isActive
-                        ? "bg-primary text-white shadow"
-                        : "bg-gray-100 text-gray-700 hover:bg-primary-light hover:text-white"
-                      }`
-                    }
-                  >
-                    <FiPhone size={16} />
-                    Contact Us
-                  </NavLink>
-
-                </div>
-              </>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
     </nav>
-
   );
 };
 
