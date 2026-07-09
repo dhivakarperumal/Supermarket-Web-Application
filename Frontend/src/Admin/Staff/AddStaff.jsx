@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import imageCompression from "browser-image-compression";
@@ -108,6 +108,32 @@ const AddEditStaff = () => {
   });
 
   const [previewFile, setPreviewFile] = useState(null);
+  const activeFieldRef = useRef(null);
+
+  const restoreActiveFieldFocus = useCallback(() => {
+    const input = activeFieldRef.current;
+    if (!input || !input.isConnected) return;
+
+    if (document.activeElement !== input) {
+      input.focus();
+    }
+
+    if (
+      typeof input.selectionStart === "number" &&
+      typeof input.selectionEnd === "number" &&
+      typeof input.setSelectionRange === "function"
+    ) {
+      input.setSelectionRange(input.selectionStart, input.selectionEnd);
+    }
+  }, []);
+
+  useEffect(() => {
+    restoreActiveFieldFocus();
+  }, [form, restoreActiveFieldFocus]);
+
+  const handleFieldFocus = useCallback((e) => {
+    activeFieldRef.current = e.target;
+  }, []);
 
   /* ---------------- LOAD STAFF (EDIT ONLY) ---------------- */
 
@@ -165,9 +191,6 @@ const AddEditStaff = () => {
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
-    const input = e.target;
-    const selectionStart = input.selectionStart;
-    const selectionEnd = input.selectionEnd;
 
     // Auto-populate username from email
     if (name === "email") {
@@ -191,19 +214,9 @@ const AddEditStaff = () => {
     }
 
     requestAnimationFrame(() => {
-      if (!input || !input.isConnected) return;
-
-      input.focus();
-
-      if (
-        typeof selectionStart === "number" &&
-        typeof selectionEnd === "number" &&
-        typeof input.setSelectionRange === "function"
-      ) {
-        input.setSelectionRange(selectionStart, selectionEnd);
-      }
+      restoreActiveFieldFocus();
     });
-  }, []);
+  }, [restoreActiveFieldFocus]);
 
   /* ---------------- FILE UPLOAD ---------------- */
 
@@ -541,6 +554,7 @@ const AddEditStaff = () => {
         <form
           id="staffForm"
           onSubmit={handleSubmit}
+          onFocusCapture={handleFieldFocus}
           className="grid lg:grid-cols-3 gap-6 items-start"
         >
 
