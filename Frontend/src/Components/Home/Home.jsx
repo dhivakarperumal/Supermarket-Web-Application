@@ -9,6 +9,7 @@ import CategoryIcon from './CategoryIcon'
 import SareeSwiper from './SareeSwiper'
 import TrendingProducts from './TrendingProducts'
 import OfferProducts from '../Products/OfferProducts'
+import Features from './Features'
 
 const Home = () => {
   return (
@@ -38,8 +39,11 @@ const Home = () => {
         <Banner />
       </div>
       <div>
-        <VideoSwiper />
+        <Features/>
       </div>
+      {/* <div>
+        <VideoSwiper />
+      </div> */}
     </div>
   )
 }

@@ -267,6 +267,15 @@ const Navbar = () => {
                   Home
                 </NavLink>
 
+                 <NavLink
+                  to="/shop"
+                  className={({ isActive }) =>
+                    isActive ? "text-yellow-400" : "hover:text-yellow-400 transition"
+                  }
+                >
+                  Shop
+                </NavLink>
+
                 {categories.slice(0, 7).map((cat) => (
                   <NavLink
                     key={cat.id}
