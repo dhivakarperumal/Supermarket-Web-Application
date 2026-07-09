@@ -41,41 +41,47 @@ const [activeTab, setActiveTab] = useState(tab || "personal");
   return (
     <>
       <PageHeader title="My Account" />
-      <div className="min-h-screen bg-[#F8F6F2] py-16">
+      <div className="min-h-screen bg-[#f7f8f3] py-10 sm:py-16">
         <PageContainer>
-          <div className=" grid lg:grid-cols-4 gap-10">
+          <div className="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
 
             {/* SIDEBAR */}
 
-            <div className="bg-white rounded-2xl shadow-md p-6 space-y-2 h-fit">
+            <div className="overflow-hidden rounded-[1.5rem] border border-green-100 bg-gradient-to-br from-[#0e6827] via-[#168637] to-[#0b511d] p-5 shadow-[0_20px_50px_rgba(14,104,39,0.18)] h-fit">
+              <div className="rounded-[1.25rem] border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
+                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-100">
+                  Account
+                </p>
+                <h2 className="mt-2 text-xl font-bold text-white">
+                  My Account
+                </h2>
+                <p className="mt-2 text-sm text-green-50/90">
+                  Manage your profile, orders, delivery, and password in one place.
+                </p>
+              </div>
 
-              <h2 className="text-lg font-bold text-gray-800 mb-4">
-                My Account
-              </h2>
-
-              {menuItems.map((item) => (
-
-                <button
-                  key={item.key}
-                  onClick={() => setActiveTab(item.key)}
-                  className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl font-medium transition cursor-pointer
-              
-              ${activeTab === item.key
-                      ? "bg-primary text-white shadow-md"
-                      : "hover:bg-gray-100 text-gray-700"
-                    }`}
-                >
-                  {item.icon}
-                  {item.label}
-                </button>
-
-              ))}
-
+              <div className="mt-5 space-y-2">
+                {menuItems.map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => setActiveTab(item.key)}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-all duration-200 ${activeTab === item.key
+                        ? "bg-[#ffc107] text-black shadow-lg"
+                        : "text-green-50 hover:bg-white/15 hover:text-white"
+                      }`}
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
+                      {item.icon}
+                    </span>
+                    {item.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* MAIN CONTENT */}
 
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-1">
 
               {activeTab === "personal" && <PersonalInfo />}
 
