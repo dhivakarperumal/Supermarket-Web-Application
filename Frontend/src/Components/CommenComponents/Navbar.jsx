@@ -90,7 +90,7 @@ const Navbar = () => {
   }, 0);
 
   return (
-    <nav className="w-full sticky top-0 z-50 shadow-sm">
+    <nav className="w-full shadow-sm">
 
       {/* Top Header - White */}
       <div className="bg-white py-4 border-b border-gray-100">
@@ -215,7 +215,7 @@ const Navbar = () => {
       </div>
 
       {/* Bottom Header - Green Navbar */}
-      <div className="bg-[#0e6827] hidden md:block border-b-4 border-[#0b511d]">
+      <div className="sticky top-0 z-50 bg-[#0e6827] hidden md:block border-b-4 border-[#0b511d] shadow-md">
         <PageContainer>
           <div className="flex items-center justify-between h-12">
             
