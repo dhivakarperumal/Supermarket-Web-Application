@@ -90,10 +90,10 @@ const Navbar = () => {
   }, 0);
 
   return (
-    <nav className="w-full sticky top-0 z-50 shadow-sm">
+    <div className="relative z-40 bg-white py-4 border-b border-gray-100">
 
       {/* Top Header - White */}
-      <div className="relative z-40 bg-white py-4 border-b border-gray-100">
+      <div className="relative z-[80] bg-white py-4 border-b border-gray-100 overflow-visible">
         <PageContainer>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8">
 
@@ -148,7 +148,7 @@ const Navbar = () => {
                 </div>
 
                 {userMenu && (
-                  <div className="absolute right-0 top-full mt-3 w-48 bg-white border border-gray-100 rounded-lg shadow-lg overflow-hidden z-50">
+                  <div className="absolute right-0 top-full mt-3 w-56 bg-white border border-gray-100 rounded-xl shadow-2xl overflow-hidden z-[9999]">
                     {user ? (
                       <>
                         <Link to="/account" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-800" onClick={() => setUserMenu(false)}>
@@ -216,7 +216,7 @@ const Navbar = () => {
 
       {/* Bottom Header - Green Navbar */}
       <div className="hidden md:block">
-        <div className="sticky top-0 z-[60] bg-[#0e6827] border-b-4 border-[#0b511d] shadow-md">
+        <div className="sticky top-0 z-30 bg-[#0e6827] border-b-4 border-[#0b511d] shadow-md">
           <PageContainer>
             <div className="grid grid-cols-3 items-center h-12">
 
@@ -481,7 +481,7 @@ const Navbar = () => {
           </div>
         </div>
       )}
-    </nav>
+    </div>
   );
 };
 
