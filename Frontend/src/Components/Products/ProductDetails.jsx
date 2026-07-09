@@ -89,6 +89,71 @@ const ProductDetails = () => {
     }
   };
 
+  const resolveImageUrl = (url) => {
+    if (!url || typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith('http') || trimmed.startsWith('data:')) return trimmed;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    const cleanPath = trimmed.replace(/\\/g, '/');
+    const finalPath = cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
+    return `${backendUrl}${finalPath}`;
+  };
+
+  const normalizeImageList = (value) => {
+    if (!value) return [];
+
+    if (Array.isArray(value)) {
+      return value.filter(Boolean);
+    }
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return [];
+
+      try {
+        const parsed = JSON.parse(trimmed);
+        return Array.isArray(parsed) ? parsed.filter(Boolean) : [parsed].filter(Boolean);
+      } catch {
+        if (trimmed.startsWith('[')) return [];
+        return [trimmed];
+      }
+    }
+
+    return [value];
+  };
+
+  const getDisplayImages = (data, variant) => {
+    const candidates = [
+      variant?.images,
+      data?.thumbnail_image,
+      data?.product_images,
+      data?.images,
+      data?.image,
+      data?.image_url,
+      data?.thumbnail,
+      variant?.image,
+      variant?.image_url,
+    ];
+
+    const images = Array.from(
+      new Set(
+        candidates
+          .flatMap((candidate) => normalizeImageList(candidate))
+          .map((img) => resolveImageUrl(img))
+          .filter(Boolean)
+      )
+    );
+
+    if (images.length > 0) {
+      return images;
+    }
+
+    return [
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(data?.name || "Product")}&background=random`
+    ];
+  };
+
   const fetchProduct = async () => {
     try {
       const res = await api.get(`/products/${id}`);
@@ -100,27 +165,24 @@ const ProductDetails = () => {
 
       if (data.variants?.length > 0) {
         const firstVariant = data.variants[0];
-        // Parse variant images if they are JSON strings
-        if (typeof firstVariant.images === 'string') {
-          firstVariant.images = JSON.parse(firstVariant.images);
-        }
+        const normalizedVariant = {
+          ...firstVariant,
+          images: normalizeImageList(firstVariant.images),
+        };
 
-        setSelectedVariant(firstVariant);
-        setSelectedImage(resolveImageUrl(firstVariant.images?.[0]));
-        setSelectedSize(firstVariant.selectedSizes?.[0] || null);
+        setSelectedVariant(normalizedVariant);
+        const images = getDisplayImages(data, normalizedVariant);
+        setSelectedImage(images[0]);
+        setSelectedSize(normalizedVariant.selectedSizes?.[0] || null);
+      } else {
+        const images = getDisplayImages(data, null);
+        setSelectedVariant(null);
+        setSelectedImage(images[0]);
+        setSelectedSize(null);
       }
     } catch (error) {
       console.error(error);
     }
-  };
-
-  const resolveImageUrl = (url) => {
-    if (!url || typeof url !== 'string') return null;
-    if (url.startsWith('http') || url.startsWith('data:')) return url;
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-    const cleanPath = url.replace(/\\/g, '/');
-    const finalPath = cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
-    return `${backendUrl}${finalPath}`;
   };
 
   const handleBuyNow = () => {
@@ -263,6 +325,9 @@ const ProductDetails = () => {
     }
   }, [user, id]);
 
+  const displayImages = product ? getDisplayImages(product, selectedVariant) : [];
+  const fallbackImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(product?.name || "Product")}&background=random`;
+
   if (!product)
     return (
       <>
@@ -326,9 +391,12 @@ const ProductDetails = () => {
             onMouseMove={handleMouseMove}
           >
             <img
-              src={selectedImage}
+              src={selectedImage || displayImages[0] || fallbackImage}
               alt={product.name}
               className="w-full h-full object-cover object-top"
+              onError={(e) => {
+                e.currentTarget.src = fallbackImage;
+              }}
             />
 
             {zoomed && (
@@ -345,13 +413,16 @@ const ProductDetails = () => {
           </div>
           {/* Thumbnails */}
           <div className="flex gap-2 sm:gap-3 mt-3 sm:mt-4 flex-wrap">
-            {selectedVariant?.images?.map((img, index) => (
+            {displayImages.map((img, index) => (
               <img
                 key={index}
                 src={img}
                 onClick={() => setSelectedImage(img)}
-                className={`w-14 h-14 sm:w-18 sm:h-20 sm:h-16 object-cover object-top rounded-lg cursor-pointer border ${selectedImage === img ? "border-primary" : "border-gray-200"
+                className={`w-14 h-14 sm:w-18 sm:h-16 object-cover object-top rounded-lg cursor-pointer border ${selectedImage === img ? "border-primary" : "border-gray-200"
                   }`}
+                onError={(e) => {
+                  e.currentTarget.src = fallbackImage;
+                }}
               />
             ))}
           </div>
@@ -428,21 +499,29 @@ const ProductDetails = () => {
                 <div
                   key={index}
                   onClick={() => {
-                    setSelectedVariant(variant);
-                    setSelectedImage(variant.images?.[0]);
-                    setSelectedSize(variant.selectedSizes?.[0] || null);
+                    const normalizedVariant = {
+                      ...variant,
+                      images: normalizeImageList(variant.images),
+                    };
+                    const images = getDisplayImages(product, normalizedVariant);
+                    setSelectedVariant(normalizedVariant);
+                    setSelectedImage(images[0]);
+                    setSelectedSize(normalizedVariant.selectedSizes?.[0] || null);
                     setQuantity(1);
                   }}
                   className="flex flex-col items-center cursor-pointer"
                 >
                   {/* variant image */}
                   <img
-                    src={resolveImageUrl(variant.images?.[0])}
+                    src={getDisplayImages(product, { ...variant, images: normalizeImageList(variant.images) })[0]}
                     alt={variant.colorName}
                     className={`w-16 h-16 object-cover object-top rounded-lg border-2 ${selectedVariant?.color === variant.color
                       ? "border-primary"
                       : "border-gray-200"
                       }`}
+                    onError={(e) => {
+                      e.currentTarget.src = fallbackImage;
+                    }}
                   />
 
                   {/* color name */}
