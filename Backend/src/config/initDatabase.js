@@ -107,6 +107,17 @@ const createUsersTable = async () => {
       )
     `);
 
+    try {
+      await connection.query(`
+        ALTER TABLE employees
+        DROP COLUMN IF EXISTS employee_id,
+        DROP COLUMN IF EXISTS emergency_name,
+        DROP COLUMN IF EXISTS emergency_phone
+      `);
+    } catch (migrationErr) {
+      console.warn('⚠️  employees migration skipped:', migrationErr?.message || migrationErr);
+    }
+
     await connection.query(`
       ALTER TABLE users
       ADD COLUMN IF NOT EXISTS name VARCHAR(255) DEFAULT NULL,
