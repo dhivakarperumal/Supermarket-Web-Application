@@ -1,26 +1,41 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import PageContainer from "./PageContainer";
-
-import {
-  MapPin,
-  Phone,
-  Mail,
-  Clock,
-} from "lucide-react";
-
 import {
   FaFacebookF,
   FaInstagram,
   FaYoutube,
   FaTwitter,
 } from "react-icons/fa";
-
 import {
   SiVisa,
   SiMastercard,
   SiPaytm,
 } from "react-icons/si";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  ChevronRight,
+  Home,
+  ShoppingBag,
+  Info,
+  PhoneCall,
+  User,
+  Package,
+  RotateCcw,
+  HelpCircle,
+  Shield,
+  FileText,
+  Truck,
+  RefreshCw,
+  Apple,
+  ShoppingBasket,
+  Milk,
+  Coffee,
+  Heart,
+} from "lucide-react";
 
 const Footer = () => {
   return (
@@ -92,10 +107,34 @@ const Footer = () => {
 
             <ul className="space-y-3 text-sm text-green-100">
 
-              <li><Link to="/" className="hover:text-white">Home</Link></li>
-              <li><Link to="/shop">Shop</Link></li>
-              <li><Link to="/about">About Us</Link></li>
-              <li><Link to="/contactus">Contact Us</Link></li>
+              <li>
+                <Link to="/" className="flex items-center gap-2 hover:text-white transition">
+                  <Home size={16} className="text-green-300" />
+                  Home
+                </Link>
+              </li>
+
+              <li>
+                <Link to="/shop" className="flex items-center gap-2 hover:text-white transition">
+                  <ShoppingBag size={16} className="text-green-300" />
+                  Shop
+                </Link>
+              </li>
+
+              <li>
+                <Link to="/about" className="flex items-center gap-2 hover:text-white transition">
+                  <Info size={16} className="text-green-300" />
+                  About Us
+                </Link>
+              </li>
+
+              <li>
+                <Link to="/contactus" className="flex items-center gap-2 hover:text-white transition">
+                  <PhoneCall size={16} className="text-green-300" />
+                  Contact Us
+                </Link>
+              </li>
+
             </ul>
 
           </div>
@@ -109,15 +148,40 @@ const Footer = () => {
 
             <ul className="space-y-3 text-sm text-green-100">
 
-              <li><Link to="/profile">My Account</Link></li>
+              <li>
+                <Link to="/profile" className="flex items-center gap-2 hover:text-white transition">
+                  <User size={16} className="text-green-300" />
+                  My Account
+                </Link>
+              </li>
 
-              <li><Link to="/orders">Track Order</Link></li>
+              <li>
+                <Link to="/orders" className="flex items-center gap-2 hover:text-white transition">
+                  <Package size={16} className="text-green-300" />
+                  Track Order
+                </Link>
+              </li>
 
-              <li><Link to="/">Returns & Refunds</Link></li>
+              <li>
+                <Link to="/" className="flex items-center gap-2 hover:text-white transition">
+                  <RotateCcw size={16} className="text-green-300" />
+                  Returns & Refunds
+                </Link>
+              </li>
 
-              <li><Link to="/">FAQ</Link></li>
+              <li>
+                <Link to="/" className="flex items-center gap-2 hover:text-white transition">
+                  <HelpCircle size={16} className="text-green-300" />
+                  FAQ
+                </Link>
+              </li>
 
-              <li><Link to="/">Help Center</Link></li>
+              <li>
+                <Link to="/" className="flex items-center gap-2 hover:text-white transition">
+                  <HelpCircle size={16} className="text-green-300" />
+                  Help Center
+                </Link>
+              </li>
 
             </ul>
 
@@ -132,15 +196,40 @@ const Footer = () => {
 
             <ul className="space-y-3 text-sm text-green-100">
 
-              <li><Link to="/">Privacy Policy</Link></li>
+              <li>
+                <Link to="/" className="flex items-center gap-2 hover:text-white transition">
+                  <Shield size={16} className="text-green-300" />
+                  Privacy Policy
+                </Link>
+              </li>
 
-              <li><Link to="/">Terms & Conditions</Link></li>
+              <li>
+                <Link to="/" className="flex items-center gap-2 hover:text-white transition">
+                  <FileText size={16} className="text-green-300" />
+                  Terms & Conditions
+                </Link>
+              </li>
 
-              <li><Link to="/">Shipping Policy</Link></li>
+              <li>
+                <Link to="/" className="flex items-center gap-2 hover:text-white transition">
+                  <Truck size={16} className="text-green-300" />
+                  Shipping Policy
+                </Link>
+              </li>
 
-              <li><Link to="/">Return Policy</Link></li>
+              <li>
+                <Link to="/" className="flex items-center gap-2 hover:text-white transition">
+                  <RefreshCw size={16} className="text-green-300" />
+                  Return Policy
+                </Link>
+              </li>
 
-              <li><Link to="/">Cancellation Policy</Link></li>
+              <li>
+                <Link to="/" className="flex items-center gap-2 hover:text-white transition">
+                  <RefreshCw size={16} className="text-green-300" />
+                  Cancellation Policy
+                </Link>
+              </li>
 
             </ul>
 
