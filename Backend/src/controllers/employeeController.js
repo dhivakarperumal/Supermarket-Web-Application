@@ -73,41 +73,61 @@ exports.createEmployee = async (req, res) => {
     const safePassword = password || "123456";
     const hashedPassword = await bcrypt.hash(safePassword, 10);
 
-    /* ---------- Insert User ---------- */
+    /* ---------- Ensure User Exists (create or reuse) ---------- */
 
-    const [userInsertResult] = await conn.query(
-      `
-      INSERT INTO users
-      (
-        user_id,
-        name,
-        username,
-        email,
-        password,
-        phone,
-        role,
-        status,
-        created_by,
-        updated_by
-      )
-      VALUES (?,?,?,?,?,?,?,?,?,?)
-      `,
-      [
-        generatedUserId,
-        name,
-        username,
-        email,
-        hashedPassword,
-        phone,
-        normalizedRole,
-        normalizedStatus,
-        createdBy,
-        createdBy,
-      ]
+    let userId;
+
+    // Try to find an existing user by email or username to avoid duplicate entries
+    const [existingUsers] = await conn.query(
+      `SELECT id, user_id FROM users WHERE email=? OR username=? LIMIT 1`,
+      [email, username]
     );
 
-    // mysql2/promise returns [rows, fields]; the insert id is on the result object.
-    const userId = generatedUserId;
+    if (existingUsers.length) {
+      const existing = existingUsers[0];
+      userId = existing.user_id;
+
+      // Update basic user info to keep records in sync (do not override password)
+      await conn.query(
+        `UPDATE users SET name=?, username=?, phone=?, role=?, status=?, updated_by=? WHERE id=?`,
+        [name || null, username || null, phone || null, normalizedRole, normalizedStatus, createdBy, existing.id]
+      );
+    } else {
+      // Create a new user with a UUID user_id
+      await conn.query(
+        `
+        INSERT INTO users
+        (
+          user_id,
+          name,
+          username,
+          email,
+          password,
+          phone,
+          role,
+          status,
+          created_by,
+          updated_by
+        )
+        VALUES (?,?,?,?,?,?,?,?,?,?)
+        `,
+        [
+          generatedUserId,
+          name,
+          username,
+          email,
+          hashedPassword,
+          phone,
+          normalizedRole,
+          normalizedStatus,
+          createdBy,
+          createdBy,
+        ]
+      );
+
+      userId = generatedUserId;
+    }
+
     console.log("createEmployee debug", { generatedUserId, userId, createdBy, normalizedRole, normalizedStatus });
 
     /* ---------- Insert Employee ---------- */
