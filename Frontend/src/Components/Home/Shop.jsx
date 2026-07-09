@@ -170,22 +170,22 @@ const Shop = ({ defaultCategory = "" }) => {
 
   const colors = selectedCategory
     ? [
-        ...new Set(
-          products
-            .filter((p) => p.category === selectedCategory)
-            .flatMap((p) => p.variants?.map((v) => v.colorName)),
-        ),
-      ]
+      ...new Set(
+        products
+          .filter((p) => p.category === selectedCategory)
+          .flatMap((p) => p.variants?.map((v) => v.colorName)),
+      ),
+    ]
     : [];
 
   const sizes = selectedCategory
     ? [
-        ...new Set(
-          products
-            .filter((p) => p.category === selectedCategory)
-            .flatMap((p) => p.variants?.flatMap((v) => v.selectedSizes || [])),
-        ),
-      ]
+      ...new Set(
+        products
+          .filter((p) => p.category === selectedCategory)
+          .flatMap((p) => p.variants?.flatMap((v) => v.selectedSizes || [])),
+      ),
+    ]
     : [];
 
   const clearFilters = () => {
@@ -238,112 +238,79 @@ const Shop = ({ defaultCategory = "" }) => {
     <>
       <PageHeader title="Shop" />
 
-      {/* SEARCH BAR */}
-
+      {/* SHOP HERO */}
       <div className="px-4 md:px-10 mt-6">
-        <div className="flex flex-col md:flex-row md:flex-wrap md:items-center md:justify-between gap-3 bg-white border border-gray-200 rounded-2xl shadow-sm px-4 py-3">
-          {/* FILTER BUTTON */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-xl transition font-medium text-sm cursor-pointer w-fit"
-          >
-            {showFilters ? <FiX size={18} /> : <FiFilter size={18} />}
-            {showFilters ? "Close" : "Filters"}
-          </button>
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-green-800 via-green-700 to-green-600 text-white shadow-xl">
 
-          {/* SEARCH INPUT */}
-          <div className="flex items-center gap-3 flex-1 w-full">
-            <svg
-              className="w-5 h-5 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
+          {/* Background Decoration */}
+          <div className="absolute -right-10 -top-10 w-56 h-56 bg-white/10 rounded-full"></div>
+          <div className="absolute right-32 bottom-0 w-36 h-36 bg-yellow-400/10 rounded-full"></div>
 
-            <input
-              type="text"
-              placeholder="Search sarees, colors, designs..."
-              className="w-full outline-none text-sm text-gray-700 placeholder-gray-400"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between p-8 lg:p-12 gap-8">
 
-          {/* SORT DROPDOWN */}
-          <div className="flex flex-wrap items-center gap-3 md:border-l md:pl-4 pt-2 md:pt-0">
-            {/* SORT */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="text-sm text-gray-600 font-medium">Sort By</span>
+            {/* Left Content */}
+            <div className="max-w-xl">
 
-              <select
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value)}
-                className="text-sm border rounded-lg px-2 py-1 outline-none cursor-pointer"
-              >
-                <option value="">Default</option>
-                <option value="az">A - Z</option>
-                <option value="za">Z - A</option>
-                <option value="priceLowHigh">Price Low → High</option>
-                <option value="priceHighLow">Price High → Low</option>
-                <option value="offerHighLow">Offer High → Low</option>
-                <option value="offerLowHigh">Offer Low → High</option>
-              </select>
+              <span className="inline-flex items-center bg-yellow-400 text-black px-4 py-1 rounded-full text-sm font-bold mb-5">
+                🛒 Fresh Grocery Collection
+              </span>
+
+              <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight">
+                Fresh Products
+                <br />
+                Delivered
+                <span className="text-yellow-300"> Every Day</span>
+              </h1>
+
+              <p className="mt-5 text-green-100 text-lg">
+                Discover fresh vegetables, fruits, groceries, dairy products and
+                daily essentials at the best prices.
+              </p>
+
+              <div className="flex flex-wrap gap-4 mt-8">
+
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl px-5 py-4">
+                  <h3 className="text-3xl font-bold">
+                    {products.length}+
+                  </h3>
+                  <p className="text-sm text-green-100">
+                    Products
+                  </p>
+                </div>
+
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl px-5 py-4">
+                  <h3 className="text-3xl font-bold">
+                    30%
+                  </h3>
+                  <p className="text-sm text-green-100">
+                    Daily Offers
+                  </p>
+                </div>
+
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl px-5 py-4">
+                  <h3 className="text-3xl font-bold">
+                    🚚
+                  </h3>
+                  <p className="text-sm text-green-100">
+                    Fast Delivery
+                  </p>
+                </div>
+
+              </div>
+
             </div>
 
-            {/* GRID SELECTOR */}
-            <div className="flex items-center gap-2">
-              {/* Desktop Grid Icons */}
-              <button
-                onClick={() => setGridView(5)}
-                className={`hidden lg:flex p-2 border rounded ${
-                  gridView === 5 ? "bg-primary text-white" : "border-gray-300"
-                }`}
-              >
-                <BsGrid3X3Gap size={16} />
-              </button>
-
-              <button
-                onClick={() => setGridView(4)}
-                className={`hidden lg:flex p-2 border rounded ${
-                  gridView === 4 ? "bg-primary text-white" : "border-gray-300"
-                }`}
-              >
-                <BsGridFill size={16} />
-              </button>
-
-              <button
-                onClick={() => setGridView(3)}
-                className={`hidden lg:flex p-2 border rounded ${
-                  gridView === 3 ? "bg-primary text-white" : "border-gray-300"
-                }`}
-              >
-                <BsGrid3X2 size={16} />
-              </button>
-
-              {/* Mobile Grid Icons */}
-              <button
-                onClick={() => setGridView(2)}
-                className={`lg:hidden flex p-2 border rounded ${
-                  gridView === 2 ? "bg-primary text-white" : "border-gray-300"
-                }`}
-              >
-                <BsGrid1X2 size={16} />
-              </button>
-
-              <button
-                onClick={() => setGridView(1)}
-                className={`lg:hidden flex p-2 border rounded ${
-                  gridView === 1 ? "bg-primary text-white" : "border-gray-300"
-                }`}
-              >
-                <BsGridFill size={16} />
-              </button>
+            {/* Right Image */}
+            <div className="hidden lg:block">
+              <img
+                src="/shop-banner.png"
+                alt=""
+                className="w-[430px] object-contain drop-shadow-2xl"
+              />
             </div>
+
           </div>
+
         </div>
       </div>
 
@@ -447,11 +414,10 @@ const Shop = ({ defaultCategory = "" }) => {
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
-                      className={`px-3 py-1 text-xs font-medium border rounded-full transition ${
-                        selectedColor === color
+                      className={`px-3 py-1 text-xs font-medium border rounded-full transition ${selectedColor === color
                           ? "bg-primary text-white border-primary"
                           : "border-gray-300 hover:border-primary"
-                      }`}
+                        }`}
                     >
                       {color}
                     </button>
@@ -473,11 +439,10 @@ const Shop = ({ defaultCategory = "" }) => {
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-3 py-1 text-sm font-semibold border rounded-lg transition ${
-                        selectedSize === size
+                      className={`px-3 py-1 text-sm font-semibold border rounded-lg transition ${selectedSize === size
                           ? "bg-primary text-white border-primary"
                           : "border-gray-300 hover:border-primary"
-                      }`}
+                        }`}
                     >
                       {size}
                     </button>
@@ -545,19 +510,18 @@ const Shop = ({ defaultCategory = "" }) => {
         <div className="flex-1">
           <div
             className={`px-4 md:px-10 py-6 grid gap-6 
-  ${
-    gridView === 5
-      ? showFilters
-        ? "lg:grid-cols-4"
-        : "lg:grid-cols-5"
-      : gridView === 4
-        ? "lg:grid-cols-4"
-        : gridView === 3
-          ? "lg:grid-cols-3"
-          : gridView === 2
-            ? "grid-cols-2"
-            : "grid-cols-1"
-  }`}
+  ${gridView === 5
+                ? showFilters
+                  ? "lg:grid-cols-4"
+                  : "lg:grid-cols-5"
+                : gridView === 4
+                  ? "lg:grid-cols-4"
+                  : gridView === 3
+                    ? "lg:grid-cols-3"
+                    : gridView === 2
+                      ? "grid-cols-2"
+                      : "grid-cols-1"
+              }`}
           >
             {currentProducts.length > 0 ? (
               currentProducts.map((product) => (
@@ -583,11 +547,10 @@ const Shop = ({ defaultCategory = "" }) => {
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`px-4 py-2 rounded-lg border transition cursor-pointer ${
-                      currentPage === page
+                    className={`px-4 py-2 rounded-lg border transition cursor-pointer ${currentPage === page
                         ? "bg-primary text-white border-primary shadow-md"
                         : "bg-white hover:bg-gray-100"
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>
