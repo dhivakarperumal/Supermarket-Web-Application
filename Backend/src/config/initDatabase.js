@@ -118,6 +118,28 @@ const createUsersTable = async () => {
       console.warn('⚠️  employees migration skipped:', migrationErr?.message || migrationErr);
     }
 
+    // Ensure the employees.user_id foreign key references users.user_id (UUID)
+    try {
+      // Attempt to drop any existing foreign key named fk_employee_user (may reference users.id)
+      try {
+        await connection.query(`ALTER TABLE employees DROP FOREIGN KEY fk_employee_user`);
+      } catch (fkDropErr) {
+        // ignore if it doesn't exist or cannot be dropped
+      }
+
+      // Convert any existing numeric employee.user_id values (old behavior) to the users.user_id UUID
+      try {
+        await connection.query(`UPDATE employees e JOIN users u ON e.user_id = u.id SET e.user_id = u.user_id`);
+      } catch (convertErr) {
+        // ignore conversion errors; proceed to attempt to add the FK
+      }
+
+      // Add the correct foreign key referencing the users.user_id UUID column
+      await connection.query(`ALTER TABLE employees ADD CONSTRAINT fk_employee_user FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE`);
+    } catch (fkErr) {
+      console.warn('⚠️  employees foreign-key migration skipped:', fkErr?.message || fkErr);
+    }
+
     await connection.query(`
       ALTER TABLE users
       ADD COLUMN IF NOT EXISTS name VARCHAR(255) DEFAULT NULL,
