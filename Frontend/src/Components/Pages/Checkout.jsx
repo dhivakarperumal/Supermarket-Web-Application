@@ -6,6 +6,7 @@ import api from "../../api";
 import PageHeader from "../CommenComponents/PageHeader";
 import toast from "react-hot-toast";
 import { FiMapPin, FiPackage, FiCreditCard, FiShield, FiCheckCircle } from "react-icons/fi";
+import PageContainer from "../CommenComponents/PageContainer";
 
 const Checkout = () => {
   const { cart, clearCart } = useContext(StoreContext);
@@ -102,16 +103,16 @@ const Checkout = () => {
 
   const checkoutItems = buyNowProduct
     ? [
-        {
-          id: buyNowProduct.id,
-          name: buyNowProduct.name,
-          image: buyNowVariant?.images?.[0] || buyNowProduct?.thumbnail_image || "/placeholder.png",
-          price: buyNowProduct.offer_price || buyNowProduct.price,
-          quantity: buyNowQuantity,
-          size: buyNowSize,
-          colorName: buyNowVariant?.color,
-        },
-      ]
+      {
+        id: buyNowProduct.id,
+        name: buyNowProduct.name,
+        image: buyNowVariant?.images?.[0] || buyNowProduct?.thumbnail_image || "/placeholder.png",
+        price: buyNowProduct.offer_price || buyNowProduct.price,
+        quantity: buyNowQuantity,
+        size: buyNowSize,
+        colorName: buyNowVariant?.color,
+      },
+    ]
     : cart;
 
   const [form, setForm] = useState({
@@ -280,158 +281,162 @@ const Checkout = () => {
   return (
     <>
       <PageHeader title="Checkout" />
-      <div className="min-h-screen bg-[#f7f8f3] py-8 sm:py-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-700">Secure checkout</p>
-                <h1 className="mt-2 text-3xl font-bold text-slate-900">Checkout</h1>
-                <p className="mt-2 text-sm text-slate-500">Complete your order in a few simple steps with your preferred payment method.</p>
-              </div>
-              <div className="rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-[#0e6827]">{checkoutItems.length} item{checkoutItems.length === 1 ? "" : "s"}</div>
-            </div>
-          </div>
 
-          <div className="grid gap-8 lg:grid-cols-[1.6fr_0.9fr]">
-            <div className="space-y-6">
-              {addresses.length > 0 && (
+      <div className="min-h-screen bg-[#f7f8f3] py-8 sm:py-10">
+        <PageContainer>
+          <div className="mx-auto ">
+            <div className="mb-8 rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-700">Secure checkout</p>
+                  <h1 className="mt-2 text-3xl font-bold text-slate-900">Checkout</h1>
+                  <p className="mt-2 text-sm text-slate-500">Complete your order in a few simple steps with your preferred payment method.</p>
+                </div>
+                <div className="rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-[#0e6827]">{checkoutItems.length} item{checkoutItems.length === 1 ? "" : "s"}</div>
+              </div>
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-[1.6fr_0.9fr]">
+              <div className="space-y-6">
+                {addresses.length > 0 && (
+                  <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+                    <div className="mb-4 flex items-center gap-2">
+                      <FiMapPin className="text-[#0e6827]" />
+                      <h2 className="text-lg font-semibold text-slate-800">Saved Addresses</h2>
+                    </div>
+                    <div className="space-y-3">
+                      {addresses.map((addr) => (
+                        <div
+                          key={addr.id}
+                          onClick={() => selectAddress(addr)}
+                          className={`cursor-pointer rounded-[1.25rem] border p-4 transition ${selectedAddress === addr.id ? "border-[#0e6827] bg-green-50" : "border-gray-200 hover:border-green-300"}`}
+                        >
+                          <p className="text-sm leading-6 text-slate-700">
+                            <span className="font-semibold text-slate-900">{addr.customer_name}</span>
+                            <br />
+                            {addr.street_address}
+                            <br />
+                            {addr.city}, {addr.district}
+                            <br />
+                            {addr.state} - {addr.zip_code}
+                            <br />
+                            {addr.country}
+                            <br />
+                            Phone: {addr.customer_phone}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+                  <div className="mb-4 flex items-center gap-2">
+                    <FiPackage className="text-[#0e6827]" />
+                    <h2 className="text-lg font-semibold text-slate-800">Customer Details</h2>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <input name="customer_name" placeholder="Full Name" value={form.customer_name} onChange={handleChange} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                    <input name="customer_email" placeholder="Email" value={form.customer_email} onChange={handleChange} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                    <input name="customer_phone" placeholder="Phone Number" value={form.customer_phone} onChange={handleChange} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                  </div>
+                </div>
+
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
                   <div className="mb-4 flex items-center gap-2">
                     <FiMapPin className="text-[#0e6827]" />
-                    <h2 className="text-lg font-semibold text-slate-800">Saved Addresses</h2>
+                    <h2 className="text-lg font-semibold text-slate-800">Shipping Address</h2>
                   </div>
-                  <div className="space-y-3">
-                    {addresses.map((addr) => (
-                      <div
-                        key={addr.id}
-                        onClick={() => selectAddress(addr)}
-                        className={`cursor-pointer rounded-[1.25rem] border p-4 transition ${selectedAddress === addr.id ? "border-[#0e6827] bg-green-50" : "border-gray-200 hover:border-green-300"}`}
-                      >
-                        <p className="text-sm leading-6 text-slate-700">
-                          <span className="font-semibold text-slate-900">{addr.customer_name}</span>
-                          <br />
-                          {addr.street_address}
-                          <br />
-                          {addr.city}, {addr.district}
-                          <br />
-                          {addr.state} - {addr.zip_code}
-                          <br />
-                          {addr.country}
-                          <br />
-                          Phone: {addr.customer_phone}
-                        </p>
-                      </div>
-                    ))}
+                  <textarea name="street_address" placeholder="Street Address" value={form.street_address} onChange={handleChange} rows={3} className="mb-4 w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <input name="city" placeholder="City" value={form.city} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                    <input name="district" placeholder="District" value={form.district} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                    <select name="state" value={form.state} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100">
+                      <option value="">Select State</option>
+                      {indianStates.map((state, i) => (
+                        <option key={i} value={state}>{state}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="mt-4 grid gap-4 md:grid-cols-2">
+                    <input name="zip_code" placeholder="Zip Code" value={form.zip_code} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                    <input name="country" value="India" readOnly className="cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 px-4 py-3.5 text-sm text-slate-500 outline-none" />
                   </div>
                 </div>
-              )}
 
-              <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-                <div className="mb-4 flex items-center gap-2">
-                  <FiPackage className="text-[#0e6827]" />
-                  <h2 className="text-lg font-semibold text-slate-800">Customer Details</h2>
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <input name="customer_name" placeholder="Full Name" value={form.customer_name} onChange={handleChange} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                  <input name="customer_email" placeholder="Email" value={form.customer_email} onChange={handleChange} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                  <input name="customer_phone" placeholder="Phone Number" value={form.customer_phone} onChange={handleChange} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                </div>
-              </div>
-
-              <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-                <div className="mb-4 flex items-center gap-2">
-                  <FiMapPin className="text-[#0e6827]" />
-                  <h2 className="text-lg font-semibold text-slate-800">Shipping Address</h2>
-                </div>
-                <textarea name="street_address" placeholder="Street Address" value={form.street_address} onChange={handleChange} rows={3} className="mb-4 w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                <div className="grid gap-4 md:grid-cols-3">
-                  <input name="city" placeholder="City" value={form.city} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                  <input name="district" placeholder="District" value={form.district} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                  <select name="state" value={form.state} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100">
-                    <option value="">Select State</option>
-                    {indianStates.map((state, i) => (
-                      <option key={i} value={state}>{state}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <input name="zip_code" placeholder="Zip Code" value={form.zip_code} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                  <input name="country" value="India" readOnly className="cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 px-4 py-3.5 text-sm text-slate-500 outline-none" />
-                </div>
-              </div>
-
-              <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-                <div className="mb-4 flex items-center gap-2">
-                  <FiPackage className="text-[#0e6827]" />
-                  <h2 className="text-lg font-semibold text-slate-800">Your Items</h2>
-                </div>
-                <div className="space-y-4">
-                  {checkoutItems.map((item) => (
-                    <div key={item.id} className="flex items-center gap-4 rounded-[1.25rem] border border-gray-100 bg-gray-50 p-3">
-                      <img src={item.image || "/placeholder.png"} alt={item.name} className="h-20 w-16 rounded-xl object-cover" onError={(e) => { e.target.src = "/placeholder.png"; }} />
-                      <div className="flex-1">
-                        <p className="font-semibold text-slate-800">{item.name}</p>
-                        <div className="mt-1 space-y-1 text-sm text-slate-500">
-                          <p>Qty: {item.quantity}</p>
-                          {item.colorName && (
-                            <p className="flex items-center gap-2">
-                              <span className="h-3 w-3 rounded-full border border-gray-400" style={{ backgroundColor: item.colorHex || item.color || "#ccc" }} />
-                              <span className="font-semibold text-slate-700">{item.colorName}</span>
-                            </p>
-                          )}
-                          {item.size && <p>Size: {item.size}</p>}
+                <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+                  <div className="mb-4 flex items-center gap-2">
+                    <FiPackage className="text-[#0e6827]" />
+                    <h2 className="text-lg font-semibold text-slate-800">Your Items</h2>
+                  </div>
+                  <div className="space-y-4">
+                    {checkoutItems.map((item) => (
+                      <div key={item.id} className="flex items-center gap-4 rounded-[1.25rem] border border-gray-100 bg-gray-50 p-3">
+                        <img src={item.image || "/placeholder.png"} alt={item.name} className="h-20 w-16 rounded-xl object-cover" onError={(e) => { e.target.src = "/placeholder.png"; }} />
+                        <div className="flex-1">
+                          <p className="font-semibold text-slate-800">{item.name}</p>
+                          <div className="mt-1 space-y-1 text-sm text-slate-500">
+                            <p>Qty: {item.quantity}</p>
+                            {item.colorName && (
+                              <p className="flex items-center gap-2">
+                                <span className="h-3 w-3 rounded-full border border-gray-400" style={{ backgroundColor: item.colorHex || item.color || "#ccc" }} />
+                                <span className="font-semibold text-slate-700">{item.colorName}</span>
+                              </p>
+                            )}
+                            {item.size && <p>Size: {item.size}</p>}
+                          </div>
                         </div>
+                        <span className="font-semibold text-slate-800">₹{item.price * item.quantity}</span>
                       </div>
-                      <span className="font-semibold text-slate-800">₹{item.price * item.quantity}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <aside className="lg:sticky lg:top-24">
-              <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-                <div className="rounded-[1.25rem] bg-gradient-to-r from-[#0e6827] via-[#168637] to-[#ffc107] p-5 text-white">
-                  <p className="text-sm font-semibold uppercase tracking-[0.25em] text-white/80">Order summary</p>
-                  <h2 className="mt-2 text-2xl font-bold">Almost there</h2>
-                  <p className="mt-2 text-sm text-white/85">Your order is secured with a clean and simple checkout flow.</p>
-                </div>
-
-                <div className="mt-6 space-y-3 text-sm text-slate-600">
-                  <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal}</span></div>
-                  <div className="flex justify-between"><span>Shipping</span><span className="font-semibold text-green-600">Free</span></div>
-                  <div className="flex justify-between border-t border-gray-100 pt-3 text-base font-semibold text-slate-800"><span>Total</span><span className="text-[#0e6827]">₹{total}</span></div>
-                </div>
-
-                <div className="mt-6 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">
-                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#0e6827]">
-                    <FiCreditCard />
-                    <span>Payment Method</span>
+                    ))}
                   </div>
-                  <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-white bg-white px-3 py-3 text-sm text-slate-700 shadow-sm">
-                    <input type="radio" name="payment" value="razorpay" checked={paymentMethod === "razorpay"} onChange={(e) => setPaymentMethod(e.target.value)} />
-                    <span>Online Payment (Razorpay)</span>
-                  </label>
-                </div>
-
-                <div className="mt-4 flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
-                  <FiShield />
-                  <span>Secure payments and trusted delivery support.</span>
-                </div>
-
-                <button onClick={handleOrder} className="mt-6 w-full rounded-full bg-[#0e6827] px-4 py-3 font-semibold text-white transition hover:bg-[#168637]">
-                  Place Order
-                </button>
-                <div className="mt-3 flex items-center justify-center gap-2 text-sm text-slate-500">
-                  <FiCheckCircle className="text-green-600" />
-                  <span>Fast checkout with order confirmation.</span>
                 </div>
               </div>
-            </aside>
+
+              <aside className="lg:sticky lg:top-24">
+                <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+                  <div className="rounded-[1.25rem] bg-gradient-to-r from-[#0e6827] via-[#168637] to-[#ffc107] p-5 text-white">
+                    <p className="text-sm font-semibold uppercase tracking-[0.25em] text-white/80">Order summary</p>
+                    <h2 className="mt-2 text-2xl font-bold">Almost there</h2>
+                    <p className="mt-2 text-sm text-white/85">Your order is secured with a clean and simple checkout flow.</p>
+                  </div>
+
+                  <div className="mt-6 space-y-3 text-sm text-slate-600">
+                    <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal}</span></div>
+                    <div className="flex justify-between"><span>Shipping</span><span className="font-semibold text-green-600">Free</span></div>
+                    <div className="flex justify-between border-t border-gray-100 pt-3 text-base font-semibold text-slate-800"><span>Total</span><span className="text-[#0e6827]">₹{total}</span></div>
+                  </div>
+
+                  <div className="mt-6 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">
+                    <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#0e6827]">
+                      <FiCreditCard />
+                      <span>Payment Method</span>
+                    </div>
+                    <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-white bg-white px-3 py-3 text-sm text-slate-700 shadow-sm">
+                      <input type="radio" name="payment" value="razorpay" checked={paymentMethod === "razorpay"} onChange={(e) => setPaymentMethod(e.target.value)} />
+                      <span>Online Payment (Razorpay)</span>
+                    </label>
+                  </div>
+
+                  <div className="mt-4 flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
+                    <FiShield />
+                    <span>Secure payments and trusted delivery support.</span>
+                  </div>
+
+                  <button onClick={handleOrder} className="mt-6 w-full rounded-full bg-[#0e6827] px-4 py-3 font-semibold text-white transition hover:bg-[#168637]">
+                    Place Order
+                  </button>
+                  <div className="mt-3 flex items-center justify-center gap-2 text-sm text-slate-500">
+                    <FiCheckCircle className="text-green-600" />
+                    <span>Fast checkout with order confirmation.</span>
+                  </div>
+                </div>
+              </aside>
+            </div>
           </div>
-        </div>
+        </PageContainer>
       </div>
+
     </>
   );
 };

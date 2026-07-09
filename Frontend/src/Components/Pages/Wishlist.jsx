@@ -15,7 +15,7 @@ export default function WishList() {
 
       <div className="min-h-screen bg-[#f7f8f3] py-8 sm:py-10">
         <PageContainer>
-          <div className="mx-auto max-w-7xl">
+          <div className="">
             <div className="mb-8 rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
               <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
