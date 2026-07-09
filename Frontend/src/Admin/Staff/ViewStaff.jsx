@@ -5,11 +5,8 @@ import api from "../../api";
 import toast from "react-hot-toast";
 
 /* ================= STYLES ================= */
-const glass =
-  "bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.35)] overflow-hidden";
-
-const glassCard =
-  "bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all";
+const card =
+  "bg-white rounded-2xl border border-[#dce9df] shadow-sm";"bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all";
 
 const ViewStaff = () => {
   const { id } = useParams();
@@ -46,15 +43,58 @@ const ViewStaff = () => {
   if (!staff) return null;
 
   return (
-    <div className="min-h-screen p-6 text-white bg-transparent">
+    <div className="min-h-screen bg-[#f5f8f6] p-6">
 
-      {/* BACK */}
-      <button
-        onClick={() => navigate("/admin/staff")}
-        className="mb-8 flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/5 backdrop-blur border border-white/10 hover:bg-white/20 transition-all font-bold text-sm tracking-wide"
-      >
-        <FaArrowLeft className="text-orange-500" /> BACK TO STAFF
-      </button>
+      {/* ================= HEADER ================= */}
+
+      <div className="max-w-7xl mx-auto mb-8">
+
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-5">
+
+          <div className="flex items-center gap-4">
+
+            <button
+              onClick={() => navigate("/admin/staff")}
+              className="w-11 h-11 rounded-full bg-[#1b7f29] hover:bg-[#166321] text-white flex items-center justify-center shadow transition"
+            >
+              <FaArrowLeft />
+            </button>
+
+            <div>
+
+              <h1 className="text-3xl font-extrabold text-[#123524]">
+                Staff Details
+              </h1>
+
+              <p className="text-gray-500 mt-1">
+                View complete employee information.
+              </p>
+
+            </div>
+
+          </div>
+
+          <div className="flex gap-3">
+
+            <button
+              onClick={() => navigate("/admin/staff")}
+              className="px-6 py-3 rounded-xl border border-[#dce9df] bg-white hover:bg-gray-50 font-semibold text-gray-700 transition"
+            >
+              Back
+            </button>
+
+            <button
+              onClick={() => navigate(`/admin/staff/edit/${staff.id}`)}
+              className="px-6 py-3 rounded-xl bg-[#1b7f29] hover:bg-[#166321] text-white font-bold shadow-lg transition"
+            >
+              Edit Staff
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
 
       <div className={`max-w-6xl mx-auto ${glass}`}>
         <div className="grid grid-cols-1 lg:grid-cols-3">
@@ -98,7 +138,7 @@ const ViewStaff = () => {
 
           {/* RIGHT PANEL - Detailed Info */}
           <div className="lg:col-span-2 p-10 space-y-10">
-            
+
             <div className="grid md:grid-cols-2 gap-8">
               <InfoSection title="Work Schedule">
                 <DataRow label="SHIFT" value={staff.shift} />
@@ -177,16 +217,16 @@ const DataRow = ({ label, value }) => (
 const DocLink = ({ label, file }) => (
   <div className="p-5 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center gap-3 group hover:border-orange-500/50 transition-all cursor-pointer">
     {file ? (
-       file.startsWith('data:image') ? (
-         <img src={file} className="h-12 w-12 rounded object-cover opacity-50 group-hover:opacity-100 transition-all" alt={label} />
-       ) : (
-         <FaIdCard className="text-4xl text-white/20 group-hover:text-orange-500 transition-all" />
-       )
+      file.startsWith('data:image') ? (
+        <img src={file} className="h-12 w-12 rounded object-cover opacity-50 group-hover:opacity-100 transition-all" alt={label} />
+      ) : (
+        <FaIdCard className="text-4xl text-white/20 group-hover:text-orange-500 transition-all" />
+      )
     ) : (
       <FaIdCard className="text-4xl text-white/5" />
     )}
     <span className="text-[10px] font-black text-white/40 uppercase tracking-widest group-hover:text-white transition-all text-center leading-tight">
-       {label}
+      {label}
     </span>
     {file && (
       <a href={file} download={`${label}.png`} className="text-[9px] font-black text-orange-500 uppercase hover:underline">Download</a>
