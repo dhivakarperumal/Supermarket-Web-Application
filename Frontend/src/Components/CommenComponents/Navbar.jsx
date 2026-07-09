@@ -90,7 +90,7 @@ const Navbar = () => {
   }, 0);
 
   return (
-    <div className="relative z-40 bg-white py-4 border-b border-gray-100">
+    <div className="sticky top-0 z-40 bg-white py-4 border-b border-gray-100">
 
       {/* Top Header - White */}
       <div className="relative z-[80] bg-white py-4 border-b border-gray-100 overflow-visible">
