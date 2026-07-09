@@ -160,33 +160,6 @@ const AddEditStaff = () => {
   });
 
   const [previewFile, setPreviewFile] = useState(null);
-  const activeFieldRef = useRef(null);
-
-  const restoreActiveFieldFocus = useCallback(() => {
-    const input = activeFieldRef.current;
-    if (!input || !input.isConnected) return;
-
-    if (document.activeElement !== input) {
-      input.focus();
-    }
-
-    if (
-      typeof input.selectionStart === "number" &&
-      typeof input.selectionEnd === "number" &&
-      typeof input.setSelectionRange === "function"
-    ) {
-      const position = input.value?.length ?? input.selectionStart;
-      input.setSelectionRange(position, position);
-    }
-  }, []);
-
-  useEffect(() => {
-    restoreActiveFieldFocus();
-  }, [form, restoreActiveFieldFocus]);
-
-  const handleFieldFocus = useCallback((e) => {
-    activeFieldRef.current = e.target;
-  }, []);
 
   /* ---------------- LOAD STAFF (EDIT ONLY) ---------------- */
 
@@ -244,33 +217,28 @@ const AddEditStaff = () => {
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
-    activeFieldRef.current = e.target;
 
-    // Auto-populate username from email
     if (name === "email") {
       const usernameFromEmail = value.split("@")[0];
-      setForm((prev) => ({
-        ...prev,
-        [name]: value,
-        username: usernameFromEmail, // Auto-set username from email
-      }));
-    }
-    // Auto-populate password from mobile number
-    else if (name === "phone") {
-      setForm((prev) => ({
-        ...prev,
-        [name]: value,
-        password: value, // Auto-set password from mobile number
-      }));
-    }
-    else {
-      setForm((prev) => ({ ...prev, [name]: value }));
-    }
 
-    requestAnimationFrame(() => {
-      restoreActiveFieldFocus();
-    });
-  }, [restoreActiveFieldFocus]);
+      setForm(prev => ({
+        ...prev,
+        email: value,
+        username: usernameFromEmail,
+      }));
+    } else if (name === "phone") {
+      setForm(prev => ({
+        ...prev,
+        phone: value,
+        password: value,
+      }));
+    } else {
+      setForm(prev => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  }, []);
 
   /* ---------------- FILE UPLOAD ---------------- */
 
@@ -542,7 +510,6 @@ const AddEditStaff = () => {
         <form
           id="staffForm"
           onSubmit={handleSubmit}
-          onFocusCapture={handleFieldFocus}
           className="grid lg:grid-cols-3 gap-6 items-start"
         >
 
@@ -577,12 +544,8 @@ const AddEditStaff = () => {
                     name="name"
                     value={form.name}
                     onChange={handleChange}
-                    onFocus={handleFieldFocus}
                     placeholder="Enter employee name"
-                    className={`${inputClass} ${errors.name
-                      ? "border-red-500"
-                      : ""
-                      }`}
+                    className={`${inputClass} ${errors.name ? "border-red-500" : ""}`}
                   />
 
                 </InputBox>
@@ -599,7 +562,7 @@ const AddEditStaff = () => {
                     name="username"
                     value={form.username}
                     onChange={handleChange}
-                    onFocus={handleFieldFocus}
+                    
                     placeholder="Enter username"
                     className={`${inputClass} ${errors.username ? "border-red-500" : ""
                       }`}
@@ -620,7 +583,7 @@ const AddEditStaff = () => {
                     name="email"
                     value={form.email}
                     onChange={handleChange}
-                    onFocus={handleFieldFocus}
+                    
                     placeholder="Enter email address"
                     className={`${inputClass} ${errors.email
                       ? "border-red-500"
@@ -647,7 +610,7 @@ const AddEditStaff = () => {
                         name="password"
                         value={form.password}
                         onChange={handleChange}
-                        onFocus={handleFieldFocus}
+                        
                         placeholder="Password"
                         className={`${inputClass} ${errors.password ? "border-red-500" : ""
                           }`}
@@ -670,7 +633,7 @@ const AddEditStaff = () => {
                     name="phone"
                     value={form.phone}
                     onChange={handleChange}
-                    onFocus={handleFieldFocus}
+                    
                     placeholder="Enter mobile number"
                     className={`${inputClass} ${errors.phone
                       ? "border-red-500"
@@ -694,7 +657,7 @@ const AddEditStaff = () => {
                     name="salary"
                     value={form.salary}
                     onChange={handleChange}
-                    onFocus={handleFieldFocus}
+                    
                     placeholder="Enter salary"
                     className={`${inputClass} ${errors.salary ? "border-red-500" : ""
                       }`}
@@ -715,7 +678,7 @@ const AddEditStaff = () => {
                     name="shift"
                     value={form.shift}
                     onChange={handleChange}
-                    onFocus={handleFieldFocus}
+                    
                     placeholder="Morning / Evening"
                     className={`${inputClass} ${errors.shift ? "border-red-500" : ""
                       }`}
@@ -752,7 +715,7 @@ const AddEditStaff = () => {
                     name="role"
                     value={form.role}
                     onChange={handleChange}
-                    onFocus={handleFieldFocus}
+                    
                     className={`${inputClass} appearance-none ${errors.role ? "border-red-500" : ""
                       }`}
                   >
@@ -827,7 +790,7 @@ const AddEditStaff = () => {
                     name="gender"
                     value={form.gender}
                     onChange={handleChange}
-                    onFocus={handleFieldFocus}
+                    
                     className={`${inputClass} appearance-none ${errors.gender ? "border-red-500" : ""
                       }`}
                   >
@@ -857,7 +820,7 @@ const AddEditStaff = () => {
                     name="bloodGroup"
                     value={form.bloodGroup}
                     onChange={handleChange}
-                    onFocus={handleFieldFocus}
+                    
                     className={`${inputClass} appearance-none ${errors.bloodGroup ? "border-red-500" : ""
                       }`}
                   >
@@ -890,14 +853,11 @@ const AddEditStaff = () => {
                 >
 
                   <input
-                    ref={(el) => {
-                      activeFieldRef.current = el;
-                    }}
                     type="date"
                     name="dob"
                     value={form.dob}
                     onChange={handleChange}
-                    onFocus={handleFieldFocus}
+                    
                     className={`${inputClass} ${errors.dob ? "border-red-500" : ""
                       }`}
                   />
@@ -918,7 +878,7 @@ const AddEditStaff = () => {
                     name="joiningDate"
                     value={form.joiningDate}
                     onChange={handleChange}
-                    onFocus={handleFieldFocus}
+                    
                     className={`${inputClass} ${errors.joiningDate ? "border-red-500" : ""
                       }`}
                   />
@@ -939,7 +899,7 @@ const AddEditStaff = () => {
                     name="timeIn"
                     value={form.timeIn}
                     onChange={handleChange}
-                    onFocus={handleFieldFocus}
+                    
                     className={`${inputClass} ${errors.timeIn ? "border-red-500" : ""
                       }`}
                   />
@@ -960,7 +920,7 @@ const AddEditStaff = () => {
                     name="timeOut"
                     value={form.timeOut}
                     onChange={handleChange}
-                    onFocus={handleFieldFocus}
+                    
                     className={`${inputClass} ${errors.timeOut ? "border-red-500" : ""
                       }`}
                   />
@@ -981,7 +941,7 @@ const AddEditStaff = () => {
                     rows={4}
                     value={form.address}
                     onChange={handleChange}
-                    onFocus={handleFieldFocus}
+                    
                     placeholder="Enter address"
                     className="
       w-full
