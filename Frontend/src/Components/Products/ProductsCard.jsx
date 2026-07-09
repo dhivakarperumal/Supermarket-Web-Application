@@ -7,6 +7,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import QuickViewModal from "./QuickModel";
 import { FaStar } from "react-icons/fa";
 import ReactDOM from "react-dom";
+import AnimatedButton from "../AnimatedButton";
 
 const ProductCard = ({ product }) => {
   const { addToCart, toggleWishlist, wishlist } = useContext(StoreContext);
@@ -114,7 +115,7 @@ const ProductCard = ({ product }) => {
         className="relative bg-white rounded-xl border border-gray-200 p-3 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col h-full"
       >
         {/* Icons */}
-        <div
+        {/* <div
           className="absolute top-2 right-2 flex flex-col gap-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           onClick={(e) => e.stopPropagation()}
         >
@@ -157,7 +158,7 @@ const ProductCard = ({ product }) => {
           >
             <BsQrCode className="text-sm" />
           </div>
-        </div>
+        </div> */}
 
         {/* Image Area */}
         <div
@@ -199,9 +200,26 @@ const ProductCard = ({ product }) => {
 
         {/* Content */}
         <div className="flex flex-col flex-grow">
-          <h2 className="text-sm text-gray-700 font-medium line-clamp-2 min-h-[40px]">
-            {product?.name}
-          </h2>
+          <div className="flex items-start justify-between gap-2 min-h-[40px]">
+            <h2 className="text-sm text-gray-700 font-medium line-clamp-2 flex-1">
+              {product?.name}
+            </h2>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleWishlist(product);
+              }}
+              className={`flex-shrink-0 transition ${isInWishlist
+                ? "text-red-500"
+                : "text-gray-400 hover:text-red-500"
+                }`}
+            >
+              <FiHeart
+                className={`text-lg ${isInWishlist ? "fill-current" : ""}`}
+              />
+            </button>
+          </div>
 
           {/* Rating */}
           <div className="flex items-center gap-1 mt-1 mb-2 text-sm">
@@ -229,16 +247,15 @@ const ProductCard = ({ product }) => {
               )}
             </div>
 
-            {/* Add to Cart Button */}
-            <button
+            {/* Quick ViewButton */}
+            <AnimatedButton
+              text="Quick View"
               onClick={(e) => {
                 e.stopPropagation();
-                addToCart(product);
+                setQuickView(true);
               }}
-              className="w-full border border-green-700 text-green-700 py-1.5 rounded-md hover:bg-green-700 hover:text-white transition-colors duration-300 font-medium text-sm flex justify-center items-center"
-            >
-              Add to Cart
-            </button>
+              className="mt-2 rounded-md py-2 px-4 text-sm"
+            />
           </div>
         </div>
       </div>
