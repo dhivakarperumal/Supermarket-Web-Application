@@ -13,7 +13,6 @@ export default function About() {
   return (
     <section className="py-20 bg-gradient-to-b from-green-50 via-white to-white">
       <PageContainer>
-        <Heading title="About Us" />
 
         <div className="grid lg:grid-cols-2 gap-16 items-center mt-10">
 
@@ -21,7 +20,7 @@ export default function About() {
           <div className="relative">
             <div className="overflow-hidden rounded-3xl shadow-2xl">
               <img
-                src="/about-supermarket.jpg"
+                src="/aboutimagesupermarket.png"
                 alt="Supermarket"
                 className="w-full h-[500px] object-cover hover:scale-105 transition duration-700"
               />
@@ -39,18 +38,13 @@ export default function About() {
           {/* Right Content */}
           <div>
 
-            <span className="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold">
+            <span className="inline-block mb-5 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold">
               🌿 Fresh • Healthy • Affordable
             </span>
 
-            <h2 className="text-4xl lg:text-5xl font-bold mt-6 text-gray-900 leading-tight">
-              Bringing Freshness
-              <span className="block text-green-600">
-                Directly To Your Doorstep
-              </span>
-            </h2>
+            <Heading title="Where Freshness Meets Convenience" />
 
-            <p className="mt-6 text-gray-600 leading-8 text-lg">
+            <p className="   text-gray-600 leading-8 text-lg">
               We provide farm-fresh fruits, vegetables, groceries,
               dairy products, beverages, household essentials, and
               daily needs at affordable prices. Our mission is to make
@@ -59,47 +53,81 @@ export default function About() {
             </p>
 
             {/* Features */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
 
-              <div className="bg-white rounded-2xl p-5 shadow-md hover:shadow-xl transition">
-                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-2xl mb-4">
-                  <FaLeaf />
+              {/* Card 1 */}
+              <div className="group relative overflow-hidden rounded-2xl border border-green-500 bg-white p-6 shadow-2xl transition-all duration-300 hover:border-green-100 hover:shadow-md">
+
+                <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-green-500 to-lime-400 scale-x-100 group-hover:scale-x-0 transition-transform duration-300 origin-left"></div>
+
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-green-600 text-white flex items-center justify-center text-2xl mt-1 transition-all duration-300 group-hover:bg-green-100 group-hover:text-green-600">
+                    <FaLeaf />
+                  </div>
+
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900">
+                      Best Prices
+                    </h4>
+
+                    <p className="text-gray-500 text-sm leading-6 mt-2">
+                      Enjoy daily deals, exclusive discounts, and unbeatable grocery prices.
+                    </p>
+                  </div>
                 </div>
-                <h4 className="font-semibold text-gray-800">
-                  Farm Fresh
-                </h4>
-                <p className="text-sm text-gray-500 mt-2">
-                  Fresh vegetables & fruits sourced daily.
-                </p>
+
               </div>
 
-              <div className="bg-white rounded-2xl p-5 shadow-md hover:shadow-xl transition">
-                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-2xl mb-4">
-                  <FaShippingFast />
+              {/* Card 2 */}
+              <div className="group relative overflow-hidden rounded-2xl border border-green-500 bg-white p-6 shadow-2xl transition-all duration-300 hover:border-green-100 hover:shadow-md">
+
+                <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-green-500 to-lime-400 scale-x-100 group-hover:scale-x-0 transition-transform duration-300 origin-left"></div>
+
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-green-600 text-white flex items-center justify-center text-2xl mt-1 transition-all duration-300 group-hover:bg-green-100 group-hover:text-green-600">
+                    <FaShippingFast />
+                  </div>
+
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900">
+                      Fast Delivery
+                    </h4>
+
+                    <p className="text-gray-500 text-sm leading-6 mt-2">
+                      Same-day delivery with secure packaging to keep your groceries fresh.
+                    </p>
+                  </div>
                 </div>
-                <h4 className="font-semibold text-gray-800">
-                  Fast Delivery
-                </h4>
-                <p className="text-sm text-gray-500 mt-2">
-                  Quick and reliable delivery to your home.
-                </p>
+
               </div>
 
-              <div className="bg-white rounded-2xl p-5 shadow-md hover:shadow-xl transition">
-                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-2xl mb-4">
-                  <FaTags />
+              {/* Card 3 */}
+              <div className="group relative overflow-hidden rounded-2xl border border-green-500 bg-white p-6 shadow-2xl transition-all duration-300 hover:-translate-y-0 hover:border-green-100 hover:shadow-md">
+
+                {/* Top Line */}
+                <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-green-500 to-lime-400 scale-x-100 group-hover:scale-x-0 transition-transform duration-300 origin-left"></div>
+
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-green-600 text-white flex items-center justify-center text-2xl mt-1 transition-all duration-300 group-hover:bg-green-100 group-hover:text-green-600">
+                    <FaLeaf />
+                  </div>
+
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900">
+                      Farm Fresh
+                    </h4>
+
+                    <p className="text-gray-500 text-sm leading-6 mt-2">
+                      Fresh fruits and vegetables sourced directly from trusted local farms every day.
+                    </p>
+                  </div>
                 </div>
-                <h4 className="font-semibold text-gray-800">
-                  Best Prices
-                </h4>
-                <p className="text-sm text-gray-500 mt-2">
-                  Great deals and discounts every day.
-                </p>
+
               </div>
 
             </div>
 
-            <div className="mt-10">
+            <div className="mt-10 flex">
               <Link to="/about">
                 <AnimatedButton text="Explore More" />
               </Link>
