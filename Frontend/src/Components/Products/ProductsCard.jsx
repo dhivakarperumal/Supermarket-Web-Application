@@ -84,37 +84,41 @@ const ProductCard = ({ product }) => {
     <>
       <div
         onClick={handleClick}
-        className="relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition duration-300 group cursor-pointer"
+        className="relative bg-white rounded-xl border border-gray-100 p-3 hover:shadow-lg transition duration-300 group cursor-pointer flex flex-col h-full"
       >
         {/* Icons */}
         <div
-          className="absolute top-3 right-3 flex flex-col gap-4 z-20"
+          className="absolute top-2 right-2 flex flex-col gap-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           onClick={(e) => e.stopPropagation()}
         >
           <div
             onClick={() => toggleWishlist(product)}
-            className={`bg-primary rounded-full p-2 shadow-sm transition duration-300 ${isInWishlist
-                ? "text-red-500 scale-110"
-                : "text-white hover:bg-primary-light"
+            className={`bg-white border border-gray-200 rounded-full p-1.5 shadow-sm transition duration-300 ${isInWishlist
+                ? "text-red-500"
+                : "text-gray-500 hover:text-red-500"
               }`}
           >
             <FiHeart
-              className={`text-lg ${isInWishlist ? "fill-current" : ""}`}
+              className={`text-sm ${isInWishlist ? "fill-current" : ""}`}
             />
           </div>
 
-          {/* <div
-            onClick={() => addToCart(product)}
-            className="bg-primary rounded-full p-2 shadow hover:bg-primary-light text-white transition duration-300"
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              setQuickView(true);
+            }}
+            className="bg-white border border-gray-200 rounded-full p-1.5 shadow-sm text-gray-500 hover:text-primary transition duration-300"
+            title="Quick View"
           >
-            <FiPlus className="text-lg" />
-          </div> */}
+            <FiPlus className="text-sm" />
+          </div>
 
           <div
             onClick={handleShare}
-            className="bg-primary rounded-full p-2 shadow-sm hover:bg-primary-light text-white transition duration-300"
+            className="bg-white border border-gray-200 rounded-full p-1.5 shadow-sm text-gray-500 hover:text-primary transition duration-300"
           >
-            <FiShare2 className="text-lg text-white" />
+            <FiShare2 className="text-sm" />
           </div>
 
           <div
@@ -122,23 +126,36 @@ const ProductCard = ({ product }) => {
               e.stopPropagation();
               setShowQR(true);
             }}
-            className="bg-primary rounded-full p-2 shadow-sm hover:bg-primary-light text-white transition duration-300"
+            className="bg-white border border-gray-200 rounded-full p-1.5 shadow-sm text-gray-500 hover:text-primary transition duration-300"
           >
-            <BsQrCode className="text-lg text-white" />
+            <BsQrCode className="text-sm" />
           </div>
         </div>
 
-        {/* Image */}
+        {/* Image Area */}
         <div
-          className="relative h-80 overflow-hidden"
+          className="relative h-48 w-full flex items-center justify-center mb-3"
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
         >
+          {/* Top Left Tags */}
+          <div className="absolute top-0 left-0 z-10 flex flex-col gap-1">
+            {product?.bestseller ? (
+              <span className="bg-green-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">
+                Bestseller
+              </span>
+            ) : product?.offer ? (
+              <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm">
+                {Math.floor(product.offer)}% OFF
+              </span>
+            ) : null}
+          </div>
+
           {/* Default Image */}
           <img
             src={images[0]}
             alt={product?.name}
-            className={`absolute w-full h-full object-cover transition-opacity duration-700 ${hovered && images[1] ? "opacity-0" : "opacity-100"
+            className={`max-w-full max-h-full object-contain transition-opacity duration-500 ${hovered && images[1] ? "opacity-0" : "opacity-100"
               }`}
           />
 
@@ -147,60 +164,54 @@ const ProductCard = ({ product }) => {
             <img
               src={images[1]}
               alt={product?.name}
-              className={`absolute w-full h-full object-cover transition-opacity duration-700 ${hovered ? "opacity-100" : "opacity-0"
+              className={`absolute max-w-full max-h-full object-contain transition-opacity duration-500 ${hovered ? "opacity-100" : "opacity-0"
                 }`}
             />
-          )}
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setQuickView(true);
-            }}
-            className="absolute bottom-3 right-3 bg-primary text-white p-2 rounded-full shadow-md hover:bg-primary-light cursor-pointer"
-          >
-            <FiPlus className="text-lg" />
-          </button>
-
-          {product?.offer && (
-            <span className="absolute top-3 left-3 bg-primary text-white text-xs px-3 py-1 rounded-full">
-              {Math.floor(product.offer)}% OFF
-            </span>
           )}
         </div>
 
         {/* Content */}
-        <div className="p-4">
-          <h2 className="font-semibold text-gray-800 line-clamp-1">
+        <div className="flex flex-col flex-grow">
+          <h2 className="text-sm text-gray-700 font-medium line-clamp-2 min-h-[40px]">
             {product?.name}
           </h2>
 
           {/* Rating */}
-          <div className="flex items-center gap-1 mt-1">
-            {[...Array(5)].map((_, i) => (
-              <FaStar
-                key={i}
-                className={`text-xs ${i < Math.round(product?.rating || 0)
-                    ? "text-yellow-400"
-                    : "text-gray-300"
-                  }`}
-              />
-            ))}
+          <div className="flex items-center gap-1 mt-1 mb-2 text-sm">
+            <FaStar className="text-orange-400 text-xs" />
+            <span className="text-orange-500 font-medium text-xs">{product?.rating || '4.6'}</span>
+            <span className="text-gray-400 text-xs">({product?.reviews_count || '1.2k'})</span>
           </div>
 
-          {/* Price */}
-          <div className="flex items-center mt-2">
-            <div className="flex items-center gap-3">
-              <span className="text-primary font-bold text-lg">
+          {/* Price & Add to Cart Container */}
+          <div className="mt-auto">
+            {/* Price */}
+            <div className="flex items-center gap-2 mb-3">
+              <span className="font-bold text-gray-900 text-lg">
                 ₹{product?.offer_price || product?.price}
               </span>
-
               {product?.mrp && (
-                <span className="text-gray-400 line-through text-sm">
+                <span className="text-gray-400 line-through text-xs">
                   ₹{product?.mrp}
                 </span>
               )}
+              {product?.offer && (
+                <span className="text-green-600 text-xs font-bold">
+                  {Math.floor(product.offer)}% OFF
+                </span>
+              )}
             </div>
+
+            {/* Add to Cart Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                addToCart(product);
+              }}
+              className="w-full border border-green-700 text-green-700 py-1.5 rounded-md hover:bg-green-700 hover:text-white transition-colors duration-300 font-medium text-sm flex justify-center items-center"
+            >
+              Add to Cart
+            </button>
           </div>
         </div>
       </div>
