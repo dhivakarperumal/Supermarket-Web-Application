@@ -12,6 +12,8 @@ import ReactDOM from "react-dom";
 
 const QuickViewModal = ({ product, onClose }) => {
 
+
+
   const resolveImage = (img) => {
     if (!img || typeof img !== "string") return null;
 
@@ -77,7 +79,7 @@ const QuickViewModal = ({ product, onClose }) => {
     (w) => w.product_id === product?.id || w.id === product?.id,
   );
 
-   const imageCandidates = [
+  const imageCandidates = [
     selectedVariant?.images,
     product?.thumbnail_image,
     product?.product_images,
@@ -86,7 +88,7 @@ const QuickViewModal = ({ product, onClose }) => {
     product?.image_url,
   ];
 
-    const allImages = Array.from(
+  const allImages = Array.from(
     new Set(
       imageCandidates
         .flatMap((item) => normalizeImageList(item))
@@ -102,6 +104,10 @@ const QuickViewModal = ({ product, onClose }) => {
       setImgIndex(0);
     }
   }, [selectedVariant, allImages]);
+
+  useEffect(() => {
+    setImgIndex(0);
+  }, [selectedVariant]);
 
   // Disable body scrolling while modal is open
   useEffect(() => {
@@ -128,15 +134,15 @@ const QuickViewModal = ({ product, onClose }) => {
   };
 
   const prevImage = () => {
-    const newIdx = imgIndex === 0 ? allImages.length - 1 : imgIndex - 1;
-    setImgIndex(newIdx);
-    setSelectedImage(allImages[newIdx]);
+    setImgIndex((prev) =>
+      prev === 0 ? allImages.length - 1 : prev - 1
+    );
   };
 
   const nextImage = () => {
-    const newIdx = imgIndex === allImages.length - 1 ? 0 : imgIndex + 1;
-    setImgIndex(newIdx);
-    setSelectedImage(allImages[newIdx]);
+    setImgIndex((prev) =>
+      prev === allImages.length - 1 ? 0 : prev + 1
+    );
   };
 
   return ReactDOM.createPortal(
@@ -198,7 +204,7 @@ const QuickViewModal = ({ product, onClose }) => {
             <div className="relative flex-1 min-h-[420px] rounded-3xl bg-white border border-green-100 shadow-md overflow-hidden flex items-center justify-center group">
 
               <img
-                src={selectedImage || allImages[0]}
+                src={allImages[imgIndex] || allImages[0]}
                 alt={product.name}
                 className="w-full h-full object-contain p-8 transition duration-300 group-hover:scale-105"
               />
@@ -232,10 +238,9 @@ const QuickViewModal = ({ product, onClose }) => {
                   <button
                     key={index}
                     onClick={() => {
-                      setSelectedImage(img);
                       setImgIndex(index);
                     }}
-                    className={`w-20 h-20 rounded-2xl overflow-hidden border-2 transition shrink-0 ${selectedImage === img
+                    className={`w-20 h-20 rounded-2xl overflow-hidden border-2 transition shrink-0 ${imgIndex === index
                       ? "border-green-700 shadow-lg"
                       : "border-gray-200 hover:border-green-400"
                       }`}
@@ -250,33 +255,6 @@ const QuickViewModal = ({ product, onClose }) => {
 
               </div>
             )}
-
-            {/* Features */}
-
-            {/* <div className="grid grid-cols-3 gap-3 mt-6">
-
-              <div className="bg-white rounded-2xl border border-green-100 p-4 text-center shadow-sm">
-                <div className="text-2xl mb-2">🌿</div>
-                <p className="text-xs font-semibold text-gray-700">
-                  Fresh Quality
-                </p>
-              </div>
-
-              <div className="bg-white rounded-2xl border border-green-100 p-4 text-center shadow-sm">
-                <div className="text-2xl mb-2">🚚</div>
-                <p className="text-xs font-semibold text-gray-700">
-                  Fast Delivery
-                </p>
-              </div>
-
-              <div className="bg-white rounded-2xl border border-green-100 p-4 text-center shadow-sm">
-                <div className="text-2xl mb-2">⭐</div>
-                <p className="text-xs font-semibold text-gray-700">
-                  Premium Product
-                </p>
-              </div>
-
-            </div> */}
 
           </div>
 
