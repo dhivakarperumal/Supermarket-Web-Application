@@ -43,42 +43,37 @@ const CategoryIcon = () => {
         <Heading title="Shop By Category" align="center" />
         {/* Categories container */}
         {loading ? (
-          <div className="flex flex-wrap justify-center gap-8 md:gap-12">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="flex flex-col items-center w-28 md:w-36 animate-pulse">
-                <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-gray-100" />
-                <div className="mt-5 w-24 h-8 bg-gray-100 rounded-full" />
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="flex flex-col items-center justify-between p-3 w-28 h-32 md:w-32 md:h-40 rounded-2xl bg-white border border-gray-100 shadow-sm animate-pulse">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-200 rounded-lg mt-2" />
+                <div className="w-16 h-3 bg-gray-200 rounded-full mb-1" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="flex flex-wrap justify-center gap-8 md:gap-12">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
             {Array.isArray(categories) && categories.map((cat) => (
               <Link
                 key={cat.id}
                 to={`/category/${cat.name.toLowerCase()}`}
-                className="group cursor-pointer flex flex-col items-center w-28 md:w-36"
+                className="group flex flex-col items-center justify-between p-3 w-28 h-32 md:w-32 md:h-40 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
               >
-                {/* Animated Gradient Border Ring */}
-                <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full p-[3px] bg-gradient-to-tr from-gray-200 via-gray-100 to-gray-200 group-hover:from-primary-dark group-hover:via-primary group-hover:to-primary-light group-hover:shadow-[0_0_25px_rgba(153,27,27,0.4)] transition-all duration-500 ease-out">
-                  {/* Inner Image Container */}
-                  <div className="w-full h-full bg-white rounded-full p-1 relative overflow-hidden">
-                    <img
-                      src={
-                        cat.images?.[0] ||
-                        "https://images.unsplash.com/photo-1610030469983-98e550d6193c"
-                      }
-                      alt={cat.name}
-                      className="w-full h-full object-cover object-top rounded-full group-hover:scale-110 transition-transform duration-700 ease-in-out"
-                    />
-                    {/* Color Tint Overlay on Hover */}
-                    <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
-                  </div>
+                {/* Image Container */}
+                <div className="w-full flex-1 flex items-center justify-center p-1 overflow-hidden">
+                  <img
+                    src={
+                      cat.images?.[0] ||
+                      "https://images.unsplash.com/photo-1610030469983-98e550d6193c"
+                    }
+                    alt={cat.name}
+                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 ease-in-out"
+                  />
                 </div>
 
-                {/* Category Name Pill */}
-                <div className="mt-5 px-5 py-2 rounded-full bg-gray-50 border border-gray-100 group-hover:border-primary/30 group-hover:bg-primary/5 group-hover:shadow-md transition-all duration-300">
-                  <p className="text-sm md:text-base font-bold text-gray-700 group-hover:text-primary transition-colors duration-300 text-center">
+                {/* Category Name */}
+                <div className="w-full text-center mt-2 h-auto">
+                  <p className="text-xs md:text-sm font-semibold text-gray-800 group-hover:text-primary transition-colors duration-300 line-clamp-1">
                     {cat.name}
                   </p>
                 </div>
