@@ -19,7 +19,7 @@ const SareeSwiper = () => {
   const fetchSarees = async () => {
     try {
       let data = productsCache;
-      
+
       // If cache is empty or older than 5 minutes, fetch again
       if (!data || data.length === 0 || !lastFetchTime || (Date.now() - lastFetchTime > 5 * 60 * 1000)) {
         const res = await api.get("/products");
@@ -55,7 +55,7 @@ const SareeSwiper = () => {
                 <div className="p-4 space-y-2">
                   <div className="h-4 bg-gray-100 rounded-full w-3/4"></div>
                   <div className="h-3 bg-gray-100 rounded-full w-1/2"></div>
-                </div>  
+                </div>
               </div>
             ))}
           </div>
@@ -64,38 +64,106 @@ const SareeSwiper = () => {
     );
   }
 
-  return (
-    <PageContainer>
-      <div className="py-5">
-        {/* SECTION TITLE */}
-        <Heading title="Latest Saree Collection" />
+  <PageContainer>
+    <div className="py-8">
+      <Heading title="Latest Saree Collection" />
 
-        {/* SWIPER */}
-        <Swiper
-          modules={[Autoplay]}
-          spaceBetween={20}
-          loop={true}
-          autoplay={{ delay: 3000 }}
-          breakpoints={{
-            320: { slidesPerView: 1 },
-            480: { slidesPerView: 2 },
-            640: { slidesPerView: 3 },
-            768: { slidesPerView: 4 },
-            1024: { slidesPerView: 5 },
-          }}
-        >
-          {Array.isArray(sarees) && sarees.map((product) => (
-            <SwiperSlide
-              key={product.id}
-              className="flex justify-center pb-10"
-            >
-              <ProductCard product={product} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+      <div className="flex flex-col lg:flex-row gap-6">
+
+        {/* Flash Sale Card */}
+        <div className="lg:w-[260px] w-full shrink-0">
+          <div className="bg-gradient-to-br from-orange-50 to-white rounded-3xl border border-orange-100 h-full p-6 flex flex-col justify-between shadow-sm">
+
+            <div>
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                ⚡ Flash Sale
+              </h2>
+
+              <p className="text-gray-500 mt-2">
+                Hurry up! Deals end in
+              </p>
+
+              <div className="flex gap-3 mt-6">
+
+                <div className="flex-1 bg-white rounded-xl shadow-sm py-3">
+                  <h3 className="text-red-600 text-2xl font-bold text-center">
+                    02
+                  </h3>
+                  <p className="text-xs text-center text-gray-500">
+                    Hours
+                  </p>
+                </div>
+
+                <div className="flex-1 bg-white rounded-xl shadow-sm py-3">
+                  <h3 className="text-red-600 text-2xl font-bold text-center">
+                    15
+                  </h3>
+                  <p className="text-xs text-center text-gray-500">
+                    Mins
+                  </p>
+                </div>
+
+                <div className="flex-1 bg-white rounded-xl shadow-sm py-3">
+                  <h3 className="text-red-600 text-2xl font-bold text-center">
+                    30
+                  </h3>
+                  <p className="text-xs text-center text-gray-500">
+                    Secs
+                  </p>
+                </div>
+
+              </div>
+            </div>
+
+            <button className="mt-8 bg-green-700 hover:bg-green-800 text-white rounded-xl py-3 font-semibold transition">
+              View All Deals
+            </button>
+
+          </div>
+        </div>
+
+        {/* Product Swiper */}
+
+        <div className="flex-1">
+
+          <Swiper
+            modules={[Autoplay]}
+            autoplay={{
+              delay: 2500,
+              disableOnInteraction: false,
+            }}
+            loop
+            spaceBetween={18}
+            breakpoints={{
+              0: {
+                slidesPerView: 2,
+              },
+              640: {
+                slidesPerView: 2,
+              },
+              768: {
+                slidesPerView: 3,
+              },
+              1024: {
+                slidesPerView: 4,
+              },
+              1280: {
+                slidesPerView: 5,
+              },
+            }}
+          >
+            {sarees.map((product) => (
+              <SwiperSlide key={product.id}>
+                <ProductCard product={product} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+
+        </div>
+
       </div>
-    </PageContainer>
-  );
+    </div>
+  </PageContainer>
 };
 
 export default SareeSwiper;
