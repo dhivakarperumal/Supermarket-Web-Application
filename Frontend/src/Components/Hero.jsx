@@ -11,25 +11,6 @@ import "swiper/css/effect-fade";
 import PageContainer from "./CommenComponents/PageContainer";
 import "swiper/css/pagination";
 
-const defaultSlides = [
-    {
-        title: "GULPOSH",
-        subtitle: "Luxury Saree Collection",
-        description: "Experience the elegance of traditional craftsmanship.",
-        image: "/Hero/download.jpg",
-        mobile_image: "/Hero/download.jpg",
-        link: "/shop"
-    },
-    {
-        title: "ROYAL SAREES",
-        subtitle: "Timeless Traditional Elegance",
-        description: "A heritage of beauty in every fold.",
-        image: "/Hero/images.jpg",
-        mobile_image: "/Hero/images.jpg",
-        link: "/shop"
-    }
-];
-
 export default function HeroSlider() {
     const { bannersCache, setBannersCache } = useContext(StoreContext);
     const [slides, setSlides] = useState(bannersCache.hero || []);
@@ -89,13 +70,11 @@ export default function HeroSlider() {
                                 />
                             </picture>
 
-                            {/* Refined Overlays */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
-                            <div className="absolute inset-0 bg-black/10"></div>
+                           
 
                             {/* Content Layer */}
                             <div className="absolute inset-0 flex items-center">
-                                <PageContainer>
+                                {/* <PageContainer>
                                     <div className="text-white max-w-2xl px-4">
                                         <div className="overflow-hidden mb-2">
                                             <p className="text-xs md:text-sm tracking-[6px] md:tracking-[8px] uppercase text-amber-400 font-bold animate-in slide-in-from-left duration-700">
@@ -122,7 +101,7 @@ export default function HeroSlider() {
                                             </Link>
                                         </div>
                                     </div>
-                                </PageContainer>
+                                </PageContainer> */}
                             </div>
                         </div>
                     </SwiperSlide>
