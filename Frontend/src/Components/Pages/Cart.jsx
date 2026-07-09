@@ -52,7 +52,8 @@ export default function CartPage() {
 
                 cart.map((item, index) => {
 
-                  const image = item.image;
+                  const name = item.name || item.product_name || item.productName || "Product";
+                  const image = item.image || item.product_image || item.thumbnail_image || item.product_images?.[0] || "/placeholder.png";
                   const price = item.price;
                   const mrp = item.mrp;
 
@@ -68,8 +69,11 @@ export default function CartPage() {
 
                         <img
                           src={image}
-                          alt={item.name}
+                          alt={name}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.src = "/placeholder.png";
+                          }}
                         />
 
                       </div>
@@ -78,7 +82,7 @@ export default function CartPage() {
                       <div className="flex-1">
 
                         <h3 className="font-semibold text-lg text-gray-800">
-                          {item.name}
+                          {name}
                         </h3>
 
                         {/* CATEGORY */}

@@ -1,5 +1,41 @@
 const { getPool } = require("../config/db");
 
+const parseJsonField = (value) => {
+    if (!value) return [];
+    try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+};
+
+const enrichWishlistItem = async (item, pool) => {
+    const productId = item.product_id;
+    let product = null;
+
+    if (productId) {
+        const [rows] = await pool.query(
+            "SELECT id, name, thumbnail_image, product_images, mrp, offer_price, selling_price FROM products WHERE id = ?",
+            [productId]
+        );
+        product = rows?.[0] || null;
+    }
+
+    const productImages = parseJsonField(product?.product_images);
+    const fallbackImage = product?.thumbnail_image || productImages?.[0] || item.image || null;
+
+    return {
+        ...item,
+        name: item.name || item.product_name || product?.name || "Product",
+        product_name: item.product_name || product?.name || item.name || "Product",
+        image: item.image || fallbackImage,
+        product_image: item.product_image || fallbackImage,
+        mrp: item.mrp ?? product?.mrp ?? null,
+        price: item.price ?? product?.offer_price ?? product?.selling_price ?? null,
+    };
+};
+
 const initWishlistTable = async () => {
     const pool = getPool();
     const connection = await pool.getConnection();
@@ -35,7 +71,8 @@ const getWishlist = async (req, res) => {
             "SELECT * FROM wishlist WHERE user_id = ? ORDER BY created_at DESC",
             [userId]
         );
-        res.status(200).json(items);
+        const enrichedItems = await Promise.all(items.map((item) => enrichWishlistItem(item, pool)));
+        res.status(200).json(enrichedItems);
     } catch (error) {
         console.error("Error fetching wishlist:", error);
         res.status(500).json({ message: "Server error" });

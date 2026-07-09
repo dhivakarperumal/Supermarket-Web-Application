@@ -100,6 +100,25 @@ export const StoreProvider = ({ children }) => {
         }
     };
 
+    const removeFromWishlist = async (wishlistItemId) => {
+        if (!user?.user_id) {
+            toast.error("Please login to manage wishlist");
+            return;
+        }
+
+        const targetItem = wishlist.find((item) => item.id === wishlistItemId || item._id === wishlistItemId || item.product_id === wishlistItemId);
+        const productId = targetItem?.product_id || wishlistItemId;
+
+        try {
+            await api.delete(`/wishlist/${user.user_id}/${productId}`);
+            toast.error("Removed from favorites");
+            await fetchWishlist();
+        } catch (err) {
+            console.error("Remove wishlist error:", err);
+            toast.error("Failed to remove item");
+        }
+    };
+
     const updateCartQuantity = async (cartItemId, qty) => {
         if (qty < 1) return;
         const targetItem = cart.find(i => i.id === cartItemId);
@@ -182,6 +201,7 @@ export const StoreProvider = ({ children }) => {
         <StoreContext.Provider value={{
             cart, wishlist,
             addToCart, removeFromCart, updateCartQuantity, clearCart,
+            removeFromWishlist,
             toggleWishlist,
             loadingCart, loadingWishlist,
             fetchCart, fetchWishlist,

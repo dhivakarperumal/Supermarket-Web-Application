@@ -43,11 +43,12 @@ export default function WishList() {
             ) : (
               <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                 {wishlist.map((item) => {
-                  const image = item?.variants?.[0]?.images?.[0] || item?.image;
+                  const name = item?.name || item?.product_name || item?.productName || "Product";
+                  const image = item?.image || item?.product_image || item?.thumbnail_image || item?.product_images?.[0] || item?.variants?.[0]?.images?.[0] || "/placeholder.png";
 
-                  const price = item?.variants?.[0]?.price || item?.price;
+                  const price = item?.price ?? item?.variants?.[0]?.price;
 
-                  const mrp = item?.variants?.[0]?.mrp || item?.mrp;
+                  const mrp = item?.mrp ?? item?.variants?.[0]?.mrp;
 
                   const discount = Math.round(((mrp - price) / mrp) * 100);
 
@@ -60,8 +61,11 @@ export default function WishList() {
                       <div className="relative h-80 overflow-hidden">
                         <img
                           src={image}
-                          alt={item.name}
+                          alt={name}
                           className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                          onError={(e) => {
+                            e.target.src = "/placeholder.png";
+                          }}
                         />
 
                         {/* Discount */}
@@ -73,7 +77,7 @@ export default function WishList() {
 
                         {/* Remove */}
                         <button
-                          onClick={() => removeFromWishlist(item._id)}
+                          onClick={() => removeFromWishlist(item.id || item._id || item.product_id)}
                           className="absolute top-3 right-3 bg-white p-2 rounded-full shadow hover:bg-primary-light hover:text-white transition cursor-pointer"
                         >
                           <FiTrash2 />
@@ -83,7 +87,7 @@ export default function WishList() {
                       {/* Content */}
                       <div className="p-4">
                         <h3 className="font-semibold text-gray-800 line-clamp-1">
-                          {item.name}
+                          {name}
                         </h3>
 
                         {/* Price */}
