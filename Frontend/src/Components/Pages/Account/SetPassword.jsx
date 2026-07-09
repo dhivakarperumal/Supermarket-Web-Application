@@ -57,12 +57,15 @@ const SetPassword = () => {
 
   return (
 
-    <div className="max-w-md bg-white rounded-2xl shadow-md p-8">
+    <div className="max-w-xl rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)] sm:p-8">
 
-      <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-        <FiLock className="text-primary"/>
-        Set / Change Password
-      </h2>
+      <div className="mb-6 border-b border-green-100 pb-4">
+        <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-700">Security</p>
+        <h2 className="mt-2 flex items-center gap-2 text-xl font-bold text-gray-800">
+          <FiLock className="text-[#0e6827]"/>
+          Set / Change Password
+        </h2>
+      </div>
 
       <div className="space-y-4">
 
@@ -71,7 +74,7 @@ const SetPassword = () => {
           placeholder="Current Password"
           value={currentPwd}
           onChange={(e)=>setCurrentPwd(e.target.value)}
-          className="w-full border px-4 py-3 rounded-xl"
+          className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
         />
 
         <input
@@ -79,7 +82,7 @@ const SetPassword = () => {
           placeholder="New Password"
           value={newPwd}
           onChange={(e)=>setNewPwd(e.target.value)}
-          className="w-full border px-4 py-3 rounded-xl"
+          className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
         />
 
         <input
@@ -87,13 +90,13 @@ const SetPassword = () => {
           placeholder="Confirm New Password"
           value={confirmPwd}
           onChange={(e)=>setConfirmPwd(e.target.value)}
-          className="w-full border px-4 py-3 rounded-xl"
+          className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
         />
 
         <button
           onClick={handlePasswordUpdate}
           disabled={loading}
-          className="w-full bg-primary-light hover:bg-primary text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0e6827] px-4 py-3 font-semibold text-white shadow-lg shadow-green-100 transition hover:bg-[#168637]"
         >
           {loading ? (
             <>

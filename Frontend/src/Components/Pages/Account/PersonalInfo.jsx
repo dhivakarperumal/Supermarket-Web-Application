@@ -50,11 +50,14 @@ export default function PersonalInfo() {
   };
 
   return (
-    <div className="bg-white border border-primary rounded-2xl p-8 shadow-sm">
+    <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)] sm:p-8">
 
-      <h2 className="text-2xl font-semibold text-gray-800 mb-8">
-        Personal Information
-      </h2>
+      <div className="mb-8 border-b border-green-100 pb-4">
+        <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-700">Profile</p>
+        <h2 className="mt-2 text-2xl font-semibold text-gray-800">
+          Personal Information
+        </h2>
+      </div>
 
       <div className="grid md:grid-cols-2 gap-6">
 
@@ -99,7 +102,7 @@ export default function PersonalInfo() {
             name="email"
             value={form.email}
             disabled
-            className="w-full mt-2 border border-primary bg-gray-100 text-gray-500 cursor-not-allowed rounded-lg px-4 py-3"
+            className="mt-2 w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-gray-500"
           />
         </div>
 
@@ -123,7 +126,7 @@ export default function PersonalInfo() {
       <div className="flex justify-end mt-8">
         <button
           onClick={handleUpdate}
-          className="bg-primary hover:bg-primary-light text-white px-6 py-3 rounded-lg font-medium transition shadow-sm"
+          className="rounded-full bg-[#0e6827] px-6 py-3 font-semibold text-white shadow-lg shadow-green-100 transition hover:bg-[#168637]"
         >
           Save Changes
         </button>
