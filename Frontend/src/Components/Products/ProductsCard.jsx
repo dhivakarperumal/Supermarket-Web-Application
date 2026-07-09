@@ -49,30 +49,57 @@ const ProductCard = ({ product }) => {
   // Helper to resolve image URLs
   const resolveImage = (img) => {
     if (!img || typeof img !== 'string') return null;
-    if (img.startsWith('http') || img.startsWith('data:')) return img;
+    const trimmed = img.trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith('http') || trimmed.startsWith('data:')) return trimmed;
+
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-    const cleanPath = img.replace(/\\/g, '/');
+    const cleanPath = trimmed.replace(/\\/g, '/');
     const finalPath = cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
     return `${backendUrl}${finalPath}`;
   };
 
-  const rawImages =
-    product?.variants &&
-      product.variants.length > 0 &&
-      product.variants[0]?.images &&
-      product.variants[0].images.length > 0
-      ? (typeof product.variants[0].images === 'string' ? JSON.parse(product.variants[0].images) : product.variants[0].images)
-      : product?.images && product.images.length > 0
-        ? (typeof product.images === 'string' ? JSON.parse(product.images) : product.images)
-        : [
-          `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            product?.name || "Product",
-          )}&background=random`,
-        ];
+  const normalizeImageList = (value) => {
+    if (!value) return [];
 
-  const images = (Array.isArray(rawImages) ? rawImages : [rawImages])
-    .map(img => resolveImage(img))
-    .filter(Boolean);
+    if (Array.isArray(value)) {
+      return value.filter(Boolean);
+    }
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return [];
+
+      try {
+        const parsed = JSON.parse(trimmed);
+        return Array.isArray(parsed) ? parsed.filter(Boolean) : [parsed].filter(Boolean);
+      } catch {
+        if (trimmed.startsWith('[')) return [];
+        return [trimmed];
+      }
+    }
+
+    return [value];
+  };
+
+  const imageCandidates = [
+    product?.thumbnail_image,
+    product?.product_images,
+    product?.images,
+    product?.image,
+    product?.image_url,
+    product?.thumbnail,
+    product?.variants?.[0]?.images,
+  ];
+
+  const images = Array.from(
+    new Set(
+      imageCandidates
+        .flatMap((candidate) => normalizeImageList(candidate))
+        .map((img) => resolveImage(img))
+        .filter(Boolean)
+    )
+  );
 
   if (images.length === 0) {
     images.push(`https://ui-avatars.com/api/?name=${encodeURIComponent(product?.name || "Product")}&background=random`);
