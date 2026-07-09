@@ -93,7 +93,7 @@ const Navbar = () => {
     <nav className="w-full shadow-sm">
 
       {/* Top Header - White */}
-      <div className="bg-white py-4 border-b border-gray-100">
+      <div className="relative z-40 bg-white py-4 border-b border-gray-100">
         <PageContainer>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8">
             
@@ -215,11 +215,12 @@ const Navbar = () => {
       </div>
 
       {/* Bottom Header - Green Navbar */}
-      <div className="sticky top-0 z-50 bg-[#0e6827] hidden md:block border-b-4 border-[#0b511d] shadow-md">
-        <PageContainer>
-          <div className="flex items-center justify-between h-12">
-            
-            <div className="flex items-center h-full gap-8">
+      <div className="hidden md:block">
+        <div className="fixed inset-x-0 top-0 z-[60] bg-[#0e6827] border-b-4 border-[#0b511d] shadow-md">
+          <PageContainer>
+            <div className="flex items-center justify-between h-12">
+              
+              <div className="flex items-center h-full gap-8">
               {/* Categories Dropdown Button */}
               <div className="relative h-full" ref={categoryRef}>
                 <button
@@ -280,13 +281,15 @@ const Navbar = () => {
               </div>
             </div>
 
-            {/* Hot Deals */}
-            <Link to="/shop" className="bg-[#e53935] text-white flex items-center gap-1.5 px-4 py-1.5 rounded text-[13px] font-bold hover:bg-red-700 transition shadow-sm h-8">
-              Hot Deals <span className="text-sm">🔥</span>
-            </Link>
+              {/* Hot Deals */}
+              <Link to="/shop" className="bg-[#e53935] text-white flex items-center gap-1.5 px-4 py-1.5 rounded text-[13px] font-bold hover:bg-red-700 transition shadow-sm h-8">
+                Hot Deals <span className="text-sm">🔥</span>
+              </Link>
 
-          </div>
-        </PageContainer>
+            </div>
+          </PageContainer>
+        </div>
+        <div className="h-12" />
       </div>
 
       {/* Logout Modal */}
