@@ -90,7 +90,7 @@ const Navbar = () => {
   }, 0);
 
   return (
-    <nav className="w-full z-50 shadow-sm relative">
+    <nav className="w-full sticky top-0 z-50 shadow-sm">
 
       {/* Top Header - White */}
       <div className="bg-white py-4 border-b border-gray-100">
