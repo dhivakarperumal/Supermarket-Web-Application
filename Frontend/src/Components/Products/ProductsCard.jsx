@@ -111,7 +111,7 @@ const ProductCard = ({ product }) => {
     <>
       <div
         onClick={handleClick}
-        className="relative bg-white rounded-xl border border-gray-100 p-3 hover:shadow-lg transition duration-300 group cursor-pointer flex flex-col h-full"
+        className="relative bg-white rounded-xl border border-gray-200 p-3 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col h-full"
       >
         {/* Icons */}
         <div
@@ -161,7 +161,7 @@ const ProductCard = ({ product }) => {
 
         {/* Image Area */}
         <div
-          className="relative h-48 w-full flex items-center justify-center mb-3"
+          className="relative  h-48 w-full flex items-center justify-center mb-3"
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
         >
@@ -182,7 +182,7 @@ const ProductCard = ({ product }) => {
           <img
             src={images[0]}
             alt={product?.name}
-            className={`max-w-full max-h-full object-contain transition-opacity duration-500 ${hovered && images[1] ? "opacity-0" : "opacity-100"
+            className={`max-w-full max-h-full object-cover transition-opacity duration-500 ${hovered && images[1] ? "opacity-0" : "opacity-100"
               }`}
           />
 
@@ -191,7 +191,7 @@ const ProductCard = ({ product }) => {
             <img
               src={images[1]}
               alt={product?.name}
-              className={`absolute max-w-full max-h-full object-contain transition-opacity duration-500 ${hovered ? "opacity-100" : "opacity-0"
+              className={`absolute max-w-full max-h-full object-cover transition-opacity duration-500 ${hovered ? "opacity-100" : "opacity-0"
                 }`}
             />
           )}
