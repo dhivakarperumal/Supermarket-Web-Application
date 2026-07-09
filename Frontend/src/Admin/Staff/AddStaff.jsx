@@ -115,18 +115,6 @@ const AddEditStaff = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const generateEmployeeId = useCallback(async () => {
-    try {
-      const res = await api.get('/staff/generate-employee-id');
-      if (res.data && res.data.employeeId) return res.data.employeeId;
-    } catch (err) {
-      console.warn('generateEmployeeId api failed, falling back', err?.message);
-    }
-
-    // fallback: timestamp-based id
-    return `EMP${String(Date.now()).slice(-6)}`;
-  }, []);
-
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -136,7 +124,6 @@ const AddEditStaff = () => {
     email: "",
     password: "",
     phone: "",
-    employeeId: "",
     role: "",
     gender: "",
     bloodGroup: "",
@@ -147,8 +134,6 @@ const AddEditStaff = () => {
     shift: "",
     salary: "",
     address: "",
-    emergencyName: "",
-    emergencyPhone: "",
     status: "active",
     timeIn: "",
     timeOut: "",
@@ -182,7 +167,6 @@ const AddEditStaff = () => {
           username: data.username || "",
           email: data.email || "",
           phone: data.phone || "",
-          employeeId: data.employee_id || "",
           role: data.role || "",
           gender: data.gender || "",
           bloodGroup: data.blood_group || "",
@@ -193,8 +177,6 @@ const AddEditStaff = () => {
           shift: data.shift || "",
           salary: data.salary || "",
           address: data.address || "",
-          emergencyName: data.emergency_name || "",
-          emergencyPhone: data.emergency_phone || "",
           status: data.status || "active",
           timeIn: data.time_in ? data.time_in.slice(0, 5) : "",
           timeOut: data.time_out ? data.time_out.slice(0, 5) : "",
@@ -334,11 +316,6 @@ const AddEditStaff = () => {
       newErrors.username = "Username is required";
     }
 
-    // Employee ID validation (only for edit mode - auto-generated for new staff)
-    if (isEdit && !form.employeeId?.trim()) {
-      newErrors.employeeId = "Employee ID is required";
-    }
-
     // Role validation (required for staff creation)
     if (!form.role?.trim()) {
       newErrors.role = "Role is required";
@@ -385,13 +362,7 @@ const AddEditStaff = () => {
     setLoading(true);
 
     try {
-      let staffData = { ...form };
-
-      // Generate Employee ID only for new staff when submitting
-      if (!isEdit && !form.employeeId) {
-        const empId = await generateEmployeeId();
-        staffData.employeeId = empId;
-      }
+      const staffData = { ...form };
 
       const {
         password,
@@ -405,11 +376,8 @@ const AddEditStaff = () => {
       // Map frontend camelCase to backend snake_case
       const payload = {
         ...finalStaffData,
-        employee_id: finalStaffData.employeeId,
         blood_group: finalStaffData.bloodGroup,
         joining_date: finalStaffData.joiningDate,
-        emergency_name: finalStaffData.emergencyName,
-        emergency_phone: finalStaffData.emergencyPhone,
         time_in: finalStaffData.timeIn,
         time_out: finalStaffData.timeOut,
         aadhar_doc: aadharDoc || null,
@@ -687,22 +655,6 @@ const AddEditStaff = () => {
                 </InputBox>
 
                 <ErrorText field="shift" errors={errors} />
-
-                {/* EMPLOYEE ID */}
-                <InputBox
-                  label="Employee ID"
-                  icon={<Badge size={16} />}
-                >
-
-                  <input
-                    value={form.employeeId}
-                    readOnly
-                    disabled
-                    placeholder="Auto Generated"
-                    className={inputClass}
-                  />
-
-                </InputBox>
 
                 {/* ROLE */}
                 <InputBox

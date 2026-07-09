@@ -23,25 +23,7 @@ const resolveActorId = (req, fallback = null) => {
 
 exports.generateEmployeeId = async (req, res) => {
   try {
-    const [rows] = await getPool().query(
-      `SELECT employee_id
-       FROM employees
-       ORDER BY id DESC
-       LIMIT 1`
-    );
-
-    let next = 1;
-
-    if (rows.length && rows[0].employee_id) {
-      const match = String(rows[0].employee_id).match(/(\d+)$/);
-      if (match) {
-        next = parseInt(match[1], 10) + 1;
-      }
-    }
-
-    const employeeId = `EMP${String(next).padStart(5, "0")}`;
-
-    res.json({ employeeId });
+    res.json({ employeeId: null });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: err.message });
@@ -64,7 +46,6 @@ exports.createEmployee = async (req, res) => {
       email,
       password,
       phone,
-      employee_id,
       role,
       gender,
       blood_group,
@@ -75,8 +56,6 @@ exports.createEmployee = async (req, res) => {
       shift,
       salary,
       address,
-      emergency_name,
-      emergency_phone,
       status,
       time_in,
       time_out,
@@ -136,7 +115,6 @@ exports.createEmployee = async (req, res) => {
     const [employeeResult] = await conn.query(
       `INSERT INTO employees (
         user_id,
-        employee_id,
         name,
         username,
         email,
@@ -151,8 +129,6 @@ exports.createEmployee = async (req, res) => {
         shift,
         salary,
         address,
-        emergency_name,
-        emergency_phone,
         status,
         time_in,
         time_out,
@@ -162,10 +138,9 @@ exports.createEmployee = async (req, res) => {
         certificate_doc,
         created_by,
         updated_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )`,
       [
         userId,
-        employee_id,
         name,
         username,
         email,
@@ -180,8 +155,6 @@ exports.createEmployee = async (req, res) => {
         shift,
         salary,
         address,
-        emergency_name,
-        emergency_phone,
         normalizedStatus,
         time_in,
         time_out,
@@ -270,7 +243,6 @@ exports.updateEmployee = async (req, res) => {
       username,
       email,
       phone,
-      employee_id,
       role,
       gender,
       blood_group,
@@ -281,8 +253,6 @@ exports.updateEmployee = async (req, res) => {
       shift,
       salary,
       address,
-      emergency_name,
-      emergency_phone,
       status,
       time_in,
       time_out,
@@ -310,10 +280,9 @@ exports.updateEmployee = async (req, res) => {
 
     await conn.query(
       `UPDATE employees SET
-        employee_id=?, name=?, username=?, email=?, phone=?, role=?, gender=?, blood_group=?, dob=?, joining_date=?, qualification=?, experience=?, shift=?, salary=?, address=?, emergency_name=?, emergency_phone=?, status=?, time_in=?, time_out=?, photo=?, aadhar_doc=?, id_doc=?, certificate_doc=?, updated_by=?
+        name=?, username=?, email=?, phone=?, role=?, gender=?, blood_group=?, dob=?, joining_date=?, qualification=?, experience=?, shift=?, salary=?, address=?, status=?, time_in=?, time_out=?, photo=?, aadhar_doc=?, id_doc=?, certificate_doc=?, updated_by=?
       WHERE id=?`,
       [
-        employee_id || null,
         name || null,
         username || null,
         email || null,
@@ -328,8 +297,6 @@ exports.updateEmployee = async (req, res) => {
         shift || null,
         salary || null,
         address || null,
-        emergency_name || null,
-        emergency_phone || null,
         status || "active",
         time_in || null,
         time_out || null,

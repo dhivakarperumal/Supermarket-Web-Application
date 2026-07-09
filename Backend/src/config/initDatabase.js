@@ -79,7 +79,6 @@ const createUsersTable = async () => {
       CREATE TABLE IF NOT EXISTS employees (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id VARCHAR(36) NOT NULL UNIQUE,
-        employee_id VARCHAR(50) DEFAULT NULL UNIQUE,
         name VARCHAR(255) NOT NULL,
         username VARCHAR(100) NOT NULL,
         email VARCHAR(255) NOT NULL,
@@ -94,8 +93,6 @@ const createUsersTable = async () => {
         shift VARCHAR(50) DEFAULT NULL,
         salary DECIMAL(12,2) DEFAULT NULL,
         address TEXT DEFAULT NULL,
-        emergency_name VARCHAR(255) DEFAULT NULL,
-        emergency_phone VARCHAR(20) DEFAULT NULL,
         status VARCHAR(20) DEFAULT 'active',
         time_in TIME DEFAULT NULL,
         time_out TIME DEFAULT NULL,
