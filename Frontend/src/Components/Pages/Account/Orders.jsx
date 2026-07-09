@@ -96,10 +96,14 @@ export default function Orders() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] py-10">
+    <div className="min-h-screen bg-[#f7f8f3] py-8 sm:py-10">
       <PageContainer>
-        <div className="max-w-5xl mx-auto space-y-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
+        <div className="mx-auto max-w-5xl space-y-6">
+          <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-700">Orders</p>
+            <h1 className="mt-2 text-3xl font-bold text-gray-900">My Orders</h1>
+            <p className="mt-2 text-sm text-gray-500">Track your purchases and view order details in one place.</p>
+          </div>
 
           {orders.length === 0 ? (
             <p className="text-gray-500">No orders found</p>
@@ -108,13 +112,13 @@ export default function Orders() {
               <div
                 key={order.id}
                 onClick={() => openOrderDetails(order)}
-                className="bg-white rounded-3xl border border-primary/10 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group"
+                className="group cursor-pointer overflow-hidden rounded-[1.75rem] border border-green-100 bg-white shadow-[0_20px_40px_rgba(14,104,39,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_rgba(14,104,39,0.14)]"
               >
                 {/* top gradient */}
-                <div className="h-2 w-full bg-gradient-to-r from-primary-light via-primary-light to-secondary"></div>
+                <div className="h-2 w-full bg-linear-to-r from-[#0e6827] via-[#168637] to-[#ffc107]"></div>
 
                 {/* ORDER SUMMARY CARD */}
-                <div className="bg-gradient-to-br from-primary-light/10 via-white to-secondary/10 pt-6 px-6 pb-4">
+                <div className="bg-linear-to-br from-green-50 via-white to-amber-50 px-6 pb-4 pt-6">
                   <div className="grid md:grid-cols-2 gap-x-12 gap-y-4 text-sm">
                     <div className="flex justify-between border-b border-primary/10 pb-2">
                       <span className="text-gray-500">Order ID</span>
@@ -149,12 +153,12 @@ export default function Orders() {
                   {order.items?.map((item, index) => (
                     <div
                       key={index}
-                      className="flex gap-6 items-start border border-primary/10 rounded-2xl p-4 hover:shadow-lg hover:border-primary/30 transition bg-white group-hover:bg-primary/5"
+                      className="flex items-start gap-6 rounded-[1.25rem] border border-green-100 bg-white p-4 transition hover:border-green-300 hover:shadow-md group-hover:bg-green-50"
                     >
                       <img
                         src={item.image}
                         alt={item.product_name}
-                        className="w-24 h-28 object-cover rounded-xl shadow-md border border-primary/10"
+                        className="h-28 w-24 rounded-xl border border-green-100 object-cover shadow-sm"
                         onError={(e) => {
                           e.target.src = "/placeholder.png";
                         }}
@@ -162,11 +166,11 @@ export default function Orders() {
 
                       <div className="flex-1">
                         <div className="flex justify-between">
-                          <h3 className="font-semibold text-lg text-primary-dark group-hover:text-primary transition">
+                          <h3 className="text-lg font-semibold text-primary-dark transition group-hover:text-[#0e6827]">
                             {item.product_name}
                           </h3>
 
-                          <p className="font-bold text-primary text-lg bg-primary/10 px-3 py-1 rounded-lg">
+                          <p className="rounded-lg bg-green-50 px-3 py-1 text-lg font-bold text-[#0e6827]">
                             ₹{item.price}
                           </p>
                         </div>
@@ -195,7 +199,7 @@ export default function Orders() {
             <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl border border-gray-100 overflow-hidden max-h-[90vh] flex flex-col">
               {/* HEADER */}
 
-              <div className="flex justify-between items-center px-8 py-6 bg-gradient-to-r from-primary-light to-secondary text-white">
+              <div className="flex items-center justify-between bg-linear-to-r from-[#0e6827] via-[#168637] to-[#ffc107] px-8 py-6 text-white">
                 <h2 className="text-2xl font-bold tracking-wide">
                   Order Details
                 </h2>
@@ -291,7 +295,7 @@ export default function Orders() {
                         Shipping Address
                       </h3>
 
-                      <div className="border border-gray-100 rounded-2xl p-6 bg-gradient-to-br from-primary/5 to-transparent shadow-sm">
+                      <div className="border border-gray-100 rounded-2xl p-6 bg-linear-to-br from-primary/5 to-transparent shadow-sm">
                         {address ? (
                           <div className="text-sm text-gray-700 space-y-1">
                             <p className="font-semibold">
@@ -412,7 +416,7 @@ export default function Orders() {
 
                       <button
                         onClick={() => setShowPopup(false)}
-                        className="bg-gradient-to-r from-primary to-secondary text-white px-8 py-2.5 rounded-xl font-semibold shadow-md hover:opacity-90 transition cursor-pointer"
+                        className="cursor-pointer rounded-full bg-[#0e6827] px-8 py-2.5 font-semibold text-white shadow-md transition hover:bg-[#168637]"
                       >
                         Close
                       </button>

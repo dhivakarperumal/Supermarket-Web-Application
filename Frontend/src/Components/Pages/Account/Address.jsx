@@ -121,29 +121,31 @@ export default function Address() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-black text-slate-800">Saved Addresses</h2>
-          <p className="text-xs text-gray-400 font-bold mt-0.5 uppercase tracking-widest">Manage your delivery locations</p>
+      <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-700">Delivery</p>
+            <h2 className="mt-2 text-xl font-black text-slate-800">Saved Addresses</h2>
+            <p className="mt-1 text-sm text-gray-500">Manage your delivery locations with ease.</p>
+          </div>
+          <button
+            onClick={() => { resetForm(); setShowForm(true); }}
+            className="flex items-center justify-center gap-2 rounded-full bg-[#0e6827] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-green-100 transition hover:bg-[#168637]"
+          >
+            <FiPlus size={16} /> Add New
+          </button>
         </div>
-        <button
-          onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-sm font-black transition-all shadow-lg shadow-blue-100"
-        >
-          <FiPlus size={16} /> Add New
-        </button>
       </div>
 
       {/* Add / Edit Form */}
       {showForm && (
-        <div className="bg-white border border-gray-100 rounded-[2rem] shadow-sm p-6 animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-black text-slate-800 flex items-center gap-2">
-              <FiMapPin className="text-blue-500" />
+        <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)] animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="mb-6 flex items-center justify-between">
+            <h3 className="flex items-center gap-2 font-black text-slate-800">
+              <FiMapPin className="text-[#0e6827]" />
               {editingId ? "Edit Address" : "New Address"}
             </h3>
-            <button onClick={resetForm} className="text-gray-400 hover:text-slate-700 p-2 hover:bg-gray-100 rounded-xl transition-all">
+            <button onClick={resetForm} className="rounded-xl p-2 text-gray-400 transition-all hover:bg-gray-100 hover:text-slate-700">
               <FiX size={18} />
             </button>
           </div>
@@ -200,7 +202,7 @@ export default function Address() {
             {/* State */}
             <select
               name="state" value={form.state} onChange={handleChange}
-              className="w-full px-4 py-3.5 bg-gray-50 rounded-xl border-2 border-transparent focus:border-blue-100 focus:bg-white transition-all text-sm font-bold text-slate-700 outline-none cursor-pointer"
+              className="w-full cursor-pointer rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm font-bold text-slate-700 outline-none transition-all focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100"
             >
               <option value="">Select State</option>
               {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -215,14 +217,14 @@ export default function Address() {
             {/* Country - Read only */}
             <input
               name="country" value={form.country} readOnly
-              className="w-full px-4 py-3.5 bg-gray-100 rounded-xl border-2 border-transparent text-sm font-bold text-slate-400 outline-none cursor-not-allowed"
+              className="w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 px-4 py-3.5 text-sm font-bold text-slate-400 outline-none"
             />
 
             {/* Set Default checkbox */}
             <label className="flex items-center gap-3 cursor-pointer md:col-span-2">
               <div
                 onClick={() => setForm(p => ({ ...p, is_default: !p.is_default }))}
-                className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${form.is_default ? "bg-blue-600 border-blue-600" : "border-gray-300 bg-white"}`}
+                className={`flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all ${form.is_default ? "border-[#0e6827] bg-[#0e6827]" : "border-gray-300 bg-white"}`}
               >
                 {form.is_default && <FiCheck size={12} className="text-white" />}
               </div>
@@ -233,7 +235,7 @@ export default function Address() {
           <div className="flex gap-3 mt-6">
             <button
               onClick={handleSubmit} disabled={submitting}
-              className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-sm transition-all shadow-lg shadow-blue-100 disabled:opacity-60"
+              className="flex-1 rounded-full bg-[#0e6827] px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-green-100 transition hover:bg-[#168637] disabled:opacity-60"
             >
               {submitting ? "Saving..." : editingId ? "Update Address" : "Save Address"}
             </button>
@@ -248,7 +250,7 @@ export default function Address() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2].map(i => (
-            <div key={i} className="bg-white border border-gray-100 rounded-[2rem] p-6 animate-pulse space-y-3">
+            <div key={i} className="animate-pulse space-y-3 rounded-[1.75rem] border border-green-100 bg-white p-6">
               <div className="h-4 bg-gray-100 rounded-full w-1/2" />
               <div className="h-3 bg-gray-100 rounded-full w-3/4" />
               <div className="h-3 bg-gray-100 rounded-full w-1/2" />
@@ -256,7 +258,7 @@ export default function Address() {
           ))}
         </div>
       ) : addresses.length === 0 ? (
-        <div className="bg-white border border-dashed border-gray-200 rounded-[2rem] p-12 text-center">
+        <div className="rounded-[1.75rem] border border-dashed border-green-200 bg-linear-to-br from-green-50 to-white p-12 text-center">
           <FiMapPin size={32} className="text-gray-300 mx-auto mb-4" />
           <p className="font-black text-gray-400 uppercase tracking-widest text-xs">No addresses saved yet</p>
           <p className="text-xs text-gray-400 mt-1">Add a delivery address to get started</p>
@@ -266,17 +268,17 @@ export default function Address() {
           {addresses.map((address) => (
             <div
               key={address.id}
-              className={`relative bg-white border-2 rounded-[2rem] p-6 transition-all ${address.is_default ? "border-blue-200 shadow-lg shadow-blue-50" : "border-gray-100 shadow-sm"}`}
+              className={`relative rounded-[1.75rem] border-2 bg-white p-6 transition-all ${address.is_default ? "border-green-200 shadow-[0_20px_40px_rgba(14,104,39,0.08)]" : "border-gray-100 shadow-sm"}`}
             >
               {address.is_default && (
-                <div className="absolute top-4 right-4 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1">
+                <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-[#0e6827] px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white">
                   <FiCheck size={10} /> Default
                 </div>
               )}
 
               <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 bg-blue-50 rounded-2xl flex items-center justify-center flex-shrink-0">
-                  <FiMapPin className="text-blue-500" size={18} />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-green-50">
+                  <FiMapPin className="text-[#0e6827]" size={18} />
                 </div>
                 <div>
                   <p className="font-black text-slate-800 text-sm">{address.customer_name}</p>
@@ -299,20 +301,20 @@ export default function Address() {
                 {!address.is_default && (
                   <button
                     onClick={() => handleSetDefault(address.id)}
-                    className="flex-1 text-[10px] font-black uppercase tracking-widest py-2 border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 rounded-xl transition-all"
+                    className="flex-1 rounded-xl border border-gray-200 py-2 text-[10px] font-black uppercase tracking-widest text-gray-500 transition-all hover:border-green-300 hover:bg-green-50 hover:text-[#0e6827]"
                   >
                     Set Default
                   </button>
                 )}
                 <button
                   onClick={() => handleEdit(address)}
-                  className="flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-gray-50 hover:bg-blue-50 hover:text-blue-600 text-gray-500 rounded-xl transition-all"
+                  className="flex items-center gap-1.5 rounded-xl bg-gray-50 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-gray-500 transition-all hover:bg-green-50 hover:text-[#0e6827]"
                 >
                   <FiEdit2 size={12} /> Edit
                 </button>
                 <button
                   onClick={() => handleDelete(address.id)}
-                  className="flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-gray-50 hover:bg-red-50 hover:text-red-500 text-gray-400 rounded-xl transition-all"
+                  className="flex items-center gap-1.5 rounded-xl bg-gray-50 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400 transition-all hover:bg-red-50 hover:text-red-500"
                 >
                   <FiTrash2 size={12} /> Delete
                 </button>

@@ -72,7 +72,7 @@ export default function PersonalInfo() {
             name="username"
             value={form.username}
             onChange={handleChange}
-            className="w-full mt-2 border border-primary rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary outline-none"
+            className="w-full mt-2 border border-primary/20 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary outline-none"
           />
         </div>
 
@@ -117,7 +117,7 @@ export default function PersonalInfo() {
             name="phone"
             value={form.phone}
             onChange={handleChange}
-            className="w-full mt-2 border border-primary rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary outline-none"
+            className="w-full mt-2 border border-primary/20 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary outline-none"
           />
         </div>
 
