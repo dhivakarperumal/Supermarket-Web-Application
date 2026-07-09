@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import PageContainer from "./PageContainer";
+import { useState, useEffect } from "react";
+import api from "../../api";
 import {
   FaFacebookF,
   FaInstagram,
@@ -38,6 +40,19 @@ import {
 } from "lucide-react";
 
 const Footer = () => {
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await api.get("/categories");
+        setCategories(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
   return (
     <footer className="bg-gradient-to-r from-[#0b5b1c] via-[#084b17] to-[#063914] text-white mt-20">
 
@@ -243,17 +258,21 @@ const Footer = () => {
             </h3>
 
             <ul className="space-y-3 text-sm text-green-100">
-
-              <li>Fruits & Vegetables</li>
-
-              <li>Grocery & Staples</li>
-
-              <li>Dairy & Bakery</li>
-
-              <li>Beverages</li>
-
-              <li>Personal Care</li>
-
+              {categories.length > 0 ? (
+                categories.slice(0, 5).map((category) => (
+                  <li key={category.id}>
+                    <Link
+                      to={`/category/${category.slug || category.name}`}
+                      className="flex items-center gap-2 hover:text-white transition"
+                    >
+                      <ChevronRight size={15} className="text-green-300" />
+                      {category.name}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <li className="text-green-300">No Categories Found</li>
+              )}
             </ul>
 
           </div>

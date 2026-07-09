@@ -96,7 +96,7 @@ const Navbar = () => {
       <div className="relative z-40 bg-white py-4 border-b border-gray-100">
         <PageContainer>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8">
-            
+
             {/* Logo */}
             <Link to="/" className="flex-shrink-0 flex items-center justify-between w-full md:w-auto">
               <img
@@ -131,10 +131,10 @@ const Navbar = () => {
 
             {/* Right Action Icons (Hidden on Mobile) */}
             <div className="hidden md:flex items-center gap-8 flex-shrink-0">
-              
+
               {/* Account Dropdown */}
               <div className="relative" ref={menuRef}>
-                <div 
+                <div
                   className="flex items-center gap-3 cursor-pointer group"
                   onClick={() => setUserMenu(!userMenu)}
                 >
@@ -218,73 +218,112 @@ const Navbar = () => {
       <div className="hidden md:block">
         <div className="sticky top-0 z-[60] bg-[#0e6827] border-b-4 border-[#0b511d] shadow-md">
           <PageContainer>
-            <div className="flex items-center justify-between h-12">
-              
-              <div className="flex items-center h-full gap-8">
-              {/* Categories Dropdown Button */}
-              <div className="relative h-full" ref={categoryRef}>
-                <button
-                  onClick={() => {
-                    setCategoryMenu(!categoryMenu);
-                    setPagesMenu(false);
-                  }}
-                  className="bg-[#ffc107] text-black flex items-center gap-3 px-5 h-full font-bold hover:bg-[#e0a800] transition cursor-pointer"
-                >
-                  <Menu size={20} />
-                  All Categories
-                  <ChevronDown size={18} className={`transition-transform ${categoryMenu ? "rotate-180" : ""}`} />
-                </button>
+            <div className="grid grid-cols-3 items-center h-12">
 
-                {categoryMenu && (
-                  <div className="absolute top-full left-0 w-64 bg-white border border-gray-200 shadow-xl overflow-hidden z-50">
-                    {categories.length > 0 ? categories.map((cat) => (
-                      <NavLink
-                        key={cat.id}
-                        to={`/category/${cat.slug || cat.name}`}
-                        onClick={() => setCategoryMenu(false)}
-                        className="block px-5 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-800 border-b border-gray-100 last:border-none transition"
-                      >
-                        {cat.name}
-                      </NavLink>
-                    )) : (
-                      <div className="px-5 py-3 text-sm text-gray-500">No categories found</div>
-                    )}
-                  </div>
-                )}
+              <div className="flex justify-start items-center h-full gap-4">
+                {/* Categories Dropdown Button */}
+                <div className="relative h-full" ref={categoryRef}>
+                  <button
+                    onClick={() => {
+                      setCategoryMenu(!categoryMenu);
+                      setPagesMenu(false);
+                    }}
+                    className="bg-[#ffc107] text-black flex items-center gap-3 px-5 h-full font-bold hover:bg-[#e0a800] transition cursor-pointer"
+                  >
+                    <Menu size={20} />
+                    All Categories
+                    <ChevronDown size={18} className={`transition-transform ${categoryMenu ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {categoryMenu && (
+                    <div className="absolute top-full left-0 w-64 bg-white border border-gray-200 shadow-xl overflow-hidden z-50">
+                      {categories.length > 0 ? categories.map((cat) => (
+                        <NavLink
+                          key={cat.id}
+                          to={`/category/${cat.slug || cat.name}`}
+                          onClick={() => setCategoryMenu(false)}
+                          className="block px-5 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-800 border-b border-gray-100 last:border-none transition"
+                        >
+                          {cat.name}
+                        </NavLink>
+                      )) : (
+                        <div className="px-5 py-3 text-sm text-gray-500">No categories found</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+
               </div>
 
               {/* Navigation Links */}
               <div className="flex items-center gap-6 text-[13px] font-semibold text-white tracking-wide">
-                <NavLink to="/" className={({ isActive }) => isActive ? "text-yellow-400" : "hover:text-yellow-400 transition"}>Home</NavLink>
-                <Link to="/shop" className="hover:text-yellow-400 transition">Fruits & Vegetables</Link>
-                <Link to="/shop" className="hover:text-yellow-400 transition">Grocery & Staples</Link>
-                <Link to="/shop" className="hover:text-yellow-400 transition">Dairy & Bakery</Link>
-                <Link to="/shop" className="hover:text-yellow-400 transition">Beverages</Link>
-                <Link to="/shop" className="hover:text-yellow-400 transition">Snacks & Branded Foods</Link>
-                <Link to="/shop" className="hover:text-yellow-400 transition">Personal Care</Link>
-                <Link to="/shop" className="hover:text-yellow-400 transition">Household</Link>
-                <div className="flex items-center gap-1 cursor-pointer hover:text-yellow-400 transition" ref={pagesRef}>
-                   <button 
-                      onClick={() => { setPagesMenu(!pagesMenu); setCategoryMenu(false); }}
-                      className="flex items-center gap-1"
-                   >
-                     More <ChevronDown size={14} />
-                   </button>
-                   {pagesMenu && (
-                    <div className="absolute top-full right-auto mt-0 w-44 bg-white shadow-xl z-50 border border-gray-100">
-                      <NavLink to="/about" onClick={() => setPagesMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">About</NavLink>
-                      <NavLink to="/contactus" onClick={() => setPagesMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Contact Us</NavLink>
-                      <NavLink to="/termsandconditions" onClick={() => setPagesMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Terms</NavLink>
+                <NavLink
+                  to="/"
+                  className={({ isActive }) =>
+                    isActive ? "text-yellow-400" : "hover:text-yellow-400 transition"
+                  }
+                >
+                  Home
+                </NavLink>
+
+                {categories.slice(0, 7).map((cat) => (
+                  <NavLink
+                    key={cat.id}
+                    to={`/category/${cat.slug || cat.name}`}
+                    className="hover:text-yellow-400 transition whitespace-nowrap"
+                  >
+                    {cat.name}
+                  </NavLink>
+                ))}
+
+                <div className="relative" ref={pagesRef}>
+                  <button
+                    onClick={() => {
+                      setPagesMenu(!pagesMenu);
+                      setCategoryMenu(false);
+                    }}
+                    className="flex items-center gap-1 hover:text-yellow-400 transition"
+                  >
+                    More <ChevronDown size={14} />
+                  </button>
+
+                  {pagesMenu && (
+                    <div className="absolute top-full left-0 w-44 bg-white shadow-xl z-50 border border-gray-100">
+                      <NavLink
+                        to="/about"
+                        onClick={() => setPagesMenu(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        About
+                      </NavLink>
+
+                      <NavLink
+                        to="/contactus"
+                        onClick={() => setPagesMenu(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        Contact Us
+                      </NavLink>
+
+                      <NavLink
+                        to="/termsandconditions"
+                        onClick={() => setPagesMenu(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        Terms
+                      </NavLink>
                     </div>
                   )}
                 </div>
               </div>
-            </div>
 
               {/* Hot Deals */}
+              <div className="flex justify-end">
               <Link to="/shop" className="bg-[#e53935] text-white flex items-center gap-1.5 px-4 py-1.5 rounded text-[13px] font-bold hover:bg-red-700 transition shadow-sm h-8">
                 Hot Deals <span className="text-sm">🔥</span>
               </Link>
+              </div>
 
             </div>
           </PageContainer>
@@ -313,9 +352,9 @@ const Navbar = () => {
       {mobileMenu && (
         <div className="fixed inset-0 z-[100] md:hidden">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileMenu(false)} />
-          
+
           <div className="absolute top-0 left-0 h-full w-[85%] max-w-[320px] bg-white shadow-2xl overflow-y-auto flex flex-col">
-            
+
             {/* Mobile Menu Header */}
             <div className="flex items-center justify-between px-5 py-4 bg-green-800 text-white">
               <div className="flex items-center gap-3">
@@ -335,11 +374,11 @@ const Navbar = () => {
                   <NavLink to="/" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-green-50 hover:text-green-800 transition font-medium">
                     <FiHome size={18} /> Home
                   </NavLink>
-                  
+
                   <NavLink to="/shop" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-green-50 hover:text-green-800 transition font-medium">
                     <FiShoppingBag size={18} /> Shop
                   </NavLink>
-                  
+
                   <button onClick={() => setMobileCategory(true)} className="flex items-center justify-between px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-green-50 hover:text-green-800 transition font-medium w-full">
                     <div className="flex items-center gap-3">
                       <FiGrid size={18} /> Categories
@@ -362,7 +401,7 @@ const Navbar = () => {
                     </div>
                     {cart.length > 0 && <span className="bg-orange-500 text-white px-2 py-0.5 rounded-full text-xs">{cart.length}</span>}
                   </Link>
-                  
+
                   <Link to="/wishlist" onClick={() => setMobileMenu(false)} className="flex items-center justify-between px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-green-50 hover:text-green-800 transition font-medium">
                     <div className="flex items-center gap-3">
                       <Heart size={18} /> Wishlist
