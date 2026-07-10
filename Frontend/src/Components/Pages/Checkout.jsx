@@ -21,6 +21,8 @@ const Checkout = () => {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [distanceInfo, setDistanceInfo] = useState({ loading: false, error: "", distanceKm: null });
+  const [deliveryCharges, setDeliveryCharges] = useState(null);
+  const [deliveryChargeError, setDeliveryChargeError] = useState("");
   const buyNowQuantity = location.state?.quantity || 1;
   const SHOP_ADDRESS =
     "3, 1st St, Mohammed Pura, Flower Bazar, Ambur, Tamil Nadu 635802";
@@ -75,6 +77,54 @@ const Checkout = () => {
   useEffect(() => {
     if (user?.user_id) fetchAddresses();
   }, [user]);
+
+  const fetchDeliveryCharges = async () => {
+    try {
+      const res = await api.get("/delivery-charges");
+      if (res.data && res.data.length > 0) {
+        setDeliveryCharges(res.data[0]);
+        setDeliveryChargeError("");
+      }
+    } catch (error) {
+      console.error("Error fetching delivery charges:", error);
+      setDeliveryChargeError("Unable to fetch delivery charges");
+    }
+  };
+
+  useEffect(() => {
+    fetchDeliveryCharges();
+  }, []);
+
+  const calculateDeliveryCharge = (distanceKm, orderSubtotal) => {
+    if (!deliveryCharges) return { charge: 0, message: "Delivery charges not available" };
+    if (distanceKm === null || distanceKm === undefined) return { charge: 0, message: "" };
+
+    const baseCharge = parseFloat(deliveryCharges.base_delivery_charge) || 0;
+    const perKmCharge = parseFloat(deliveryCharges.per_km_delivery_charge) || 0;
+    const maxDistance = parseFloat(deliveryCharges.maximum_delivery_distance) || 100;
+    const freeDeliveryThreshold = parseFloat(deliveryCharges.free_delivery_minimum_order_amount) || 0;
+
+    // Check if distance exceeds maximum delivery distance
+    if (distanceKm > maxDistance) {
+      return {
+        charge: 0,
+        message: `Delivery not available beyond ${maxDistance} km. Current distance: ${distanceKm} km`,
+        isError: true,
+      };
+    }
+
+    // Apply free delivery if order is above threshold
+    if (orderSubtotal >= freeDeliveryThreshold) {
+      return { charge: 0, message: `Free delivery on orders ₹${freeDeliveryThreshold} and above` };
+    }
+
+    // Calculate delivery charge
+    const calculatedCharge = baseCharge + distanceKm * perKmCharge;
+    return {
+      charge: Math.round(calculatedCharge * 100) / 100,
+      message: `Base ₹${baseCharge} + ${distanceKm}km × ₹${perKmCharge}/km`,
+    };
+  };
 
   const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
     const toRad = (value) => (value * Math.PI) / 180;
@@ -216,7 +266,8 @@ const Checkout = () => {
   });
 
   const subtotal = checkoutItems.reduce((total, item) => total + parseFloat(item.price || 0) * item.quantity, 0);
-  const shipping = 0;
+  const deliveryInfo = calculateDeliveryCharge(distanceInfo.distanceKm, subtotal);
+  const shipping = deliveryInfo.charge;
   const total = subtotal + shipping;
 
   const handleChange = (e) => {
@@ -258,6 +309,8 @@ const Checkout = () => {
         payment_id: paymentId,
         items: orderItems,
         total_amount: total,
+        delivery_charge: shipping,
+        distance_km: distanceInfo.distanceKm,
         created_at: new Date().toISOString(),
       };
 
@@ -321,6 +374,10 @@ const Checkout = () => {
     }
     if (!checkoutItems.length) {
       alert("No product to checkout");
+      return;
+    }
+    if (deliveryInfo.isError) {
+      toast.error(deliveryInfo.message || "Delivery not available for this location");
       return;
     }
 
@@ -409,6 +466,15 @@ const Checkout = () => {
                           <div>
                             <p className="text-sm text-slate-500">Estimated distance</p>
                             <p className="text-2xl font-bold text-[#0e6827]">{distanceInfo.distanceKm} km</p>
+                            {deliveryCharges && distanceInfo.distanceKm !== null && (
+                              <p className="mt-2 text-xs text-slate-600">
+                                {deliveryInfo.isError ? (
+                                  <span className="text-red-600">{deliveryInfo.message}</span>
+                                ) : (
+                                  <span className="text-green-600">{deliveryInfo.message}</span>
+                                )}
+                              </p>
+                            )}
                           </div>
                           <button type="button" onClick={detectDistanceToShop} className="rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
                             Fetch location
@@ -525,9 +591,22 @@ const Checkout = () => {
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
 
                   <div className="mt-6 space-y-3 text-sm text-slate-600">
-                    <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal}</span></div>
-                    <div className="flex justify-between"><span>Shipping</span><span className="font-semibold text-green-600">Free</span></div>
-                    <div className="flex justify-between border-t border-gray-100 pt-3 text-base font-semibold text-slate-800"><span>Total</span><span className="text-[#0e6827]">₹{total}</span></div>
+                    <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
+                    <div className="flex justify-between">
+                      <span>Shipping</span>
+                      <span className={shipping === 0 ? "font-semibold text-green-600" : "font-semibold text-slate-800"}>
+                        {shipping === 0 ? "Free" : `₹${shipping.toFixed(2)}`}
+                      </span>
+                    </div>
+                    {deliveryInfo.message && (
+                      <div className={`text-xs ${deliveryInfo.isError ? "text-red-600" : "text-green-600"}`}>
+                        {deliveryInfo.message}
+                      </div>
+                    )}
+                    <div className="flex justify-between border-t border-gray-100 pt-3 text-base font-semibold text-slate-800">
+                      <span>Total</span>
+                      <span className="text-[#0e6827]">₹{total.toFixed(2)}</span>
+                    </div>
                   </div>
 
                   <div className="mt-6 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">

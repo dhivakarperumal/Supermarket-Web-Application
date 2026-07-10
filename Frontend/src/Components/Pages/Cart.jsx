@@ -142,7 +142,7 @@ export default function CartPage() {
                   <div className="rounded-[1.25rem] bg-linear-to-r from-[#0e6827] via-[#168637] to-[#ffc107] p-5 text-white">
                     <p className="text-sm font-semibold uppercase tracking-[0.25em] text-white/80">Order summary</p>
                     <h2 className="mt-2 text-2xl font-bold">Ready to checkout?</h2>
-                    <p className="mt-2 text-sm text-white/85">Free shipping on every order in this store.</p>
+                    <p className="mt-2 text-sm text-white/85">Delivery charges calculated at checkout based on location.</p>
                   </div>
 
                   <div className="mt-6 space-y-3 text-sm text-slate-600">

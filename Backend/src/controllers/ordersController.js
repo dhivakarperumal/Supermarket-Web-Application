@@ -42,7 +42,9 @@ const initOrdersTable = async () => {
             "ALTER TABLE orders ADD COLUMN courier_name VARCHAR(255)",
             "ALTER TABLE orders ADD COLUMN shipped_at DATETIME",
             "ALTER TABLE orders ADD COLUMN cancellation_reason TEXT",
-            "ALTER TABLE orders ADD COLUMN cancelled_at DATETIME"
+            "ALTER TABLE orders ADD COLUMN cancelled_at DATETIME",
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_charge DECIMAL(10, 2) DEFAULT 0.00",
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS distance_km DECIMAL(8, 2) DEFAULT NULL"
         ];
         for (const sql of extraAlters) {
             try { await connection.query(sql); } catch (e) { /* ignore if exists */ }
@@ -91,7 +93,7 @@ const createOrder = async (req, res) => {
             user_id, customer_name, customer_phone, customer_email,
             order_type, payment_method, payment_status, payment_id,
             shipping_address, street_address, city, district, state, zip_code, country,
-            total_amount, status, items
+            total_amount, status, items, delivery_charge, distance_km
         } = req.body;
 
         const order_id = 'ORD-' + Date.now() + Math.floor(Math.random() * 1000);
@@ -107,8 +109,8 @@ const createOrder = async (req, res) => {
         await connection.beginTransaction();
 
         await connection.query(`
-            INSERT INTO orders (order_id, user_id, customer_name, customer_phone, customer_email, order_type, payment_method, payment_status, payment_id, shipping_address, total_amount, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO orders (order_id, user_id, customer_name, customer_phone, customer_email, order_type, payment_method, payment_status, payment_id, shipping_address, total_amount, status, delivery_charge, distance_km)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             order_id,
             user_id || null,
@@ -121,7 +123,9 @@ const createOrder = async (req, res) => {
             payment_id || null,
             shippingData,
             total_amount,
-            status || 'Paid'
+            status || 'Paid',
+            delivery_charge || 0,
+            distance_km || null
         ]);
 
         if (items && items.length > 0) {
