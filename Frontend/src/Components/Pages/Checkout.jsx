@@ -20,7 +20,17 @@ const Checkout = () => {
   const buyNowSize = location.state?.size;
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [distanceInfo, setDistanceInfo] = useState({ loading: false, error: "", distanceKm: null });
+  const [deliveryCharges, setDeliveryCharges] = useState(null);
+  const [deliveryChargeError, setDeliveryChargeError] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
   const buyNowQuantity = location.state?.quantity || 1;
+  const SHOP_ADDRESS =
+    "NH 179A, Salem - Tirupattur - Vaniyambadi Rd, Thiruppathur, Tamil Nadu 635601 ";
+  const SHOP_COORDINATES = { lat: 12.4968, lng: 78.5663 };
 
   const fetchAddresses = async () => {
     try {
@@ -68,6 +78,280 @@ const Checkout = () => {
   useEffect(() => {
     if (user?.user_id) fetchAddresses();
   }, [user]);
+
+  const fetchDeliveryCharges = async () => {
+    try {
+      const res = await api.get("/delivery-charges");
+      console.log("Delivery charges API response:", res.data);
+
+      let chargesData = null;
+      // API returns { success: true, data: settings }
+      if (res.data?.data) {
+        chargesData = res.data.data;
+      } else if (res.data && !res.data.success) {
+        // Fallback: handle both array and object responses
+        if (Array.isArray(res.data)) {
+          chargesData = res.data.length > 0 ? res.data[0] : null;
+        } else if (typeof res.data === 'object') {
+          chargesData = res.data;
+        }
+      }
+
+      if (chargesData && chargesData.id) {
+        setDeliveryCharges(chargesData);
+        console.log("Delivery charges set to:", chargesData);
+        setDeliveryChargeError("");
+      } else {
+        console.warn("No delivery charges data found");
+        setDeliveryChargeError("No delivery charges configured");
+      }
+    } catch (error) {
+      console.error("Error fetching delivery charges:", error);
+      setDeliveryChargeError("Unable to fetch delivery charges");
+    }
+  };
+
+  useEffect(() => {
+    fetchDeliveryCharges();
+  }, []);
+
+  // Recalculate delivery charge when distance or charges change
+  useEffect(() => {
+    if (distanceInfo.distanceKm && deliveryCharges) {
+      console.log("Recalculating delivery charge with distance:", distanceInfo.distanceKm, "and charges:", deliveryCharges);
+    }
+  }, [distanceInfo.distanceKm, deliveryCharges]);
+
+  // Check if user is a new customer and auto-apply coupon
+  useEffect(() => {
+    const checkAndApplyNewCustomerCoupon = async () => {
+      try {
+        // Check if user has any previous orders
+        const userOrders = await api.get(`/orders/user/${user?.user_id}`);
+        const isNewCustomer = !userOrders.data || userOrders.data.length === 0;
+        
+        if (isNewCustomer) {
+          // Fetch coupons
+          const couponsRes = await api.get("/coupons");
+          const newCustomerCoupons = couponsRes.data?.coupons?.filter(
+            (c) => c.coupon_scope === "new_customers_only" && c.status === "active"
+          );
+          
+          if (newCustomerCoupons && newCustomerCoupons.length > 0) {
+            const coupon = newCustomerCoupons[0];
+            setAppliedCoupon(coupon);
+            setCouponCode(coupon.code);
+            toast.success(`Welcome! Coupon "${coupon.code}" automatically applied`);
+            console.log("Auto-applied new customer coupon:", coupon);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking new customer status:", error);
+      }
+    };
+    
+    if (user?.user_id) {
+      checkAndApplyNewCustomerCoupon();
+    }
+  }, [user?.user_id]);
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError("Please enter a coupon code");
+      return;
+    }
+
+    setCouponLoading(true);
+    setCouponError("");
+    
+    try {
+      const res = await api.get("/coupons");
+      const coupons = res.data?.coupons || [];
+      
+      const coupon = coupons.find(
+        (c) => c.code.toLowerCase() === couponCode.toLowerCase() && c.status === "active"
+      );
+      
+      if (!coupon) {
+        setCouponError("Invalid or inactive coupon code");
+        setAppliedCoupon(null);
+        setCouponLoading(false);
+        return;
+      }
+
+      // Check expiry
+      if (new Date(coupon.expiry_date) < new Date()) {
+        setCouponError("This coupon has expired");
+        setAppliedCoupon(null);
+        setCouponLoading(false);
+        return;
+      }
+
+      // Check minimum order value
+      if (subtotal < parseFloat(coupon.min_order_value)) {
+        setCouponError(`Minimum order value should be ₹${coupon.min_order_value}`);
+        setAppliedCoupon(null);
+        setCouponLoading(false);
+        return;
+      }
+
+      // Check if new customer coupon
+      if (coupon.coupon_scope === "new_customers_only") {
+        try {
+          const userOrders = await api.get(`/orders/user/${user?.user_id}`);
+          if (userOrders.data && userOrders.data.length > 0) {
+            setCouponError("This coupon is only for new customers");
+            setAppliedCoupon(null);
+            setCouponLoading(false);
+            return;
+          }
+        } catch (err) {
+          console.error("Error checking customer orders:", err);
+        }
+      }
+
+      setAppliedCoupon(coupon);
+      toast.success("Coupon applied successfully!");
+      setCouponError("");
+    } catch (error) {
+      console.error("Error applying coupon:", error);
+      setCouponError("Error validating coupon");
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError("");
+    toast.success("Coupon removed");
+  };
+
+  const calculateDeliveryCharge = (distanceKm, orderSubtotal) => {
+    if (!deliveryCharges) return { charge: 0, message: "Delivery charges not available" };
+    if (distanceKm === null || distanceKm === undefined) return { charge: 0, message: "" };
+
+    const baseCharge = parseFloat(deliveryCharges.base_delivery_charge) || 0;
+    const perKmCharge = parseFloat(deliveryCharges.per_km_delivery_charge) || 0;
+    const maxDistance = parseFloat(deliveryCharges.maximum_delivery_distance) || 100;
+    const freeDeliveryThreshold = parseFloat(deliveryCharges.free_delivery_minimum_order_amount) || 0;
+
+    // Check if distance exceeds maximum delivery distance
+    if (distanceKm > maxDistance) {
+      return {
+        charge: 0,
+        message: `Delivery not available beyond ${maxDistance} km. Current distance: ${distanceKm} km`,
+        isError: true,
+      };
+    }
+
+    // Apply free delivery if order is above threshold
+    if (orderSubtotal >= freeDeliveryThreshold) {
+      return { charge: 0, message: `Free delivery on orders ₹${freeDeliveryThreshold} and above` };
+    }
+
+    // Calculate delivery charge
+    const calculatedCharge = baseCharge + distanceKm * perKmCharge;
+    return {
+      charge: Math.round(calculatedCharge * 100) / 100,
+      message: `Base ₹${baseCharge} + ${distanceKm}km × ₹${perKmCharge}/km`,
+    };
+  };
+
+  const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
+    const toRad = (value) => (value * Math.PI) / 180;
+    const earthRadiusKm = 6371;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadiusKm * c;
+  };
+
+  const detectDistanceToShop = () => {
+    if (!navigator.geolocation) {
+      setDistanceInfo({ loading: false, error: "Location access is not supported by this browser.", distanceKm: null });
+      return;
+    }
+
+    setDistanceInfo((prev) => ({ ...prev, loading: true, error: "" }));
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const userLat = position.coords.latitude;
+          const userLng = position.coords.longitude;
+          const shopLat = SHOP_COORDINATES.lat;
+          const shopLng = SHOP_COORDINATES.lng;
+          const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
+
+          // Fetch fresh delivery charges first
+          let freshCharges = deliveryCharges;
+          try {
+            const res = await api.get("/delivery-charges");
+            if (res.data && res.data.length > 0) {
+              freshCharges = res.data[0];
+              setDeliveryCharges(freshCharges);
+              console.log("Updated delivery charges:", freshCharges);
+            }
+          } catch (error) {
+            console.error("Error fetching delivery charges:", error);
+          }
+
+          const reverseResponse = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${userLat}&lon=${userLng}&addressdetails=1`
+          );
+          const reverseData = await reverseResponse.json();
+          const address = reverseData?.address || {};
+
+          setForm((prev) => ({
+            ...prev,
+            street_address:
+              [address.house_number, address.road, address.pedestrian, address.suburb]
+                .filter(Boolean)
+                .join(" ") || prev.street_address || "",
+            city:
+              address.city ||
+              address.town ||
+              address.village ||
+              address.suburb ||
+              prev.city ||
+              "",
+            district:
+              address.district ||
+              address.county ||
+              address.state_district ||
+              prev.district ||
+              "",
+            state: address.state || prev.state || "",
+            country: address.country || prev.country || "India",
+            zip_code: address.postcode || prev.zip_code || "",
+          }));
+
+          console.log("Distance calculated:", distance, "Delivery charges object:", freshCharges);
+          setDistanceInfo({ loading: false, error: "", distanceKm: Number(distance.toFixed(1)) });
+        } catch (error) {
+          console.error(error);
+          setDistanceInfo({ loading: false, error: "We could not calculate the distance right now.", distanceKm: null });
+        }
+      },
+      (error) => {
+        let message = "We could not access your location.";
+        if (error.code === 1) message = "Location permission was denied. Please allow location access to see the distance.";
+        else if (error.code === 2) message = "Your location is currently unavailable.";
+        else if (error.code === 3) message = "Location request timed out.";
+
+        setDistanceInfo({ loading: false, error: message, distanceKm: null });
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
 
   const indianStates = [
     "Andhra Pradesh",
@@ -130,8 +414,21 @@ const Checkout = () => {
   });
 
   const subtotal = checkoutItems.reduce((total, item) => total + parseFloat(item.price || 0) * item.quantity, 0);
-  const shipping = 0;
-  const total = subtotal + shipping;
+  const deliveryInfo = calculateDeliveryCharge(distanceInfo.distanceKm, subtotal);
+  const shipping = deliveryInfo.charge;
+  
+  // Calculate coupon discount
+  let discountAmount = 0;
+  if (appliedCoupon) {
+    if (appliedCoupon.discount_type === "percentage") {
+      discountAmount = (subtotal * parseFloat(appliedCoupon.discount_value)) / 100;
+    } else {
+      discountAmount = parseFloat(appliedCoupon.discount_value);
+    }
+    discountAmount = Math.round(discountAmount * 100) / 100;
+  }
+  
+  const total = Math.round((subtotal - discountAmount + shipping) * 100) / 100;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -172,6 +469,11 @@ const Checkout = () => {
         payment_id: paymentId,
         items: orderItems,
         total_amount: total,
+        delivery_charge: shipping,
+        distance_km: distanceInfo.distanceKm,
+        coupon_code: appliedCoupon?.code || null,
+        coupon_discount: discountAmount || 0,
+        subtotal_before_discount: subtotal,
         created_at: new Date().toISOString(),
       };
 
@@ -237,6 +539,10 @@ const Checkout = () => {
       alert("No product to checkout");
       return;
     }
+    if (deliveryInfo.isError) {
+      toast.error(deliveryInfo.message || "Delivery not available for this location");
+      return;
+    }
 
     try {
       if (paymentMethod === "cod") {
@@ -285,7 +591,7 @@ const Checkout = () => {
       <div className="min-h-screen bg-[#f7f8f3] py-8 sm:py-10">
         <PageContainer>
           <div className="mx-auto ">
-            <div className="mb-8 rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+            {/* <div className="mb-8 rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-700">Secure checkout</p>
@@ -294,11 +600,69 @@ const Checkout = () => {
                 </div>
                 <div className="rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-[#0e6827]">{checkoutItems.length} item{checkoutItems.length === 1 ? "" : "s"}</div>
               </div>
-            </div>
+            </div> */}
 
             <div className="grid gap-8 lg:grid-cols-[1.6fr_0.9fr]">
               <div className="space-y-6">
-                {addresses.length > 0 && (
+                <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+                  <div className="mb-4 flex items-center gap-2">
+                    <FiMapPin className="text-[#0e6827]" />
+                    <h2 className="text-lg font-semibold text-slate-800">Delivery Distance</h2>
+                  </div>
+                  <p className="text-sm text-slate-500">Click the button below to fetch your current location and estimate the distance to our shop.</p>
+
+
+                  <div className="mb-4 rounded-lg bg-blue-50 p-3 text-sm">
+                    <p className="text-slate-700">
+                      <span className="font-semibold">Max Delivery Distance:</span> {deliveryCharges?.maximum_delivery_distance || "N/A"} km
+                    </p>
+                  </div>
+
+                  <div className="mt-4 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">
+                    {!distanceInfo.distanceKm && !distanceInfo.error && !distanceInfo.loading ? (
+                      <div className="flex flex-col gap-3">
+                        <p className="text-sm text-slate-600">No location fetched yet.</p>
+                        <button type="button" onClick={detectDistanceToShop} className="w-fit rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
+                          Fetch location
+                        </button>
+                      </div>
+                    ) : distanceInfo.loading ? (
+                      <p className="text-sm text-slate-600">Fetching your current location...</p>
+                    ) : distanceInfo.distanceKm !== null ? (
+                      <>
+                        <p className="text-sm text-slate-600">Shop address</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-800">{SHOP_ADDRESS}</p>
+                        <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
+                          <div>
+                            <p className="text-sm text-slate-500">Estimated distance</p>
+                            <p className="text-2xl font-bold text-[#0e6827]">{distanceInfo.distanceKm} km</p>
+                            {deliveryCharges && distanceInfo.distanceKm !== null && (
+                              <p className="mt-2 text-xs text-slate-600">
+                                {deliveryInfo.isError ? (
+                                  <span className="text-red-600">{deliveryInfo.message}</span>
+                                ) : (
+                                  <span className="text-green-600">{deliveryInfo.message}</span>
+                                )}
+                              </p>
+                            )}
+                          </div>
+                          <button type="button" onClick={detectDistanceToShop} className="rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
+                            Fetch location
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-slate-600">{distanceInfo.error || "We could not calculate the distance right now."}</p>
+                        <button type="button" onClick={detectDistanceToShop} className="mt-3 rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
+                          Fetch location
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* {addresses.length > 0 && (
                   <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
                     <div className="mb-4 flex items-center gap-2">
                       <FiMapPin className="text-[#0e6827]" />
@@ -328,7 +692,7 @@ const Checkout = () => {
                       ))}
                     </div>
                   </div>
-                )}
+                )} */}
 
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
                   <div className="mb-4 flex items-center gap-2">
@@ -395,16 +759,69 @@ const Checkout = () => {
 
               <aside className="lg:sticky lg:top-24">
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-                  <div className="rounded-[1.25rem] bg-gradient-to-r from-[#0e6827] via-[#168637] to-[#ffc107] p-5 text-white">
-                    <p className="text-sm font-semibold uppercase tracking-[0.25em] text-white/80">Order summary</p>
-                    <h2 className="mt-2 text-2xl font-bold">Almost there</h2>
-                    <p className="mt-2 text-sm text-white/85">Your order is secured with a clean and simple checkout flow.</p>
-                  </div>
 
                   <div className="mt-6 space-y-3 text-sm text-slate-600">
-                    <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal}</span></div>
-                    <div className="flex justify-between"><span>Shipping</span><span className="font-semibold text-green-600">Free</span></div>
-                    <div className="flex justify-between border-t border-gray-100 pt-3 text-base font-semibold text-slate-800"><span>Total</span><span className="text-[#0e6827]">₹{total}</span></div>
+                    <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
+                    <div className="flex justify-between">
+                      <span>Delivery Charges</span>
+                      <span className={shipping === 0 ? "font-semibold text-green-600" : "font-semibold text-slate-800"}>
+                        {shipping === 0 ? "Free" : `₹${shipping.toFixed(2)}`}
+                      </span>
+                    </div>
+                    {deliveryInfo.message && (
+                      <div className={`text-xs ${deliveryInfo.isError ? "text-red-600" : "text-green-600"}`}>
+                        {deliveryInfo.message}
+                      </div>
+                    )}
+                    {appliedCoupon && (
+                      <div className="flex justify-between">
+                        <span>Discount ({appliedCoupon.code})</span>
+                        <span className="font-semibold text-green-600">-₹{discountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between border-t border-gray-100 pt-3 text-base font-semibold text-slate-800">
+                      <span>Total</span>
+                      <span className="text-[#0e6827]">₹{total.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">
+                    <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#0e6827]">
+                      🎟️
+                      <span>Apply Coupon</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Enter coupon code"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        disabled={appliedCoupon !== null}
+                        className="flex-1 rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[#0e6827] focus:ring-2 focus:ring-green-100 disabled:bg-gray-100"
+                      />
+                      {appliedCoupon ? (
+                        <button
+                          onClick={removeCoupon}
+                          className="rounded-xl bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100"
+                        >
+                          Remove
+                        </button>
+                      ) : (
+                        <button
+                          onClick={applyCoupon}
+                          disabled={couponLoading}
+                          className="rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:bg-gray-400"
+                        >
+                          {couponLoading ? "Applying..." : "Apply"}
+                        </button>
+                      )}
+                    </div>
+                    {couponError && <p className="mt-2 text-xs text-red-600">{couponError}</p>}
+                    {appliedCoupon && (
+                      <p className="mt-2 text-xs text-green-600">
+                        ✓ Coupon applied: {appliedCoupon.discount_value}% off
+                      </p>
+                    )}
                   </div>
 
                   <div className="mt-6 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">

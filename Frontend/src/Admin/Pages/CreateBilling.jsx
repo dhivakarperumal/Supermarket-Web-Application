@@ -4,14 +4,14 @@ import {
     FiSearch, FiPhone, FiCheckCircle, FiMic, FiMaximize, FiLayers, FiCamera, FiX
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../PrivateRouter/AuthContext";
+import { useAuth } from "../../PrivateRouter/AuthContext";
 import api from "../../api";
 import { toast } from "react-hot-toast";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
 const CreateBilling = () => {
     const navigate = useNavigate();
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     const barcodeInputRef = useRef(null);
     const [loading, setLoading] = useState(false);
 

@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { AuthContext } from "../../PrivateRouter/AuthContext";
+import { useAuth } from "../../PrivateRouter/AuthContext";
 import api from "../../api";
 import { toast, Toaster } from "react-hot-toast";
 import {
@@ -163,7 +163,7 @@ const InfoRow = ({ icon, iconBg, iconColor, label, value }) => (
 
 /* ─── Profile Page ────────────────────────────────────── */
 const Profile = () => {
-    const { user, login } = useContext(AuthContext);
+    const { user, login } = useAuth();
 
     const [isPwdModalOpen, setIsPwdModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
