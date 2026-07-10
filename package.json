@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "lucide-react": "^1.23.0",
-    "react-select": "^5.10.2"
+    "react-select": "^5.10.2",
+    "recharts": "^3.9.2"
   }
 }

@@ -95,13 +95,43 @@ const Checkout = () => {
     setDistanceInfo((prev) => ({ ...prev, loading: true, error: "" }));
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         try {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
           const shopLat = SHOP_COORDINATES.lat;
           const shopLng = SHOP_COORDINATES.lng;
           const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
+
+          const reverseResponse = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${userLat}&lon=${userLng}&addressdetails=1`
+          );
+          const reverseData = await reverseResponse.json();
+          const address = reverseData?.address || {};
+
+          setForm((prev) => ({
+            ...prev,
+            street_address:
+              [address.house_number, address.road, address.pedestrian, address.suburb]
+                .filter(Boolean)
+                .join(" ") || prev.street_address || "",
+            city:
+              address.city ||
+              address.town ||
+              address.village ||
+              address.suburb ||
+              prev.city ||
+              "",
+            district:
+              address.district ||
+              address.county ||
+              address.state_district ||
+              prev.district ||
+              "",
+            state: address.state || prev.state || "",
+            country: address.country || prev.country || "India",
+            zip_code: address.postcode || prev.zip_code || "",
+          }));
 
           setDistanceInfo({ loading: false, error: "", distanceKm: Number(distance.toFixed(1)) });
         } catch (error) {
@@ -337,7 +367,7 @@ const Checkout = () => {
       <div className="min-h-screen bg-[#f7f8f3] py-8 sm:py-10">
         <PageContainer>
           <div className="mx-auto ">
-            <div className="mb-8 rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+            {/* <div className="mb-8 rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-700">Secure checkout</p>
@@ -346,7 +376,7 @@ const Checkout = () => {
                 </div>
                 <div className="rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-[#0e6827]">{checkoutItems.length} item{checkoutItems.length === 1 ? "" : "s"}</div>
               </div>
-            </div>
+            </div> */}
 
             <div className="grid gap-8 lg:grid-cols-[1.6fr_0.9fr]">
               <div className="space-y-6">
@@ -392,7 +422,7 @@ const Checkout = () => {
                   </div>
                 </div>
 
-                {addresses.length > 0 && (
+                {/* {addresses.length > 0 && (
                   <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
                     <div className="mb-4 flex items-center gap-2">
                       <FiMapPin className="text-[#0e6827]" />
@@ -422,7 +452,7 @@ const Checkout = () => {
                       ))}
                     </div>
                   </div>
-                )}
+                )} */}
 
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
                   <div className="mb-4 flex items-center gap-2">
