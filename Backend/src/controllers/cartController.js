@@ -45,6 +45,7 @@ const initCartTable = async () => {
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 user_id VARCHAR(100) NOT NULL,
                 product_id INT NOT NULL,
+                category_id INT DEFAULT NULL,
                 variant_color VARCHAR(100) DEFAULT NULL,
                 variant_size VARCHAR(100) DEFAULT NULL,
                 image TEXT DEFAULT NULL,
@@ -55,6 +56,15 @@ const initCartTable = async () => {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        
+        // Add category_id column if it doesn't exist (safe migration)
+        try {
+            await connection.query(`
+                ALTER TABLE cart ADD COLUMN category_id INT DEFAULT NULL
+            `);
+        } catch (e) {
+            // Column may already exist
+        }
     } catch (e) {
         console.error("Error creating cart table:", e);
     } finally {
@@ -83,7 +93,7 @@ const addToCart = async (req, res) => {
     try {
         await initCartTable();
         const pool = getPool();
-        const { user_id, product_id, variant_color, variant_size, image, email, price, quantity, total_price } = req.body;
+        const { user_id, product_id, category_id, variant_color, variant_size, image, email, price, quantity, total_price } = req.body;
         
         // Check if item already exists in cart with same variants
         const [existing] = await pool.query(
@@ -103,10 +113,10 @@ const addToCart = async (req, res) => {
         } else {
             // Insert new item
             await pool.query(`
-                INSERT INTO cart (user_id, product_id, variant_color, variant_size, image, email, price, quantity, total_price)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO cart (user_id, product_id, category_id, variant_color, variant_size, image, email, price, quantity, total_price)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
-                user_id, product_id, variant_color || null, variant_size || null, image || null, email || null, price, quantity || 1, total_price || price
+                user_id, product_id, category_id || null, variant_color || null, variant_size || null, image || null, email || null, price, quantity || 1, total_price || price
             ]);
         }
         

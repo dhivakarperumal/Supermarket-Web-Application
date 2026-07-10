@@ -38,19 +38,32 @@ const createProduct = async (req, res) => {
     try {
       await createProductTable();
 
+      let finalCategoryId = data.category_id || null;
+      if (!finalCategoryId && data.category) {
+        try {
+          const [catRows] = await connection.execute("SELECT id FROM categories WHERE name = ? LIMIT 1", [data.category]);
+          if (catRows.length > 0) {
+            finalCategoryId = catRows[0].id;
+          }
+        } catch (err) {
+          console.warn("Failed to lookup category_id:", err.message);
+        }
+      }
+
       const [result] = await connection.execute(
         `INSERT INTO products (
-          name, product_code, barcode, barcode_image, category, subcategory, brand, description,
+          name, product_code, barcode, barcode_image, category, category_id, subcategory, brand, description,
           mrp, selling_price, offer, offer_price, stock_quantity, pricing_options, total_stock,
           expiry_date, manufacturing_date, country_of_origin, supplier, product_images, thumbnail_image,
           status, featured_product, best_seller, todays_deal, delivery_time, return_available, rating, review_count
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           data.name,
           data.product_code || "",
           data.barcode || "",
           data.barcode_image || "",
           data.category || "",
+          finalCategoryId,
           data.subcategory || "",
           data.brand || "",
           data.description || "",
@@ -246,9 +259,24 @@ const updateProduct = async (req, res) => {
         return res.status(404).json({ success: false, message: "Product not found." });
       }
 
+      let finalCategoryId = data.category_id || null;
+      if (!finalCategoryId && data.category) {
+        try {
+          const [catRows] = await connection.execute("SELECT id FROM categories WHERE name = ? LIMIT 1", [data.category]);
+          if (catRows.length > 0) {
+            finalCategoryId = catRows[0].id;
+          }
+        } catch (err) {
+          console.warn("Failed to lookup category_id:", err.message);
+        }
+      }
+      if (!finalCategoryId) {
+        finalCategoryId = existingRows[0].category_id || null;
+      }
+
       await connection.execute(
         `UPDATE products SET 
-          name = ?, product_code = ?, barcode = ?, barcode_image = ?, category = ?, subcategory = ?, brand = ?, description = ?,
+          name = ?, product_code = ?, barcode = ?, barcode_image = ?, category = ?, category_id = ?, subcategory = ?, brand = ?, description = ?,
           mrp = ?, selling_price = ?, offer = ?, offer_price = ?, stock_quantity = ?, pricing_options = ?, total_stock = ?,
           expiry_date = ?, manufacturing_date = ?, country_of_origin = ?, supplier = ?, product_images = ?, thumbnail_image = ?,
           status = ?, featured_product = ?, best_seller = ?, todays_deal = ?, delivery_time = ?, return_available = ?, rating = ?, review_count = ?,
@@ -260,6 +288,7 @@ const updateProduct = async (req, res) => {
           data.barcode || "",
           data.barcode_image || existingRows[0].barcode_image,
           data.category || "",
+          finalCategoryId,
           data.subcategory || "",
           data.brand || "",
           data.description || "",

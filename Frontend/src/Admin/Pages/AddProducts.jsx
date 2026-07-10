@@ -476,9 +476,11 @@ const AddProducts = () => {
 
     setLoading(true);
     try {
+      const selectedCategory = categories.find(c => c.name === formData.category);
       const finalData = {
         ...formData,
         category: formData.category || "General",
+        category_id: selectedCategory ? selectedCategory.id : null,
         pricing_options: Array.isArray(formData.pricing_options)
           ? formData.pricing_options
           : [],
