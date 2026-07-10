@@ -132,9 +132,8 @@ const getProductsReport = async (req, res) => {
     // Products with sales data joined
     const [products] = await pool.query(
       `SELECT 
-        p.id,
-        po.status AS status, p.name, p.product_code, p.category, p.brand,
-        p.selling_price, p.mrp, p.stock_quantity AS stock, 
+        p.id, p.name, p.product_code, p.category, p.brand,
+        p.selling_price, p.mrp, p.stock_quantity AS stock, p.status,
         p.total_stock, p.expiry_date,
         COALESCE(SUM(oi.quantity), 0) AS total_sold,
         COALESCE(SUM(oi.total), 0) AS total_revenue
