@@ -105,6 +105,7 @@ const getCategories = async (req, res) => {
         ...row,
         subcategory: parseJsonField(row.subcategory),
         images: parseJsonField(row.images),
+        show_in_navbar: row.show_in_navbar === 1 || row.show_in_navbar === true,
       }));
 
       return res.status(200).json(categories);
@@ -247,10 +248,49 @@ const deleteCategory = async (req, res) => {
   }
 };
 
+// PATCH /categories/navbar
+// Body: { catIds: ["CAT001", "CAT002"] }  — the list of catIds that SHOULD appear in navbar
+// All others are hidden.
+const updateNavbarVisibility = async (req, res) => {
+  try {
+    const { catIds } = req.body || {};
+    if (!Array.isArray(catIds)) {
+      return res.status(400).json({ success: false, message: "catIds must be an array." });
+    }
+
+    const pool = getPool();
+    const connection = await pool.getConnection();
+
+    try {
+      await createCategoryTable();
+
+      // Set all to hidden first
+      await connection.execute("UPDATE categories SET show_in_navbar = 0");
+
+      // Then enable only the selected ones
+      if (catIds.length > 0) {
+        const placeholders = catIds.map(() => "?").join(",");
+        await connection.execute(
+          `UPDATE categories SET show_in_navbar = 1 WHERE catId IN (${placeholders})`,
+          catIds
+        );
+      }
+
+      return res.status(200).json({ success: true, message: "Navbar visibility updated." });
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error("Update navbar visibility failed:", error);
+    return res.status(500).json({ success: false, message: "Failed to update navbar visibility." });
+  }
+};
+
 module.exports = {
   createCategory,
   getCategories,
   getCategory,
   updateCategory,
   deleteCategory,
+  updateNavbarVisibility,
 };

@@ -67,13 +67,15 @@ const Navbar = () => {
 
   }, []);
 
-  // Fetch categories
+  // Fetch categories — only show those marked show_in_navbar
   useEffect(() => {
 
     const fetchCategories = async () => {
       try {
         const res = await api.get("/categories");
-        setCategories(res.data);
+        // Filter: only show categories where show_in_navbar is true (or not set, default visible)
+        const visible = res.data.filter(c => c.show_in_navbar !== false);
+        setCategories(visible);
       } catch (error) {
         console.error(error);
       }

@@ -14,10 +14,24 @@ const createCategoryTable = async () => {
         description TEXT,
         subcategory JSON,
         images JSON,
+        show_in_navbar TINYINT(1) NOT NULL DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
     `);
+
+    // Add column to existing tables that were created before this migration
+    try {
+      await connection.query(
+        "ALTER TABLE categories ADD COLUMN show_in_navbar TINYINT(1) NOT NULL DEFAULT 1"
+      );
+    } catch (e) {
+      // Column already exists — safe to ignore
+      if (!e.message.includes("Duplicate column")) {
+        // Only log truly unexpected errors
+        // console.warn("show_in_navbar alter:", e.message);
+      }
+    }
   } finally {
     connection.release();
   }

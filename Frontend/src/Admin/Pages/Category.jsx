@@ -13,7 +13,10 @@ import {
     FiGrid,
     FiList,
     FiChevronLeft,
-    FiChevronRight
+    FiChevronRight,
+    FiEye,
+    FiEyeOff,
+    FiSliders
 } from "react-icons/fi";
 import imageCompression from "browser-image-compression";
 import { toast, Toaster } from "react-hot-toast";
@@ -55,6 +58,37 @@ const Category = () => {
         subcategory: "",
         image: ""
     });
+
+    // ---- Navbar Visibility Popup ----
+    const [navbarPopupOpen, setNavbarPopupOpen] = useState(false);
+    const [navbarChecked, setNavbarChecked] = useState({});  // { catId: true/false }
+    const [navbarSaving, setNavbarSaving] = useState(false);
+
+    const openNavbarPopup = () => {
+        // Initialise checkboxes from current categories state
+        const initial = {};
+        categories.forEach(c => { initial[c.catId] = c.show_in_navbar !== false; });
+        setNavbarChecked(initial);
+        setNavbarPopupOpen(true);
+    };
+
+    const saveNavbarVisibility = async () => {
+        setNavbarSaving(true);
+        try {
+            const visibleIds = Object.entries(navbarChecked)
+                .filter(([, v]) => v)
+                .map(([k]) => k);
+            await api.patch("/categories/navbar", { catIds: visibleIds });
+            // Reflect in local state so UI is immediately consistent
+            setCategories(prev => prev.map(c => ({ ...c, show_in_navbar: navbarChecked[c.catId] !== false })));
+            toast.success("Navbar visibility saved!");
+            setNavbarPopupOpen(false);
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to save navbar settings.");
+        } finally {
+            setNavbarSaving(false);
+        }
+    };
 
     // Subcategories Multiple Input Logic
     const [subcategories, setSubcategories] = useState([]);
@@ -261,9 +295,6 @@ const Category = () => {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-4">
-                    {/* Search Bar */}
-
-
                     {/* View Toggles */}
                     <div className="flex items-center bg-gray-100 p-2 rounded-xl">
                         <button
@@ -279,6 +310,14 @@ const Category = () => {
                             <FiList />
                         </button>
                     </div>
+
+                    {/* Manage Navbar Button */}
+                    <button
+                        onClick={openNavbarPopup}
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-5 py-3 rounded-xl font-bold transition-all active:scale-95"
+                    >
+                        <FiSliders className="text-lg" /> Manage Navbar
+                    </button>
 
                     {/* Add Button */}
                     <button
@@ -664,6 +703,119 @@ const Category = () => {
                                 className="px-8 py-3 bg-[#1b7f29] hover:bg-[#166321] disabled:bg-blue-400 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-blue-200 active:scale-95 flex items-center gap-2"
                             >
                                 {isEditing ? 'Update Category' : 'Save Category'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            , document.body)}
+
+            {/* ─── Manage Navbar Visibility Popup ─── */}
+            {navbarPopupOpen && ReactDOM.createPortal(
+                <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 p-4">
+                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
+
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100 shrink-0">
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                    <FiSliders className="text-indigo-500" /> Manage Navbar Categories
+                                </h2>
+                                <p className="text-xs text-gray-400 mt-1">✅ Checked categories appear in the navbar • ☐ Unchecked are hidden</p>
+                            </div>
+                            <button onClick={() => setNavbarPopupOpen(false)} className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-colors">
+                                <FiX className="text-xl" />
+                            </button>
+                        </div>
+
+                        {/* Select All / Deselect All */}
+                        <div className="px-6 pt-4 pb-2 flex items-center justify-between shrink-0">
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                                {Object.values(navbarChecked).filter(Boolean).length} of {categories.length} selected
+                            </span>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => {
+                                        const all = {};
+                                        categories.forEach(c => { all[c.catId] = true; });
+                                        setNavbarChecked(all);
+                                    }}
+                                    className="text-xs font-bold text-indigo-600 hover:underline"
+                                >Select All</button>
+                                <span className="text-gray-300">|</span>
+                                <button
+                                    onClick={() => {
+                                        const none = {};
+                                        categories.forEach(c => { none[c.catId] = false; });
+                                        setNavbarChecked(none);
+                                    }}
+                                    className="text-xs font-bold text-red-400 hover:underline"
+                                >Deselect All</button>
+                            </div>
+                        </div>
+
+                        {/* Category List */}
+                        <div className="overflow-y-auto flex-1 px-6 pb-4 space-y-2">
+                            {categories.map((cat) => {
+                                const checked = navbarChecked[cat.catId] !== false;
+                                return (
+                                    <label
+                                        key={cat.catId}
+                                        className={`flex items-center gap-4 p-3.5 rounded-2xl border-2 cursor-pointer transition-all select-none ${
+                                            checked
+                                                ? 'border-indigo-400 bg-indigo-50'
+                                                : 'border-gray-100 bg-gray-50 hover:border-gray-200'
+                                        }`}
+                                    >
+                                        {/* Category image thumbnail */}
+                                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-gray-200 flex items-center justify-center shrink-0">
+                                            {cat.images && cat.images.length > 0 ? (
+                                                <img src={Array.isArray(cat.images) ? cat.images[0] : cat.images} alt={cat.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <FiImage className="text-gray-400" />
+                                            )}
+                                        </div>
+
+                                        {/* Name + ID */}
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-bold text-slate-800 truncate">{cat.name}</p>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{cat.catId}</p>
+                                        </div>
+
+                                        {/* Visibility icon */}
+                                        <span className={`shrink-0 ${checked ? 'text-indigo-500' : 'text-gray-300'}`}>
+                                            {checked ? <FiEye size={18} /> : <FiEyeOff size={18} />}
+                                        </span>
+
+                                        {/* Checkbox (hidden, label handles click) */}
+                                        <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            onChange={(e) => setNavbarChecked(prev => ({ ...prev, [cat.catId]: e.target.checked }))}
+                                            className="w-5 h-5 rounded-lg accent-indigo-600 cursor-pointer shrink-0"
+                                        />
+                                    </label>
+                                );
+                            })}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-6 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3 shrink-0">
+                            <button
+                                onClick={() => setNavbarPopupOpen(false)}
+                                className="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-xl transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={saveNavbarVisibility}
+                                disabled={navbarSaving}
+                                className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-200 active:scale-95 flex items-center gap-2"
+                            >
+                                {navbarSaving ? (
+                                    <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Saving…</>
+                                ) : (
+                                    <><FiEye size={15} /> Save Navbar Settings</>
+                                )}
                             </button>
                         </div>
                     </div>
