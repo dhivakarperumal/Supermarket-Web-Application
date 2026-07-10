@@ -14,11 +14,13 @@ import {
     FiUsers,
     FiShield,
     FiStar,
+    FiEye,
     FiClock,
     FiList,
     FiGrid,
     FiRefreshCw
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "react-hot-toast";
 
 
@@ -35,6 +37,7 @@ const Users = ({ initialTab = "All" }) => {
     const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
     const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds
     const [lastUpdated, setLastUpdated] = useState(new Date());
+    const navigate = useNavigate();
 
     const handleSearchChange = (value) => {
         setSearchTerm(value);
@@ -72,6 +75,7 @@ const Users = ({ initialTab = "All" }) => {
                 // Transform data if needed for UI
                 const fetchedUsers = response.data.map(u => ({
                     id: u.id || u.user_id,
+                    user_id: u.user_id || null,
                     username: u.username || u.name || u.user_id,
                     name: u.username || u.name || u.user_id,
                     email: u.email || "",
@@ -108,6 +112,7 @@ const Users = ({ initialTab = "All" }) => {
             const response = await api.get("/auth/users");
             const fetchedUsers = response.data.map(u => ({
                 id: u.id || u.user_id,
+                user_id: u.user_id || null,
                 username: u.username || u.name || u.user_id,
                 name: u.username || u.name || u.user_id,
                 email: u.email || "",
@@ -547,6 +552,13 @@ const Users = ({ initialTab = "All" }) => {
                                                 <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</span>
                                                 <div className="flex items-center justify-end gap-2">
                                                     <button
+                                                        onClick={() => navigate(`/admin/users/${user.id}`)}
+                                                        className="p-2 border border-gray-200 text-gray-500 rounded-lg hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all"
+                                                        title="View User"
+                                                    >
+                                                        <FiEye size={15} />
+                                                    </button>
+                                                    <button
                                                         onClick={() => openEditModal(user)}
                                                         className="p-2 border border-gray-200 text-gray-500 rounded-lg hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all"
                                                         title="Edit User"
@@ -605,6 +617,12 @@ const Users = ({ initialTab = "All" }) => {
                                         </div>
                                     </div>
                                     <div className="mt-5 flex items-center justify-between gap-2">
+                                        <button
+                                            onClick={() => navigate(`/admin/users/${user.id}`)}
+                                            className="w-full py-2 rounded-2xl border border-gray-200 text-gray-500 hover:bg-blue-500 hover:text-white transition-all"
+                                        >
+                                            View
+                                        </button>
                                         <button
                                             onClick={() => openEditModal(user)}
                                             className="w-full py-2 rounded-2xl border border-gray-200 text-gray-500 hover:bg-emerald-500 hover:text-white transition-all"

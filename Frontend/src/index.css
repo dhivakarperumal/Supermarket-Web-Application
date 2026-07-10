@@ -48,6 +48,15 @@ body {
 }
 
 @layer utilities {
+  /* Hide scrollbar while preserving scroll functionality */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   .animate-in {
     animation-duration: 500ms;
     animation-fill-mode: both;
