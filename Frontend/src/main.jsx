@@ -114,7 +114,7 @@ const router = createBrowserRouter([
       { path: "products/:id", element: <ProductDetail /> },
       // Orders
       { path: "orders/create", element: <CreateOrder /> },
-      { path: "orders/new", element: <Orders statusFilter="Order Placed" /> },
+      { path: "orders/new", element: <Orders statusFilter="Order Placed" dateFilter="today" /> },
       { path: "orders/all", element: <Orders statusFilter="All" /> },
       { path: "orders/delivery", element: <Orders statusFilter="Delivered" /> },
       { path: "orders/cancelled", element: <Orders statusFilter="Cancelled" /> },

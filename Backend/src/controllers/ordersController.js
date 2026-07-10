@@ -157,7 +157,17 @@ const getAllOrders = async (req, res) => {
     try {
         await initOrdersTable();
         const pool = getPool();
-        const [orders] = await pool.query("SELECT * FROM orders ORDER BY created_at DESC");
+        const { status } = req.query;
+        let query = "SELECT * FROM orders";
+        let params = [];
+        
+        if (status && status !== "All") {
+            query += " WHERE status = ?";
+            params.push(status);
+        }
+        query += " ORDER BY created_at DESC";
+        
+        const [orders] = await pool.query(query, params);
         res.status(200).json(orders);
     } catch (error) {
         console.error("Error fetching orders:", error);
