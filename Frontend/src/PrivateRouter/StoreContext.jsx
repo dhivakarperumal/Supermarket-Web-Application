@@ -69,11 +69,13 @@ export const StoreProvider = ({ children }) => {
         const variantImage = selectedVariant?.images?.[0] || productImages[0] || null;
         
         const price = parseFloat(product.offer_price || product.price || 0);
+        const categoryId = product.category_id || product.categoryId || null;
 
         try {
             await api.post("/cart", {
                 user_id: user.user_id,
                 product_id: product.id || product.product_id,
+                category_id: categoryId,
                 variant_color: variantColor,
                 variant_size: selectedSize,
                 image: variantImage,
