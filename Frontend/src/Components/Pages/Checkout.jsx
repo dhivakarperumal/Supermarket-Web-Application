@@ -129,14 +129,14 @@ const Checkout = () => {
         // Check if user has any previous orders
         const userOrders = await api.get(`/orders/user/${user?.user_id}`);
         const isNewCustomer = !userOrders.data || userOrders.data.length === 0;
-        
+
         if (isNewCustomer) {
           // Fetch coupons
           const couponsRes = await api.get("/coupons");
           const newCustomerCoupons = couponsRes.data?.coupons?.filter(
             (c) => c.coupon_scope === "new_customers_only" && c.status === "active"
           );
-          
+
           if (newCustomerCoupons && newCustomerCoupons.length > 0) {
             const coupon = newCustomerCoupons[0];
             setAppliedCoupon(coupon);
@@ -149,11 +149,84 @@ const Checkout = () => {
         console.error("Error checking new customer status:", error);
       }
     };
-    
+
     if (user?.user_id) {
       checkAndApplyNewCustomerCoupon();
     }
   }, [user?.user_id]);
+
+  const checkoutItems = buyNowProduct
+    ? [
+      {
+        id: buyNowProduct.id,
+        name: buyNowProduct.name,
+        image: buyNowVariant?.images?.[0] || buyNowProduct?.thumbnail_image || "/placeholder.png",
+        price: buyNowProduct.offer_price || buyNowProduct.price,
+        quantity: buyNowQuantity,
+        size: buyNowSize,
+        colorName: buyNowVariant?.color,
+      },
+    ]
+    : cart;
+
+  // Validate applied coupon when cart changes
+  useEffect(() => {
+    if (!appliedCoupon || checkoutItems.length === 0) return;
+
+    const validateAppliedCoupon = () => {
+      // For specific products coupons
+      if (appliedCoupon.coupon_scope === "specific_products") {
+        try {
+          let applicableProductIds = [];
+          if (typeof appliedCoupon.applicable_product_ids === "string") {
+            applicableProductIds = JSON.parse(appliedCoupon.applicable_product_ids);
+          } else if (Array.isArray(appliedCoupon.applicable_product_ids)) {
+            applicableProductIds = appliedCoupon.applicable_product_ids;
+          }
+
+          const hasApplicableProduct = checkoutItems.some(item => {
+            const itemProductId = item.product_id || item.id;
+            return applicableProductIds.includes(parseInt(itemProductId));
+          });
+
+          if (!hasApplicableProduct) {
+            setCouponError("Applied coupon is no longer valid for your cart");
+            setAppliedCoupon(null);
+            setCouponCode("");
+          }
+        } catch (err) {
+          console.error("Error validating coupon on cart change:", err);
+        }
+      }
+
+      // For specific categories coupons
+      if (appliedCoupon.coupon_scope === "specific_categories") {
+        try {
+          let applicableCategoryIds = [];
+          if (typeof appliedCoupon.applicable_category_ids === "string") {
+            applicableCategoryIds = JSON.parse(appliedCoupon.applicable_category_ids);
+          } else if (Array.isArray(appliedCoupon.applicable_category_ids)) {
+            applicableCategoryIds = appliedCoupon.applicable_category_ids;
+          }
+
+          const hasApplicableCategory = checkoutItems.some(item => {
+            const itemCategoryId = item.category_id || item.categoryId;
+            return itemCategoryId && applicableCategoryIds.includes(parseInt(itemCategoryId));
+          });
+
+          if (!hasApplicableCategory) {
+            setCouponError("Applied coupon is no longer valid for your cart");
+            setAppliedCoupon(null);
+            setCouponCode("");
+          }
+        } catch (err) {
+          console.error("Error validating coupon on cart change:", err);
+        }
+      }
+    };
+
+    validateAppliedCoupon();
+  }, [checkoutItems, appliedCoupon]);
 
   const applyCoupon = async () => {
     if (!couponCode.trim()) {
@@ -163,15 +236,15 @@ const Checkout = () => {
 
     setCouponLoading(true);
     setCouponError("");
-    
+
     try {
       const res = await api.get("/coupons");
       const coupons = res.data?.coupons || [];
-      
+
       const coupon = coupons.find(
         (c) => c.code.toLowerCase() === couponCode.toLowerCase() && c.status === "active"
       );
-      
+
       if (!coupon) {
         setCouponError("Invalid or inactive coupon code");
         setAppliedCoupon(null);
@@ -207,6 +280,68 @@ const Checkout = () => {
           }
         } catch (err) {
           console.error("Error checking customer orders:", err);
+        }
+      }
+
+      // Check if specific products coupon
+      if (coupon.coupon_scope === "specific_products") {
+        try {
+          let applicableProductIds = [];
+
+          // Parse applicable_product_ids - handle both JSON string and array formats
+          if (typeof coupon.applicable_product_ids === "string") {
+            applicableProductIds = JSON.parse(coupon.applicable_product_ids);
+          } else if (Array.isArray(coupon.applicable_product_ids)) {
+            applicableProductIds = coupon.applicable_product_ids;
+          }
+
+          if (applicableProductIds.length > 0) {
+            // Check if any cart item matches the applicable products
+            const hasApplicableProduct = checkoutItems.some(item => {
+              const itemProductId = item.product_id || item.id;
+              return applicableProductIds.includes(parseInt(itemProductId));
+            });
+
+            if (!hasApplicableProduct) {
+              setCouponError(`This coupon is only applicable for specific products. Your cart doesn't contain eligible products.`);
+              setAppliedCoupon(null);
+              setCouponLoading(false);
+              return;
+            }
+          }
+        } catch (err) {
+          console.error("Error parsing product IDs:", err);
+        }
+      }
+
+      // Check if specific categories coupon
+      if (coupon.coupon_scope === "specific_categories") {
+        try {
+          let applicableCategoryIds = [];
+
+          // Parse applicable_category_ids - handle both JSON string and array formats
+          if (typeof coupon.applicable_category_ids === "string") {
+            applicableCategoryIds = JSON.parse(coupon.applicable_category_ids);
+          } else if (Array.isArray(coupon.applicable_category_ids)) {
+            applicableCategoryIds = coupon.applicable_category_ids;
+          }
+
+          if (applicableCategoryIds.length > 0) {
+            // Check if any cart item matches the applicable categories
+            const hasApplicableCategory = checkoutItems.some(item => {
+              const itemCategoryId = item.category_id || item.categoryId;
+              return itemCategoryId && applicableCategoryIds.includes(parseInt(itemCategoryId));
+            });
+
+            if (!hasApplicableCategory) {
+              setCouponError(`This coupon is only applicable for specific categories. Your cart doesn't contain eligible products.`);
+              setAppliedCoupon(null);
+              setCouponLoading(false);
+              return;
+            }
+          }
+        } catch (err) {
+          console.error("Error parsing category IDs:", err);
         }
       }
 
@@ -385,19 +520,7 @@ const Checkout = () => {
     "Delhi",
   ];
 
-  const checkoutItems = buyNowProduct
-    ? [
-      {
-        id: buyNowProduct.id,
-        name: buyNowProduct.name,
-        image: buyNowVariant?.images?.[0] || buyNowProduct?.thumbnail_image || "/placeholder.png",
-        price: buyNowProduct.offer_price || buyNowProduct.price,
-        quantity: buyNowQuantity,
-        size: buyNowSize,
-        colorName: buyNowVariant?.color,
-      },
-    ]
-    : cart;
+
 
   const [form, setForm] = useState({
     user_id: user?.user_id || "",
@@ -416,7 +539,7 @@ const Checkout = () => {
   const subtotal = checkoutItems.reduce((total, item) => total + parseFloat(item.price || 0) * item.quantity, 0);
   const deliveryInfo = calculateDeliveryCharge(distanceInfo.distanceKm, subtotal);
   const shipping = deliveryInfo.charge;
-  
+
   // Calculate coupon discount
   let discountAmount = 0;
   if (appliedCoupon) {
@@ -427,7 +550,7 @@ const Checkout = () => {
     }
     discountAmount = Math.round(discountAmount * 100) / 100;
   }
-  
+
   const total = Math.round((subtotal - discountAmount + shipping) * 100) / 100;
 
   const handleChange = (e) => {
