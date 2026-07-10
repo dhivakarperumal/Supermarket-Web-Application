@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Package,
   ShoppingCart,
+  ShoppingBag,
   Users,
   MessageSquare,
   BarChart3,
@@ -26,6 +27,9 @@ import {
   Gift,
   Star,
   CreditCard,
+  CalendarCheck,
+  FileText,
+  Wallet,
 } from "lucide-react";
 
 import { useAuth } from "../PrivateRouter/AuthContext";
@@ -47,7 +51,20 @@ const navItems = [
     ],
   },
 
- 
+  {
+    label: "Purchases",
+    icon: ShoppingBag,
+    children: [
+      { path: "/admin/purchases/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { path: "/admin/purchases/suppliers", label: "Suppliers", icon: Users },
+      { path: "/admin/purchases/orders", label: "Purchase Orders", icon: FileText },
+      { path: "/admin/purchases/all", label: "Purchase Invoices", icon: ShoppingBag },
+      { path: "/admin/purchases/payments", label: "Payments", icon: CreditCard },
+      { path: "/admin/purchases/returns", label: "Purchase Returns", icon: Archive },
+      { path: "/admin/purchases/reports", label: "Reports", icon: BarChart3 },
+      { path: "/admin/purchases/import", label: "Import/Export", icon: Layers },
+    ],
+  },
 
   {
     label: "Orders",
@@ -66,8 +83,11 @@ const navItems = [
     label: "Employee Management",
     icon: Users,
     children: [
-      { path: "/admin/staff", label: "All Employees", icon: List },
+      { path: "/admin/staff", label: "All Employees", icon: Users },
       { path: "/admin/addstaff", label: "Add Employee", icon: PlusCircle },
+      { path: "/admin/staff/attendance", label: "Attendance", icon: CalendarCheck },
+      { path: "/admin/staff/leave", label: "Leave Management", icon: FileText },
+      { path: "/admin/staff/salary", label: "Salary Management", icon: Wallet },
     ],
   },
 

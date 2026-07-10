@@ -10,6 +10,10 @@ import {
     Calendar, RefreshCw, DollarSign, ShoppingBag, Star,
     Truck, RotateCcw, UserPlus, Clock, Trophy
 } from "lucide-react";
+import {
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
+    PieChart, Pie, Cell
+} from 'recharts';
 
 /* ─────────────── helpers ─────────────── */
 const fmtINR = (v) => {
@@ -31,67 +35,81 @@ const StatusBadge = ({ s }) => {
     return <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${m[s] ?? "bg-gray-100 text-gray-600"}`}>{s}</span>;
 };
 
-/* ─────────────── SVG LINE CHART ─────────────── */
+/* ─────────────── RECHARTS AREA CHART ─────────────── */
+const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="bg-white border border-gray-100 shadow-lg rounded-xl p-3 text-sm">
+                <p className="font-bold text-gray-800 mb-1">{label}</p>
+                <p className="text-[#3a8b28] font-semibold">
+                    Sales: ₹{payload[0].value.toLocaleString("en-IN")}
+                </p>
+            </div>
+        );
+    }
+    return null;
+};
+
 const LineChart = ({ data }) => {
-    const W = 600, H = 140;
-    const vals = data.map(d => d.revenue ?? d.value ?? 0);
-    const max = Math.max(...vals, 1);
-    const pts = vals.map((v, i) => ({
-        x: vals.length > 1 ? (i / (vals.length - 1)) * W : W / 2,
-        y: H - (v / max) * (H - 20) - 4,
+    const chartData = data.map(d => ({
+        name: d.month,
+        Sales: d.revenue ?? d.value ?? 0
     }));
-    const line = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
-    const area = `${line} L${pts[pts.length - 1].x},${H} L0,${H} Z`;
-    // dashed "last week" - slightly lower
-    const pts2 = pts.map(p => ({ x: p.x, y: Math.min(H, p.y + 18) }));
-    const line2 = pts2.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+
     return (
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full" preserveAspectRatio="none">
-            <defs>
-                <linearGradient id="gr" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3a8b28" stopOpacity="0.18" />
-                    <stop offset="100%" stopColor="#3a8b28" stopOpacity="0" />
-                </linearGradient>
-            </defs>
-            {/* grid lines */}
-            {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
-                <line key={i} x1={0} x2={W} y1={H - t * (H - 20) - 4} y2={H - t * (H - 20) - 4}
-                    stroke="#f0f0f0" strokeWidth="1" />
-            ))}
-            <path d={area} fill="url(#gr)" />
-            <path d={line2} fill="none" stroke="#d1d5db" strokeWidth="2" strokeDasharray="6 4" strokeLinecap="round" />
-            <path d={line} fill="none" stroke="#3a8b28" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            {pts.map((p, i) => (
-                <circle key={i} cx={p.x} cy={p.y} r="4" fill="#3a8b28" stroke="#fff" strokeWidth="2" />
-            ))}
-        </svg>
+        <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                    <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3a8b28" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#3a8b28" stopOpacity={0} />
+                    </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af' }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af' }} tickFormatter={(val) => `₹${val/1000}k`} />
+                <RechartsTooltip content={<CustomTooltip />} cursor={{ stroke: '#e5e7eb', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                <Area type="monotone" dataKey="Sales" stroke="#3a8b28" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" activeDot={{ r: 6, strokeWidth: 0, fill: '#3a8b28' }} />
+            </AreaChart>
+        </ResponsiveContainer>
     );
 };
 
-/* ─────────────── SVG DONUT ─────────────── */
+/* ─────────────── RECHARTS DONUT ─────────────── */
 const Donut = ({ segments, center, sub, size = 160 }) => {
     const colors = ["#3a8b28", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
-    const R = 52, C = 2 * Math.PI * R;
-    let off = 0;
+    const data = segments.map((s, i) => ({ name: s.label || s.name || `Segment ${i}`, value: s.pct || s.value || 1 }));
+
     return (
-        <svg width={size} height={size} viewBox="0 0 160 160">
-            <circle cx="80" cy="80" r={R} fill="none" stroke="#f3f4f6" strokeWidth="22" />
-            {segments.map((seg, i) => {
-                const dash = (seg.pct / 100) * C;
-                const el = (
-                    <circle key={i} cx="80" cy="80" r={R} fill="none"
-                        stroke={colors[i % colors.length]} strokeWidth="22"
-                        strokeDasharray={`${dash} ${C - dash}`}
-                        strokeDashoffset={-off}
-                        style={{ transform: "rotate(-90deg)", transformOrigin: "80px 80px" }}
+        <div style={{ width: size, height: size, position: 'relative' }}>
+            <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                    <Pie
+                        data={data}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius="70%"
+                        outerRadius="100%"
+                        stroke="none"
+                        paddingAngle={2}
+                        dataKey="value"
+                    >
+                        {data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                        ))}
+                    </Pie>
+                    <RechartsTooltip 
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
+                        itemStyle={{ color: '#1f2937', fontWeight: 600 }}
+                        formatter={(value) => [`${value}%`, '']}
                     />
-                );
-                off += dash;
-                return el;
-            })}
-            <text x="80" y="75" textAnchor="middle" fontSize="16" fontWeight="800" fill="#1e293b">{center}</text>
-            {sub && <text x="80" y="93" textAnchor="middle" fontSize="10" fill="#94a3b8">{sub}</text>}
-        </svg>
+                </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-lg font-black text-slate-800 leading-tight">{center}</span>
+                {sub && <span className="text-[10px] text-slate-400 font-semibold">{sub}</span>}
+            </div>
+        </div>
     );
 };
 
@@ -820,18 +838,9 @@ const Dashboard = () => {
                             Last Week
                         </span>
                     </div>
-                    {/* Chart with Y axis */}
-                    <div className="flex gap-2 items-stretch">
-                        <div className="flex flex-col justify-between text-[9px] text-gray-400 font-bold shrink-0 py-1 text-right" style={{ height: 130 }}>
-                            {["₹50k", "₹40k", "₹30k", "₹20k", "₹10k", "0"].map(l => <span key={l}>{l}</span>)}
-                        </div>
-                        <div className="flex-1" style={{ height: 130 }}>
-                            <LineChart data={revenueTrends} />
-                        </div>
-                    </div>
-                    {/* X axis */}
-                    <div className="flex justify-between text-[9px] text-gray-400 font-semibold mt-1 pl-8">
-                        {["May 24", "May 25", "May 26", "May 27", "May 28", "May 29", "May 30"].map(d => <span key={d}>{d}</span>)}
+                    {/* Chart Area */}
+                    <div className="w-full mt-2" style={{ height: 200 }}>
+                        <LineChart data={revenueTrends} />
                     </div>
                     {/* Bottom stats */}
                     <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-gray-50">

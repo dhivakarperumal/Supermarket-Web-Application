@@ -8,7 +8,6 @@ import Loader from "../../Components/CommenComponents/Loader";
 
 const Coupons = () => {
   const [coupons, setCoupons] = useState([]);
-  const [chefs, setChefs] = useState([]);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +29,6 @@ const Coupons = () => {
     usage_limit_per_customer: "1",
     status: "active",
     coupon_scope: "all",
-    applicable_home_chef_ids: [],
     applicable_product_ids: [],
     applicable_category_ids: [],
     applicable_subcategory_ids: []
@@ -52,34 +50,20 @@ const Coupons = () => {
 
   const fetchOptions = async () => {
     try {
-      const [chefRes, prodRes, catRes] = await Promise.all([
-        api.get('/admin/homechefs').catch(() => ({ data: [] })),
-        api.get('/chef-foods').catch(() => ({ data: [] })),
-        api.get('/home-chef-categories').catch(() => ({ data: [] }))
+      const [prodRes, catRes] = await Promise.all([
+        api.get('/products').catch(() => ({ data: [] })),
+        api.get('/categories').catch(() => ({ data: [] }))
       ]);
 
-      const allChefs = Array.isArray(chefRes.data) ? chefRes.data : [];
-      const chefList = allChefs.map(c => {
-        const phone = c.phone || c.mobile || c.chef_phone || '';
-        const name = c.name || c.store_name || `Chef ${c.id}`;
-        return { value: c.id, label: phone ? `${name} (${phone})` : name };
-      });
-      setChefs(chefList);
-
       const allFoods = Array.isArray(prodRes.data) ? prodRes.data : [];
-      const prodList = allFoods.map(p => {
-        const phone = p.chef_phone || p.mobile || p.created_by_phone || '';
-        const chefName = p.chef_name || p.kitchen_name || p.created_by || p.franchise_name || `Chef ID: ${p.chef_id || 'Unknown'}`;
-        const productName = p.name || p.food_name || 'Product';
-        return { 
-          value: p.id, 
-          label: `${productName} (${chefName}${phone ? ` - ${phone}` : ''})` 
-        };
-      });
+      const prodList = allFoods.map(p => ({ 
+        value: p.id, 
+        label: p.name || 'Product' 
+      }));
       setProducts(prodList);
 
       const allCategories = Array.isArray(catRes.data) ? catRes.data : [];
-      const catList = allCategories.map(c => ({ value: c.id, label: c.c_name || c.name || `Category ${c.id}` }));
+      const catList = allCategories.map(c => ({ value: c.id, label: c.name || `Category ${c.id}` }));
       setCategories(catList);
     } catch (err) {
       console.error(err);
@@ -114,7 +98,6 @@ const Coupons = () => {
         usage_limit_per_customer: "1",
         status: "active",
         coupon_scope: "all",
-        applicable_home_chef_ids: [],
         applicable_product_ids: [],
         applicable_category_ids: [],
         applicable_subcategory_ids: []
@@ -487,30 +470,9 @@ const Coupons = () => {
                       <option value="all">All Products (Global)</option>
                       <option value="first_order_only">First Order Only</option>
                       <option value="new_customers_only">New Customers Only</option>
-                      <option value="specific_home_chef">Specific Home Chef(s)</option>
                       <option value="specific_products">Specific Product(s)</option>
                       <option value="specific_categories">Specific Category(s)</option>
                     </select>
-
-                    {formData.coupon_scope === 'specific_home_chef' && (
-                      <div className="mb-4 animate-in fade-in zoom-in-95 duration-300">
-                        <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest ml-1 mb-2 block">Select Home Chefs</label>
-                        <Select 
-                          isMulti 
-                          options={chefs} 
-                          value={chefs.filter(c => formData.applicable_home_chef_ids.includes(c.value))}
-                          onChange={(opts) => handleSelectChange(opts, 'applicable_home_chef_ids')}
-                          className="react-select-container text-black"
-                          classNamePrefix="react-select"
-                          placeholder="Search and select chefs..."
-                          styles={{
-                            option: (provided) => ({ ...provided, color: '#000' }),
-                            singleValue: (provided) => ({ ...provided, color: '#000' }),
-                            multiValueLabel: (provided) => ({ ...provided, color: '#000' })
-                          }}
-                        />
-                      </div>
-                    )}
 
                     {formData.coupon_scope === 'specific_products' && (
                       <div className="mb-4 animate-in fade-in zoom-in-95 duration-300">

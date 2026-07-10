@@ -196,6 +196,30 @@ const CreateBilling = () => {
         }
     };
 
+    const getProductImage = (product) => {
+        try {
+            let imgUrl = null;
+            
+            if (product.thumbnail_image) {
+                imgUrl = product.thumbnail_image;
+            }
+            
+            if (!imgUrl && product.product_images) {
+                const images = typeof product.product_images === 'string' ? JSON.parse(product.product_images) : (product.product_images || []);
+                if (Array.isArray(images) && images.length > 0) imgUrl = images[0];
+            }
+
+            if (!imgUrl) return `https://ui-avatars.com/api/?name=${encodeURIComponent(product.name || 'P')}&background=random`;
+            if (imgUrl.startsWith('http') || imgUrl.startsWith('data:')) return imgUrl;
+
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+            const cleanPath = imgUrl.startsWith('/') ? imgUrl : `/${imgUrl}`;
+            return `${backendUrl}${cleanPath}`;
+        } catch (e) {
+            return `https://ui-avatars.com/api/?name=${encodeURIComponent(product.name || 'P')}&background=random`;
+        }
+    };
+
     const handleProductClick = (product) => {
         setSelectedProduct(product);
         if (product.variants && product.variants.length > 0) {
@@ -231,6 +255,7 @@ const CreateBilling = () => {
                 price: price,
                 quantity: 1,
                 total: price,
+                image: getProductImage(product),
                 variant_info: variant ? { weight: variant.quantity, unit: variant.unit } : null
             };
 
@@ -342,6 +367,7 @@ const CreateBilling = () => {
                         price: price,
                         quantity: 1,
                         total: price,
+                        image: getProductImage(p),
                         variant_info: variant ? { weight: variant.quantity, unit: variant.unit } : null
                     };
                     currentItems.push(newItem);
@@ -366,29 +392,6 @@ const CreateBilling = () => {
         setSelectMode(false);
     };
 
-    const getProductImage = (product) => {
-        try {
-            let imgUrl = null;
-            
-            if (product.thumbnail_image) {
-                imgUrl = product.thumbnail_image;
-            }
-            
-            if (!imgUrl && product.product_images) {
-                const images = typeof product.product_images === 'string' ? JSON.parse(product.product_images) : (product.product_images || []);
-                if (Array.isArray(images) && images.length > 0) imgUrl = images[0];
-            }
-
-            if (!imgUrl) return `https://ui-avatars.com/api/?name=${encodeURIComponent(product.name || 'P')}&background=random`;
-            if (imgUrl.startsWith('http') || imgUrl.startsWith('data:')) return imgUrl;
-
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-            const cleanPath = imgUrl.startsWith('/') ? imgUrl : `/${imgUrl}`;
-            return `${backendUrl}${cleanPath}`;
-        } catch (e) {
-            return `https://ui-avatars.com/api/?name=${encodeURIComponent(product.name || 'P')}&background=random`;
-        }
-    };
 
     return (
         <div className="pb-20 p-2 md:p-6 bg-slate-50 min-h-screen">

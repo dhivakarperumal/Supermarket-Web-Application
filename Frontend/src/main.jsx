@@ -37,6 +37,7 @@ const StockDetails = React.lazy(() => import("./Admin/Pages/StockDetails.jsx"));
 const AddStock = React.lazy(() => import("./Admin/Pages/AddStock.jsx"));
 const Orders = React.lazy(() => import("./Admin/Pages/Orders.jsx"));
 const Users = React.lazy(() => import("./Admin/Pages/Users.jsx"));
+const UserDetail = React.lazy(() => import("./Admin/Pages/UserDetail.jsx"));
 const Billing = React.lazy(() => import("./Admin/Pages/Billing.jsx"));
 const CreateBilling = React.lazy(() => import("./Admin/Pages/CreateBilling.jsx"));
 const DealerDashboard = React.lazy(() => import("./Admin/Pages/DealerDashboard.jsx"));
@@ -62,6 +63,21 @@ const ErrorPage = React.lazy(() => import("./Admin/Pages/ErrorPage.jsx"));
 const DealerDetail = React.lazy(() => import("./Admin/Pages/DealerDetail.jsx"));
 const PurchaseOrder = React.lazy(() => import("./Admin/Pages/PurchaseOrder.jsx"));
 const DealerProductMapping = React.lazy(() => import("./Admin/Pages/DealerProductMapping.jsx"));
+const Attendance = React.lazy(() => import("./Admin/Staff/Attendance.jsx"));
+const LeaveManagement = React.lazy(() => import("./Admin/Staff/LeaveManagement.jsx"));
+const SalaryManagement = React.lazy(() => import("./Admin/Staff/SalaryManagement.jsx"));
+const Payslip = React.lazy(() => import("./Admin/Staff/Payslip.jsx"));
+
+// Lazy Load Purchase Components
+const PurchaseDashboard = React.lazy(() => import("./Admin/Pages/Purchases/PurchaseDashboard.jsx"));
+const Suppliers = React.lazy(() => import("./Admin/Pages/Purchases/Suppliers.jsx"));
+const PurchaseOrdersList = React.lazy(() => import("./Admin/Pages/Purchases/PurchaseOrders.jsx"));
+const PurchaseInvoices = React.lazy(() => import("./Admin/Pages/Purchases/PurchaseInvoices.jsx"));
+const PurchaseReturns = React.lazy(() => import("./Admin/Pages/Purchases/PurchaseReturns.jsx"));
+const PurchasePayments = React.lazy(() => import("./Admin/Pages/Purchases/PurchasePayments.jsx"));
+const PurchaseReports = React.lazy(() => import("./Admin/Pages/Purchases/PurchaseReports.jsx"));
+const PurchaseImport = React.lazy(() => import("./Admin/Pages/Purchases/PurchaseImport.jsx"));
+
 
 const router = createBrowserRouter([
   {
@@ -109,7 +125,7 @@ const router = createBrowserRouter([
       { path: "products/:id", element: <ProductDetail /> },
       // Orders
       { path: "orders/create", element: <CreateOrder /> },
-      { path: "orders/new", element: <Orders statusFilter="Order Placed" /> },
+      { path: "orders/new", element: <Orders statusFilter="Order Placed" dateFilter="today" /> },
       { path: "orders/all", element: <Orders statusFilter="All" /> },
       { path: "orders/delivery", element: <Orders statusFilter="Delivered" /> },
       { path: "orders/cancelled", element: <Orders statusFilter="Cancelled" /> },
@@ -117,10 +133,15 @@ const router = createBrowserRouter([
       // Others
       { path: "users/all", element: <Users initialTab="All" /> },
       { path: "users/new", element: <Users initialTab="New" /> },
+      { path: "users/:id", element: <UserDetail /> },
       { path: "staff", element: <Staffs /> },
       { path: "addstaff", element: <AddStaff /> },
       { path: "addstaff/:id", element: <AddStaff /> },
       { path: "viewstaff/:id", element: <ViewStaff /> },
+      { path: "staff/attendance", element: <Attendance /> },
+      { path: "staff/leave", element: <LeaveManagement /> },
+      { path: "staff/salary", element: <SalaryManagement /> },
+      { path: "staff/salary/payslip/:id", element: <Payslip /> },
       // Marketing & Support
 
       // Finance
@@ -132,6 +153,17 @@ const router = createBrowserRouter([
       { path: "dealer/all", element: <Dealers /> },
       { path: "dealer/:id", element: <DealerDetail /> },
       { path: "dealer/purchase-order/new", element: <PurchaseOrder /> },
+
+      // Purchases
+      { path: "purchases/dashboard", element: <PurchaseDashboard /> },
+      { path: "purchases/suppliers", element: <Suppliers /> },
+      { path: "purchases/orders", element: <PurchaseOrdersList /> },
+      { path: "purchases/all", element: <PurchaseInvoices /> },
+      { path: "purchases/returns", element: <PurchaseReturns /> },
+      { path: "purchases/payments", element: <PurchasePayments /> },
+      { path: "purchases/reports", element: <PurchaseReports /> },
+      { path: "purchases/import", element: <PurchaseImport /> },
+
       { path: "dealer/mapping", element: <DealerProductMapping /> },
       { path: "dealer/add", element: <AddDealer /> },
       { path: "dealer/orders", element: <Orders statusFilter="All" /> },
