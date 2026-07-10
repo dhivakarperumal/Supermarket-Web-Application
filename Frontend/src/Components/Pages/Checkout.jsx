@@ -20,7 +20,9 @@ const Checkout = () => {
   const buyNowSize = location.state?.size;
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [distanceInfo, setDistanceInfo] = useState({ loading: true, error: "", distanceKm: null });
   const buyNowQuantity = location.state?.quantity || 1;
+  const SHOP_ADDRESS = "NH 179A, Salem - Tirupattur - Vaniyambadi Rd, Thiruppathur, Tamil Nadu 635601";
 
   const fetchAddresses = async () => {
     try {
@@ -68,6 +70,68 @@ const Checkout = () => {
   useEffect(() => {
     if (user?.user_id) fetchAddresses();
   }, [user]);
+
+  const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
+    const toRad = (value) => (value * Math.PI) / 180;
+    const earthRadiusKm = 6371;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadiusKm * c;
+  };
+
+  const detectDistanceToShop = () => {
+    if (!navigator.geolocation) {
+      setDistanceInfo({ loading: false, error: "Location access is not supported by this browser.", distanceKm: null });
+      return;
+    }
+
+    setDistanceInfo((prev) => ({ ...prev, loading: true, error: "" }));
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(SHOP_ADDRESS)}`
+          );
+          const data = await response.json();
+
+          if (!data?.length) {
+            throw new Error("Shop address could not be located.");
+          }
+
+          const shopLat = parseFloat(data[0].lat);
+          const shopLng = parseFloat(data[0].lon);
+          const userLat = position.coords.latitude;
+          const userLng = position.coords.longitude;
+          const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
+
+          setDistanceInfo({ loading: false, error: "", distanceKm: Number(distance.toFixed(1)) });
+        } catch (error) {
+          console.error(error);
+          setDistanceInfo({ loading: false, error: "We could not calculate the distance right now.", distanceKm: null });
+        }
+      },
+      (error) => {
+        let message = "We could not access your location.";
+        if (error.code === 1) message = "Location permission was denied. Please allow location access to see the distance.";
+        else if (error.code === 2) message = "Your location is currently unavailable.";
+        else if (error.code === 3) message = "Location request timed out.";
+
+        setDistanceInfo({ loading: false, error: message, distanceKm: null });
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
+
+  useEffect(() => {
+    detectDistanceToShop();
+  }, []);
 
   const indianStates = [
     "Andhra Pradesh",
@@ -298,6 +362,41 @@ const Checkout = () => {
 
             <div className="grid gap-8 lg:grid-cols-[1.6fr_0.9fr]">
               <div className="space-y-6">
+                <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+                  <div className="mb-4 flex items-center gap-2">
+                    <FiMapPin className="text-[#0e6827]" />
+                    <h2 className="text-lg font-semibold text-slate-800">Delivery Distance</h2>
+                  </div>
+                  <p className="text-sm text-slate-500">We’re using your current location to estimate the distance to our shop.</p>
+
+                  <div className="mt-4 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">
+                    {distanceInfo.loading ? (
+                      <p className="text-sm text-slate-600">Fetching your current location...</p>
+                    ) : distanceInfo.distanceKm !== null ? (
+                      <>
+                        <p className="text-sm text-slate-600">Shop address</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-800">{SHOP_ADDRESS}</p>
+                        <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
+                          <div>
+                            <p className="text-sm text-slate-500">Estimated distance</p>
+                            <p className="text-2xl font-bold text-[#0e6827]">{distanceInfo.distanceKm} km</p>
+                          </div>
+                          <button type="button" onClick={detectDistanceToShop} className="rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
+                            Refresh location
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-slate-600">{distanceInfo.error || "We could not calculate the distance right now."}</p>
+                        <button type="button" onClick={detectDistanceToShop} className="mt-3 rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
+                          Try again
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
                 {addresses.length > 0 && (
                   <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
                     <div className="mb-4 flex items-center gap-2">
