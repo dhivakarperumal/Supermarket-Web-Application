@@ -61,7 +61,7 @@ const CategoryIcon = () => {
                 <Link
                   key={cat.id}
                   to={`/category/${cat.name.toLowerCase()}`}
-                  className="group flex flex-col items-center justify-between p-3 w-28 h-32 md:w-32 md:h-40 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
+                  className="group flex flex-col items-center justify-between p-3 w-28 h-32 md:w-34 md:h-44 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
                 >
                   <div className="w-full flex-1 flex items-center justify-center p-1 overflow-hidden">
                     <img
