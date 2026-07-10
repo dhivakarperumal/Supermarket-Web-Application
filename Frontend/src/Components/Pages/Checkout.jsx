@@ -81,9 +81,28 @@ const Checkout = () => {
   const fetchDeliveryCharges = async () => {
     try {
       const res = await api.get("/delivery-charges");
-      if (res.data && res.data.length > 0) {
-        setDeliveryCharges(res.data[0]);
+      console.log("Delivery charges API response:", res.data);
+      
+      let chargesData = null;
+      // API returns { success: true, data: settings }
+      if (res.data?.data) {
+        chargesData = res.data.data;
+      } else if (res.data && !res.data.success) {
+        // Fallback: handle both array and object responses
+        if (Array.isArray(res.data)) {
+          chargesData = res.data.length > 0 ? res.data[0] : null;
+        } else if (typeof res.data === 'object') {
+          chargesData = res.data;
+        }
+      }
+      
+      if (chargesData && chargesData.id) {
+        setDeliveryCharges(chargesData);
+        console.log("Delivery charges set to:", chargesData);
         setDeliveryChargeError("");
+      } else {
+        console.warn("No delivery charges data found");
+        setDeliveryChargeError("No delivery charges configured");
       }
     } catch (error) {
       console.error("Error fetching delivery charges:", error);
@@ -157,11 +176,14 @@ const Checkout = () => {
           const shopLng = SHOP_COORDINATES.lng;
           const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
 
-          // Fetch fresh delivery charges
+          // Fetch fresh delivery charges first
+          let freshCharges = deliveryCharges;
           try {
             const res = await api.get("/delivery-charges");
             if (res.data && res.data.length > 0) {
-              setDeliveryCharges(res.data[0]);
+              freshCharges = res.data[0];
+              setDeliveryCharges(freshCharges);
+              console.log("Updated delivery charges:", freshCharges);
             }
           } catch (error) {
             console.error("Error fetching delivery charges:", error);
@@ -197,6 +219,7 @@ const Checkout = () => {
             zip_code: address.postcode || prev.zip_code || "",
           }));
 
+          console.log("Distance calculated:", distance, "Delivery charges object:", freshCharges);
           setDistanceInfo({ loading: false, error: "", distanceKm: Number(distance.toFixed(1)) });
         } catch (error) {
           console.error(error);
@@ -457,6 +480,13 @@ const Checkout = () => {
                     <h2 className="text-lg font-semibold text-slate-800">Delivery Distance</h2>
                   </div>
                   <p className="text-sm text-slate-500">Click the button below to fetch your current location and estimate the distance to our shop.</p>
+
+                  
+                    <div className="mb-4 rounded-lg bg-blue-50 p-3 text-sm">
+                      <p className="text-slate-700">
+                        <span className="font-semibold">Max Delivery Distance:</span> {deliveryCharges?.maximum_delivery_distance || "N/A"} km
+                      </p>
+                    </div>
 
                   <div className="mt-4 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">
                     {!distanceInfo.distanceKm && !distanceInfo.error && !distanceInfo.loading ? (
