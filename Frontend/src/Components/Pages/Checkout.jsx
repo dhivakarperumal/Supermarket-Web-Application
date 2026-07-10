@@ -395,12 +395,7 @@ const Checkout = () => {
 
               <aside className="lg:sticky lg:top-24">
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-                  <div className="rounded-[1.25rem] bg-gradient-to-r from-[#0e6827] via-[#168637] to-[#ffc107] p-5 text-white">
-                    <p className="text-sm font-semibold uppercase tracking-[0.25em] text-white/80">Order summary</p>
-                    <h2 className="mt-2 text-2xl font-bold">Almost there</h2>
-                    <p className="mt-2 text-sm text-white/85">Your order is secured with a clean and simple checkout flow.</p>
-                  </div>
-
+                 
                   <div className="mt-6 space-y-3 text-sm text-slate-600">
                     <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal}</span></div>
                     <div className="flex justify-between"><span>Shipping</span><span className="font-semibold text-green-600">Free</span></div>
