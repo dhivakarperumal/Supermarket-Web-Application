@@ -109,7 +109,7 @@ const QuickViewModal = ({ product, onClose }) => {
     setImgIndex(0);
   }, [selectedVariant]);
 
-  // Disable body scrolling while modal is open
+  // Disable body scrolling while modal is open   
   useEffect(() => {
     document.body.style.overflow = "hidden";
 

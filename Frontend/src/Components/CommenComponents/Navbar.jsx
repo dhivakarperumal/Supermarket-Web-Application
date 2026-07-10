@@ -399,7 +399,7 @@ const Navbar = () => {
                                           {name}
                                         </h3>
 
-                                        <p className="mt-1 text-lg font-bold text-[#0e6827]">
+                                        <p className="mt-1 text-sm font-bold text-[#0e6827]">
                                           ₹{price}
                                         </p>
 
@@ -441,7 +441,7 @@ const Navbar = () => {
                                             )
                                           )
                                         }
-                                        className="h-9 w-9 rounded-lg bg-[#0e6827] text-white hover:bg-green-700 transition flex items-center justify-center"
+                                        className="h-7 w-7 rounded-lg bg-[#0e6827] text-white hover:bg-green-700 transition flex items-center justify-center"
                                       >
                                         <Minus size={15} />
                                       </button>
@@ -460,7 +460,7 @@ const Navbar = () => {
                                             (item.quantity || 1) + 1
                                           )
                                         }
-                                        className="h-9 w-9 rounded-lg bg-[#0e6827] text-white hover:bg-green-700 transition flex items-center justify-center"
+                                        className="h-7 w-7 rounded-lg bg-[#0e6827] text-white hover:bg-green-700 transition flex items-center justify-center"
                                       >
                                         <Plus size={15} />
                                       </button>
@@ -618,7 +618,7 @@ const Navbar = () => {
                                       {name}
                                     </h3>
 
-                                    <p className="mt-2 text-lg font-bold text-[#0e6827]">
+                                    <p className="mt-2 text-sm font-bold text-[#0e6827]">
                                       ₹{price}
                                     </p>
 
