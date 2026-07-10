@@ -246,75 +246,34 @@ const Shop = ({ defaultCategory = "" }) => {
           <div className="absolute -right-10 -top-10 w-56 h-56 bg-white/10 rounded-full"></div>
           <div className="absolute right-32 bottom-0 w-36 h-36 bg-yellow-400/10 rounded-full"></div>
 
-          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between p-8 lg:p-12 gap-8">
-
-            {/* Left Content */}
-            <div className="max-w-xl">
-
-              <span className="inline-flex items-center bg-yellow-400 text-black px-4 py-1 rounded-full text-sm font-bold mb-5">
-                🛒 Fresh Grocery Collection
-              </span>
-
-              <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight">
-                Fresh Products
-                <br />
-                Delivered
-                <span className="text-yellow-300"> Every Day</span>
-              </h1>
-
-              <p className="mt-5 text-green-100 text-lg">
-                Discover fresh vegetables, fruits, groceries, dairy products and
-                daily essentials at the best prices.
-              </p>
-
-              <div className="flex flex-wrap gap-4 mt-8">
-
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl px-5 py-4">
-                  <h3 className="text-3xl font-bold">
-                    {products.length}+
-                  </h3>
-                  <p className="text-sm text-green-100">
-                    Products
-                  </p>
-                </div>
-
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl px-5 py-4">
-                  <h3 className="text-3xl font-bold">
-                    30%
-                  </h3>
-                  <p className="text-sm text-green-100">
-                    Daily Offers
-                  </p>
-                </div>
-
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl px-5 py-4">
-                  <h3 className="text-3xl font-bold">
-                    🚚
-                  </h3>
-                  <p className="text-sm text-green-100">
-                    Fast Delivery
-                  </p>
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* Right Image */}
-            <div className="hidden lg:block">
-              <img
-                src="/shop-banner.png"
-                alt=""
-                className="w-[430px] object-contain drop-shadow-2xl"
-              />
-            </div>
-
-          </div>
-
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row lg:items-start items-center mt-6 w-full">
+      {/* Top Toolbar */}
+      <div className="flex items-center justify-between px-4 md:px-10 mb-6">
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl shadow-md transition-all duration-300 cursor-pointer"
+        >
+          {showFilters ? (
+            <>
+              <FiX size={18} />
+              Hide Filters
+            </>
+          ) : (
+            <>
+              <FiFilter size={18} />
+              Show Filters
+            </>
+          )}
+        </button>
+
+        <p className="text-sm text-gray-600">
+          {filteredProducts.length} Products
+        </p>
+      </div>
+
+      <div className="flex flex-col lg:flex-row lg:items-start items-center mt-6 w-full mb-6">
         {/* FILTER SIDEBAR */}
 
         {showFilters && (
@@ -415,8 +374,8 @@ const Shop = ({ defaultCategory = "" }) => {
                       key={color}
                       onClick={() => setSelectedColor(color)}
                       className={`px-3 py-1 text-xs font-medium border rounded-full transition ${selectedColor === color
-                          ? "bg-primary text-white border-primary"
-                          : "border-gray-300 hover:border-primary"
+                        ? "bg-primary text-white border-primary"
+                        : "border-gray-300 hover:border-primary"
                         }`}
                     >
                       {color}
@@ -440,8 +399,8 @@ const Shop = ({ defaultCategory = "" }) => {
                       key={size}
                       onClick={() => setSelectedSize(size)}
                       className={`px-3 py-1 text-sm font-semibold border rounded-lg transition ${selectedSize === size
-                          ? "bg-primary text-white border-primary"
-                          : "border-gray-300 hover:border-primary"
+                        ? "bg-primary text-white border-primary"
+                        : "border-gray-300 hover:border-primary"
                         }`}
                     >
                       {size}
@@ -548,8 +507,8 @@ const Shop = ({ defaultCategory = "" }) => {
                     key={page}
                     onClick={() => setCurrentPage(page)}
                     className={`px-4 py-2 rounded-lg border transition cursor-pointer ${currentPage === page
-                        ? "bg-primary text-white border-primary shadow-md"
-                        : "bg-white hover:bg-gray-100"
+                      ? "bg-primary text-white border-primary shadow-md"
+                      : "bg-white hover:bg-gray-100"
                       }`}
                   >
                     {page}
