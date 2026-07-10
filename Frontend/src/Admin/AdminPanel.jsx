@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import "./admin.css";
 
 const AdminLayout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);

@@ -67,7 +67,7 @@ const TrendingProducts = () => {
 
   return (
     <PageContainer>
-      <div className="py-5">
+      <div className="py-2">
         {/* Title */}
         <Heading title="Trending Products" />
 
