@@ -120,7 +120,7 @@ const QuickViewModal = ({ product, onClose }) => {
 
   if (!product) return null;
 
-  const stock = selectedVariant?.sizesStock?.[selectedSize];
+  const stock = selectedVariant?.stock || selectedVariant?.stock_quantity || product.stock_quantity || 0;
 
   const handleBuyNow = () => {
     navigate("/checkout", {
@@ -292,27 +292,27 @@ const QuickViewModal = ({ product, onClose }) => {
               <div className="flex items-center gap-3">
 
                 <span className="text-4xl font-bold text-green-700">
-                  ₹{product.offer_price}
+                  ₹{selectedVariant?.sellingPrice || selectedVariant?.selling_price || product.offer_price}
                 </span>
 
-                {product.mrp && (
+                {(selectedVariant?.mrp || product.mrp) && (
                   <span className="text-lg text-gray-400 line-through">
-                    ₹{product.mrp}
+                    ₹{selectedVariant?.mrp || product.mrp}
                   </span>
                 )}
 
               </div>
 
-              {product.offer && (
+              {(selectedVariant?.offer || product.offer) && (
                 <div className="mt-2 text-sm font-semibold text-red-500">
-                  Save {Math.floor(product.offer)}%
+                  Save {Math.floor(selectedVariant?.offer || product.offer)}%
                 </div>
               )}
 
             </div>
 
-            {/* Variant Colors */}
-            {product.variants?.length > 1 && (
+            {/* Variant Quantities */}
+            {product.variants?.length > 0 && (
               <div>
 
                 <h3 className="font-bold text-gray-800 mb-3">
@@ -327,19 +327,16 @@ const QuickViewModal = ({ product, onClose }) => {
                       key={index}
                       onClick={() => {
                         setSelectedVariant(variant);
-                        setSelectedImage(resolveImage(variant.images?.[0]));
-                        setSelectedSize(variant.selectedSizes?.[0]);
+                        if (variant.images?.[0]) setSelectedImage(resolveImage(variant.images?.[0]));
+                        if (variant.selectedSizes?.[0]) setSelectedSize(variant.selectedSizes?.[0]);
                         setImgIndex(0);
                       }}
-                      className={`rounded-xl border-2 overflow-hidden transition ${selectedVariant?.color === variant.color
-                        ? "border-green-700"
-                        : "border-gray-200 hover:border-green-400"
+                      className={`px-4 py-2 rounded-xl border-2 transition font-semibold ${selectedVariant?.quantity === variant.quantity && selectedVariant?.unit === variant.unit
+                        ? "border-green-700 bg-green-50 text-green-800"
+                        : "border-gray-200 hover:border-green-400 text-gray-700"
                         }`}
                     >
-                      <img
-                        src={resolveImage(variant.images?.[0])}
-                        className="w-16 h-16 object-cover"
-                      />
+                      {variant.quantity} {variant.unit}
                     </button>
 
                   ))}
