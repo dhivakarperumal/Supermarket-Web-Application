@@ -132,8 +132,9 @@ const getProductsReport = async (req, res) => {
     // Products with sales data joined
     const [products] = await pool.query(
       `SELECT 
-        p.id, p.name, p.product_code, p.category, p.brand,
-        p.selling_price, p.mrp, p.stock_quantity AS stock, p.status,
+        p.id,
+        po.status AS status, p.name, p.product_code, p.category, p.brand,
+        p.selling_price, p.mrp, p.stock_quantity AS stock, 
         p.total_stock, p.expiry_date,
         COALESCE(SUM(oi.quantity), 0) AS total_sold,
         COALESCE(SUM(oi.total), 0) AS total_revenue
@@ -181,10 +182,15 @@ const getCategoryReport = async (req, res) => {
         COUNT(DISTINCT p.id) AS total_products,
         COALESCE(SUM(oi.quantity), 0) AS total_sold,
         COALESCE(SUM(oi.total), 0) AS total_revenue,
-        COALESCE(SUM(p.stock_quantity * p.selling_price), 0) AS stock_value,
+        COALESCE(stockData.total_stock_value, 0) AS stock_value,
         COUNT(DISTINCT CASE WHEN p.status = 'Active' THEN p.id END) AS active_products
       FROM products p
       LEFT JOIN order_items oi ON oi.product_id = p.id
+      LEFT JOIN (
+        SELECT category, SUM(stock_quantity * selling_price) AS total_stock_value
+        FROM products
+        GROUP BY category
+      ) stockData ON stockData.category = p.category
       GROUP BY p.category
       ORDER BY total_revenue DESC
     `);
@@ -318,7 +324,7 @@ const getInventoryReport = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────
-// 6. PURCHASE REPORT (Dealer Invoices)
+// 6. PURCHASE REPORT
 // ─────────────────────────────────────────────
 const getPurchaseReport = async (req, res) => {
   try {
@@ -331,52 +337,73 @@ const getPurchaseReport = async (req, res) => {
       payment_status,
     } = req.query;
 
-    const { clause: dateClause, params: dateParams } = buildDateRange(range, customFrom, customTo, "inv.created_at");
+    const { clause: dateClause, params: dateParams } = buildDateRange(range, customFrom, customTo, "p.invoice_date");
 
     let where = "WHERE 1=1 " + dateClause;
     const params = [...dateParams];
 
-    if (supplier) { where += " AND d.dealerName LIKE ?"; params.push(`%${supplier}%`); }
-    if (payment_status) { where += " AND inv.payment_status = ?"; params.push(payment_status); }
+    if (supplier) {
+      where += " AND (LOWER(s.supplier_name) LIKE ? OR LOWER(s.company_name) LIKE ?)";
+      params.push(`%${supplier.toLowerCase()}%`, `%${supplier.toLowerCase()}%`);
+    }
+
+    if (payment_status) {
+      const status = payment_status.toLowerCase();
+      if (status === "pending") {
+        where += " AND LOWER(p.payment_status) IN ('unpaid','partially paid')";
+      } else if (status === "paid") {
+        where += " AND LOWER(p.payment_status) = 'paid'";
+      } else {
+        where += " AND LOWER(p.payment_status) = ?";
+        params.push(status);
+      }
+    }
 
     const [purchases] = await pool.query(
       `SELECT 
-        inv.invoice_id, inv.invoice_date, inv.status, inv.payment_method, inv.payment_status,
-        inv.total_amount, inv.created_at,
-        d.dealerName AS supplier_name, d.companyName AS supplier_company,
-        d.mobileNumber AS supplier_phone,
-        COUNT(ii.id) AS item_count,
-        COALESCE(SUM(ii.quantity), 0) AS total_qty
-       FROM invoices inv
-       LEFT JOIN dealers d ON d.id = inv.dealer_id
-       LEFT JOIN invoice_items ii ON ii.invoice_id = inv.invoice_id
+        p.id,
+        p.grn_number AS invoice_id,
+        p.invoice_date,
+        p.payment_method,
+        p.payment_status,
+        p.net_amount AS total_amount,
+        p.created_at,
+        s.supplier_name,
+        s.company_name AS supplier_company,
+        COUNT(pi.id) AS item_count,
+        COALESCE(SUM(pi.quantity), 0) AS total_qty
+       FROM purchases p
+       LEFT JOIN suppliers s ON p.supplier_id = s.id
+       LEFT JOIN purchase_items pi ON pi.purchase_id = p.id
+       LEFT JOIN purchase_orders po ON p.po_id = po.id
        ${where}
-       GROUP BY inv.id
-       ORDER BY inv.created_at DESC`,
+       GROUP BY p.id
+       ORDER BY p.invoice_date DESC`,
       params
     );
 
     const [summary] = await pool.query(
       `SELECT
         COUNT(*) AS total_purchases,
-        COALESCE(SUM(inv.total_amount), 0) AS total_amount,
-        COUNT(DISTINCT inv.dealer_id) AS total_suppliers,
-        SUM(CASE WHEN inv.payment_status = 'paid' THEN 1 ELSE 0 END) AS paid_count,
-        SUM(CASE WHEN inv.payment_status = 'pending' THEN 1 ELSE 0 END) AS pending_count
-       FROM invoices inv
-       LEFT JOIN dealers d ON d.id = inv.dealer_id ${where}`,
+        COALESCE(SUM(p.net_amount), 0) AS total_amount,
+        COUNT(DISTINCT p.supplier_id) AS total_suppliers,
+        SUM(CASE WHEN LOWER(p.payment_status) = 'paid' THEN 1 ELSE 0 END) AS paid_count,
+        SUM(CASE WHEN LOWER(p.payment_status) != 'paid' THEN 1 ELSE 0 END) AS pending_count
+       FROM purchases p
+       LEFT JOIN suppliers s ON p.supplier_id = s.id
+       ${where}`,
       params
     );
 
-    // Supplier-wise summary
     const [supplierSummary] = await pool.query(`
       SELECT 
-        d.dealerName AS supplier_name, d.companyName,
+        s.supplier_name AS supplier_name,
+        s.company_name,
         COUNT(*) AS total_invoices,
-        COALESCE(SUM(inv.total_amount), 0) AS total_spent
-      FROM invoices inv
-      LEFT JOIN dealers d ON d.id = inv.dealer_id
-      GROUP BY inv.dealer_id
+        COALESCE(SUM(p.net_amount), 0) AS total_spent
+      FROM purchases p
+      LEFT JOIN suppliers s ON p.supplier_id = s.id
+      GROUP BY p.supplier_id
       ORDER BY total_spent DESC
       LIMIT 20
     `);

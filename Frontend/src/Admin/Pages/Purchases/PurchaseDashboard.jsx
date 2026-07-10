@@ -8,24 +8,37 @@ import {
 
 /* ─── Mini Bar Chart (pure CSS) ─── */
 const BarChart = ({ data, color = "#6366f1" }) => {
-  if (!data || data.length === 0) return <div className="text-xs text-gray-400 text-center py-4">No data</div>;
-  const max = Math.max(...data.map(d => d.value || d.total || 0), 1);
+  if (!data || data.length === 0) {
+    return <div className="text-xs text-gray-400 text-center py-4">No data</div>;
+  }
+
+  const normalized = data.map((item) => ({
+    ...item,
+    value: Number(item.value ?? item.total ?? 0) || 0,
+    label: item.name || item.month || '—'
+  }));
+
+  const max = Math.max(...normalized.map((d) => d.value), 1);
+  const hasAnyValue = normalized.some((d) => d.value > 0);
+  if (!hasAnyValue) {
+    return <div className="text-xs text-gray-400 text-center py-4">No purchase value data</div>;
+  }
+
   return (
-    <div className="flex items-end gap-1 h-28 w-full">
-      {data.map((item, i) => {
-        const val = item.value || item.total || 0;
-        const pct = Math.max((val / max) * 100, 2);
+    <div className="flex items-end gap-2 h-28 w-full">
+      {normalized.map((item, i) => {
+        const pct = Math.max((item.value / max) * 100, 6);
         return (
-          <div key={i} className="flex flex-col items-center flex-1 group relative">
-            <div className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-slate-800 text-white text-[9px] rounded px-1.5 py-0.5 whitespace-nowrap pointer-events-none z-10 transition-opacity">
-              {item.name || item.month}: ₹{Number(val).toLocaleString('en-IN')}
+          <div key={i} className="flex flex-col items-center flex-1 group relative min-w-[24px]">
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-slate-800 text-white text-[9px] rounded px-1.5 py-0.5 whitespace-nowrap pointer-events-none z-10 transition-opacity">
+              {item.label}: ₹{item.value.toLocaleString('en-IN')}
             </div>
             <div
-              className="w-full rounded-t-md transition-all duration-500"
-              style={{ height: `${pct}%`, backgroundColor: color, opacity: 0.85 }}
+              className="w-full rounded-t-xl transition-all duration-500"
+              style={{ height: `${pct}%`, backgroundColor: color, opacity: 0.92 }}
             />
-            <span className="text-[8px] text-gray-400 mt-1 truncate w-full text-center">
-              {(item.name || item.month || '').slice(0, 5)}
+            <span className="text-[10px] text-gray-400 mt-2 truncate w-full text-center">
+              {item.label.slice(0, 5)}
             </span>
           </div>
         );
