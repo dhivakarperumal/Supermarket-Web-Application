@@ -14,6 +14,7 @@ const createProductTable = async () => {
         barcode VARCHAR(100),
         barcode_image LONGTEXT,
         category VARCHAR(100),
+        category_id INT DEFAULT NULL,
         subcategory VARCHAR(100),
         brand VARCHAR(100),
         description TEXT,
@@ -39,9 +40,29 @@ const createProductTable = async () => {
         rating DECIMAL(3,2) DEFAULT 5,
         review_count INT DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
       )
     `);
+
+    // Add category_id column if it doesn't exist (safe migration)
+    try {
+      await connection.query(`
+        ALTER TABLE products ADD COLUMN category_id INT DEFAULT NULL
+      `);
+    } catch (e) {
+      // Column may already exist
+    }
+
+    // Add foreign key constraint if it doesn't exist
+    try {
+      await connection.query(`
+        ALTER TABLE products ADD CONSTRAINT fk_product_category 
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+      `);
+    } catch (e) {
+      // Constraint may already exist
+    }
   } finally {
     connection.release();
   }
