@@ -20,7 +20,7 @@ const Checkout = () => {
   const buyNowSize = location.state?.size;
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
-  const [distanceInfo, setDistanceInfo] = useState({ loading: true, error: "", distanceKm: null });
+  const [distanceInfo, setDistanceInfo] = useState({ loading: false, error: "", distanceKm: null });
   const buyNowQuantity = location.state?.quantity || 1;
   const SHOP_ADDRESS = "NH 179A, Salem - Tirupattur - Vaniyambadi Rd, Thiruppathur, Tamil Nadu 635601";
 
@@ -128,10 +128,6 @@ const Checkout = () => {
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     );
   };
-
-  useEffect(() => {
-    detectDistanceToShop();
-  }, []);
 
   const indianStates = [
     "Andhra Pradesh",
@@ -367,10 +363,17 @@ const Checkout = () => {
                     <FiMapPin className="text-[#0e6827]" />
                     <h2 className="text-lg font-semibold text-slate-800">Delivery Distance</h2>
                   </div>
-                  <p className="text-sm text-slate-500">We’re using your current location to estimate the distance to our shop.</p>
+                  <p className="text-sm text-slate-500">Click the button below to fetch your current location and estimate the distance to our shop.</p>
 
                   <div className="mt-4 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">
-                    {distanceInfo.loading ? (
+                    {!distanceInfo.distanceKm && !distanceInfo.error && !distanceInfo.loading ? (
+                      <div className="flex flex-col gap-3">
+                        <p className="text-sm text-slate-600">No location fetched yet.</p>
+                        <button type="button" onClick={detectDistanceToShop} className="w-fit rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
+                          Fetch location
+                        </button>
+                      </div>
+                    ) : distanceInfo.loading ? (
                       <p className="text-sm text-slate-600">Fetching your current location...</p>
                     ) : distanceInfo.distanceKm !== null ? (
                       <>
@@ -382,7 +385,7 @@ const Checkout = () => {
                             <p className="text-2xl font-bold text-[#0e6827]">{distanceInfo.distanceKm} km</p>
                           </div>
                           <button type="button" onClick={detectDistanceToShop} className="rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
-                            Refresh location
+                            Fetch location
                           </button>
                         </div>
                       </>
@@ -390,7 +393,7 @@ const Checkout = () => {
                       <>
                         <p className="text-sm text-slate-600">{distanceInfo.error || "We could not calculate the distance right now."}</p>
                         <button type="button" onClick={detectDistanceToShop} className="mt-3 rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
-                          Try again
+                          Fetch location
                         </button>
                       </>
                     )}
