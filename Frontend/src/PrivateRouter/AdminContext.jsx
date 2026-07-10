@@ -1,7 +1,29 @@
 import React, { createContext, useState, useCallback, useContext } from "react";
 import api from "../api";
 
-export const AdminContext = createContext();
+const defaultAdminValue = {
+    dashboardData: null,
+    ordersCache: {},
+    productsCache: {},
+    stockCache: {},
+    videosCache: null,
+    reviewsCache: {},
+    reportsCache: null,
+    isInitialDashboardLoaded: false,
+    getDashboardData: async () => null,
+    getOrdersData: async () => [],
+    getProductsData: async () => null,
+    invalidateCache: () => {},
+    setDashboardCached: () => {},
+    setOrdersCache: () => {},
+    setProductsCached: () => {},
+    setStockCached: () => {},
+    setVideosCache: () => {},
+    setReviewsCache: () => {},
+    setReportsCache: () => {},
+};
+
+export const AdminContext = createContext(defaultAdminValue);
 
 export const AdminProvider = ({ children }) => {
     // Cache states
@@ -102,4 +124,7 @@ export const AdminProvider = ({ children }) => {
     );
 };
 
-export const useAdmin = () => useContext(AdminContext);
+export const useAdmin = () => {
+    const context = useContext(AdminContext);
+    return context || defaultAdminValue;
+};

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../PrivateRouter/AuthContext";
+import { useAuth } from "../PrivateRouter/AuthContext";
 import { useAdmin } from "../PrivateRouter/AdminContext";
 import api from "../api";
 import { toast, Toaster } from "react-hot-toast";
@@ -147,7 +147,7 @@ const catDots = ["bg-green-500", "bg-blue-500", "bg-yellow-500", "bg-orange-500"
 /* ═══════════════════════════════════════ COMPONENT ═══════════════════════════════════════ */
 const Dashboard = () => {
     const navigate = useNavigate();
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     const { dashboardData, setDashboardCached } = useAdmin();
     const [loading, setLoading] = useState(!dashboardData);
 

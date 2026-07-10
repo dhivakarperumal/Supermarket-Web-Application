@@ -6,7 +6,8 @@ import { AuthContext } from "./AuthContext";
 export const StoreContext = createContext();
 
 export const StoreProvider = ({ children }) => {
-    const { user } = useContext(AuthContext);
+    const authContext = useContext(AuthContext);
+    const user = authContext?.user || null;
     const [cart, setCart] = useState([]);
     const [wishlist, setWishlist] = useState([]);
     const [loadingCart, setLoadingCart] = useState(false);
