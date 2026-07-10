@@ -18,7 +18,7 @@ const banners = [
     title: "COMBO OFFERS",
     subtitle: "More Essentials",
     desc: "More Savings",
-    badge: "SAVE ₹250",
+    // badge: "SAVE ₹250",
     button: "Shop Now",
     image: "/banner2.png",
     bg: "from-yellow-50 to-orange-100",
@@ -76,13 +76,15 @@ export default function OfferBanner() {
                   {item.desc}
                 </p>
 
-                <Link
-                  to="/shop"
-                  className={`${item.btn} inline-block mt-6 px-5 py-2 rounded-full text-white font-semibold transition`}
-                >
-                  {item.button}
-                </Link>
+
               </div>
+
+              <Link
+                to="/shop"
+                className={`${item.btn} absolute top-4 right-2 z-20 px-5 py-2 rounded-full text-white font-semibold transition hover:scale-105`}
+              >
+                {item.button}
+              </Link>
 
               <img
                 src={item.image}
