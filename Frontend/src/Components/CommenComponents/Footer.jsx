@@ -54,7 +54,7 @@ const Footer = () => {
     fetchCategories();
   }, []);
   return (
-    <footer className="bg-gradient-to-r from-[#0b5b1c] via-[#084b17] to-[#063914] text-white mt-20">
+    <footer className="bg-gradient-to-r from-[#0b5b1c] via-[#084b17] to-[#063914] text-white ">
 
       <PageContainer>
 

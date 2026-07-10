@@ -566,7 +566,7 @@ const Navbar = () => {
 
                   ) : (
 
-                    <div className="space-y-5">
+                    <div className="px-5 py-5 space-y-5">
 
                       {wishlist.map((item) => {
 
