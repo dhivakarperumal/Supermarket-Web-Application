@@ -157,6 +157,16 @@ const Checkout = () => {
           const shopLng = SHOP_COORDINATES.lng;
           const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
 
+          // Fetch fresh delivery charges
+          try {
+            const res = await api.get("/delivery-charges");
+            if (res.data && res.data.length > 0) {
+              setDeliveryCharges(res.data[0]);
+            }
+          } catch (error) {
+            console.error("Error fetching delivery charges:", error);
+          }
+
           const reverseResponse = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${userLat}&lon=${userLng}&addressdetails=1`
           );
