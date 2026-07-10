@@ -114,16 +114,16 @@ const Navbar = () => {
             </Link>
 
             {/* Search Bar */}
-            <div className="flex-1 w-full max-w-3xl flex items-center border-2 border-green-800 rounded-md overflow-hidden">
+            <div className="flex-1 w-full max-w-3xl flex items-center border-2 border-gray-200 rounded-md overflow-hidden">
               <input
                 type="text"
                 placeholder="Search for products, brands and more..."
                 className="flex-1 px-4 py-2.5 text-sm outline-none w-full"
               />
-              <div className="border-l border-gray-300 hidden md:flex items-center px-4 bg-gray-50 h-full cursor-pointer hover:bg-gray-100 transition">
+              {/* <div className="border-l border-gray-300 hidden md:flex items-center px-4 bg-gray-50 h-full cursor-pointer hover:bg-gray-100 transition">
                 <span className="text-sm text-gray-600 mr-2 whitespace-nowrap">All Categories</span>
                 <ChevronDown size={16} className="text-gray-500" />
-              </div>
+              </div> */}
               <button className="bg-green-800 text-white px-6 py-2.5 hover:bg-green-900 transition flex items-center justify-center">
                 <Search size={20} />
               </button>
@@ -218,7 +218,7 @@ const Navbar = () => {
       <div className="hidden md:block">
         <div className="sticky top-0 z-30 bg-[#0e6827] border-[#0b511d] shadow-md">
           <PageContainer>
-            <div className="grid grid-cols-3 items-center h-9">
+            <div className="grid grid-cols-3 items-center h-10">
 
               <div className="flex justify-start items-center h-full gap-4">
                 {/* Categories Dropdown Button */}
@@ -228,11 +228,15 @@ const Navbar = () => {
                       setCategoryMenu(!categoryMenu);
                       setPagesMenu(false);
                     }}
-                    className="bg-[#ffc107] text-black flex items-center gap-3 px-5 h-full font-bold hover:bg-[#e0a800] transition cursor-pointer"
+                    className="bg-[#ffc107] text-black flex items-center gap-2 px-4 h-full text-sm font-semibold hover:bg-[#e0a800] transition cursor-pointer"
                   >
-                    <Menu size={20} />
-                    All Categories
-                    <ChevronDown size={18} className={`transition-transform ${categoryMenu ? "rotate-180" : ""}`} />
+                    <Menu size={18} />
+                    <span>All Categories</span>
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform ${categoryMenu ? "rotate-180" : ""
+                        }`}
+                    />
                   </button>
 
                   {categoryMenu && (
@@ -267,7 +271,7 @@ const Navbar = () => {
                   Home
                 </NavLink>
 
-                 <NavLink
+                <NavLink
                   to="/shop"
                   className={({ isActive }) =>
                     isActive ? "text-yellow-400" : "hover:text-yellow-400 transition"
@@ -329,9 +333,9 @@ const Navbar = () => {
 
               {/* Hot Deals */}
               <div className="flex justify-end">
-              <Link to="/shop" className="bg-[#e53935] text-white flex items-center gap-1.5 px-4 py-1.5 rounded text-[13px] font-bold hover:bg-red-700 transition shadow-sm h-8">
-                Hot Deals <span className="text-sm">🔥</span>
-              </Link>
+                <Link to="/shop" className="bg-[#e53935] text-white flex items-center gap-1.5 px-4 py-1.5 rounded text-[13px] font-bold hover:bg-red-700 transition shadow-sm h-8">
+                  Hot Deals <span className="text-sm">🔥</span>
+                </Link>
               </div>
 
             </div>
