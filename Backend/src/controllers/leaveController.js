@@ -19,7 +19,7 @@ const ensureLeaveTables = async () => {
 
     // Seed default leave types if empty
     const [lt] = await conn.query("SELECT COUNT(*) AS cnt FROM employee_leave_types");
-    if (lt[0].cnt === 0) {
+    if (Number(lt[0].cnt) === 0) {
       await conn.query(`
         INSERT INTO employee_leave_types (name, total_days_per_year, is_paid) VALUES
         ('Casual Leave', 12, 1),
