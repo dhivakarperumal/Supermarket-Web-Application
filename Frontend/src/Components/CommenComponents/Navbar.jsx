@@ -515,11 +515,14 @@ const Navbar = () => {
 
                           <button
                             type="button"
-                            onClick={() => navigate("/checkout")}
+                            onClick={() => {
+                              setSidebarPanel(null);
+                              navigate("/checkout");
+                            }}
                             className="mt-4 w-full rounded-xl bg-[#ffc107] py-3 text-sm font-bold text-black hover:bg-yellow-400 transition"
                           >
                             Proceed to Checkout →
-                          </button>
+                          </button> 
 
                         </div>
 
