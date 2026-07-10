@@ -496,7 +496,7 @@ const ProductDetails = () => {
               </div>
             </div>
 
-            <div className="mt-6 rounded-[1.5rem] border border-gray-100 bg-white p-5 shadow-sm">
+            {/* <div className="mt-6 rounded-[1.5rem] border border-gray-100 bg-white p-5 shadow-sm">
               <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
                 Available Colors
               </p>
@@ -529,7 +529,7 @@ const ProductDetails = () => {
                   </button>
                 ))}
               </div>
-            </div>
+            </div> */}
 
             <div className="mt-6 rounded-[1.5rem] border border-gray-100 bg-white p-5 shadow-sm">
               {!(selectedVariant?.selectedSizes?.length === 1 && selectedVariant?.selectedSizes[0]?.toLowerCase() === "free size") && (
