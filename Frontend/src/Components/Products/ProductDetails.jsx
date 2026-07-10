@@ -525,9 +525,9 @@ const ProductDetails = () => {
                 </>
               )}
 
-              <p className="mt-3 text-sm text-gray-600">
+              {/* <p className="mt-3 text-sm text-gray-600">
                 Stock Available: <span className="font-semibold text-gray-800">{selectedVariant?.stock || selectedVariant?.stock_quantity || product?.stock_quantity || 0}</span>
-              </p>
+              </p> */}
 
               <div className="mt-5">
                 <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">Quantity</p>
