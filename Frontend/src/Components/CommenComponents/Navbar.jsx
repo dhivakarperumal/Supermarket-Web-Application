@@ -10,7 +10,10 @@ import {
   ShoppingCart,
   Package,
   Search,
-  ChevronDown
+  ChevronDown,
+  Minus,
+  Plus,
+  Trash2
 } from "lucide-react";
 import logo from "/logo.png";
 import PageContainer from "./PageContainer";
@@ -20,13 +23,14 @@ import { FiHome, FiShoppingBag, FiGrid, FiFileText, FiPhone, FiChevronDown, FiCh
 const Navbar = () => {
 
   const { user, logout } = useContext(AuthContext);
-  const { cart, wishlist } = useContext(StoreContext);
+  const { cart, wishlist, removeFromCart, removeFromWishlist, updateCartQuantity } = useContext(StoreContext);
   const [mobilePages, setMobilePages] = useState(false);
   const navigate = useNavigate();
 
   const [mobileMenu, setMobileMenu] = useState(false);
   const [userMenu, setUserMenu] = useState(false);
   const [logoutConfirm, setLogoutConfirm] = useState(false);
+  const [sidebarPanel, setSidebarPanel] = useState(null); // 'cart' | 'wishlist' | null
   const [categories, setCategories] = useState([]);
   const [categoryMenu, setCategoryMenu] = useState(false);
   const [pagesMenu, setPagesMenu] = useState(false);
@@ -181,7 +185,11 @@ const Navbar = () => {
               </div>
 
               {/* Wishlist */}
-              <Link to="/wishlist" className="flex items-center gap-3 group">
+              <button
+                type="button"
+                onClick={() => setSidebarPanel("wishlist")}
+                className="flex items-center gap-3 group text-left"
+              >
                 <div className="relative">
                   <Heart className="text-gray-700 group-hover:text-green-800 transition" size={26} />
                 </div>
@@ -189,10 +197,14 @@ const Navbar = () => {
                   <p className="text-sm font-bold text-gray-800 group-hover:text-green-800 transition">Wishlist</p>
                   <p className="text-xs text-gray-500">{wishlist.length} items</p>
                 </div>
-              </Link>
+              </button>
 
               {/* Cart */}
-              <Link to="/cart" className="flex items-center gap-3 group">
+              <button
+                type="button"
+                onClick={() => setSidebarPanel("cart")}
+                className="flex items-center gap-3 group text-left"
+              >
                 <div className="relative">
                   <ShoppingCart className="text-gray-700 group-hover:text-green-800 transition" size={26} />
                   {cart.length > 0 && (
@@ -207,12 +219,190 @@ const Navbar = () => {
                   </p>
                   <p className="text-xs text-gray-500">₹{cartTotal.toLocaleString()}</p>
                 </div>
-              </Link>
+              </button>
 
             </div>
           </div>
         </PageContainer>
       </div>
+
+      {/* Cart/Wishlist Sidebar Drawer */}
+      {sidebarPanel && (
+        <div className="fixed inset-0 z-50 flex">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSidebarPanel(null)} />
+          <aside className="relative ml-auto h-full w-full max-w-md overflow-y-auto bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+              <div className="flex items-center gap-3">
+                {sidebarPanel === "cart" ? (
+                  <ShoppingCart className="text-green-700" size={22} />
+                ) : (
+                  <Heart className="text-green-700" size={22} />
+                )}
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {sidebarPanel === "cart" ? "Your Cart" : "Wishlist"}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {sidebarPanel === "cart"
+                      ? `${cart.length} item${cart.length === 1 ? "" : "s"}`
+                      : `${wishlist.length} saved item${wishlist.length === 1 ? "" : "s"}`}
+                  </p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setSidebarPanel(null)} className="text-slate-500 hover:text-slate-800">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-5">
+              {sidebarPanel === "cart" ? (
+                <>
+                  {cart.length === 0 ? (
+                    <div className="rounded-3xl border border-dashed border-green-200 bg-green-50 p-8 text-center text-slate-700">
+                      <p className="text-lg font-semibold">Your cart is empty</p>
+                      <p className="mt-2 text-sm text-slate-500">Add items to your cart and they will appear here.</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSidebarPanel(null);
+                          navigate("/shop");
+                        }}
+                        className="mt-5 rounded-full bg-[#0e6827] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#168637]"
+                      >
+                        Continue shopping
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {cart.map((item) => {
+                        const name = item.name || item.product_name || item.productName || "Product";
+                        const image = item.image || item.product_image || item.thumbnail_image || item.product_images?.[0] || "/placeholder.png";
+                        const price = item.offer_price || item.price || 0;
+
+                        return (
+                          <div key={item.id || item._id || item.product_id} className="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
+                            <div className="flex gap-4">
+                              <img src={image} alt={name} className="h-20 w-20 rounded-3xl object-cover" onError={(e) => { e.target.src = "/placeholder.png"; }} />
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="font-semibold text-slate-900 line-clamp-2">{name}</p>
+                                    <p className="mt-1 text-sm text-slate-500">₹{price}</p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeFromCart(item.id || item._id || item.product_id)}
+                                    className="rounded-full bg-slate-100 p-2 text-slate-500 hover:bg-slate-200"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                                <div className="mt-4 flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => updateCartQuantity(item.id || item._id || item.product_id, Math.max(1, (item.quantity || 1) - 1))}
+                                    className="h-8 w-8 rounded-full border border-gray-200 bg-white text-slate-700 hover:border-green-300"
+                                  >
+                                    <Minus size={14} />
+                                  </button>
+                                  <span className="min-w-[32px] text-center text-sm font-semibold">{item.quantity || 1}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => updateCartQuantity(item.id || item._id || item.product_id, (item.quantity || 1) + 1)}
+                                    className="h-8 w-8 rounded-full border border-gray-200 bg-white text-slate-700 hover:border-green-300"
+                                  >
+                                    <Plus size={14} />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      <div className="rounded-3xl border border-green-100 bg-green-50 p-4 text-sm text-slate-700">
+                        <div className="flex items-center justify-between">
+                          <span>Subtotal</span>
+                          <span className="font-semibold">₹{cartTotal.toLocaleString()}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => navigate("/cart")}
+                          className="mt-4 w-full rounded-full bg-[#0e6827] px-4 py-2 text-sm font-semibold text-white hover:bg-[#168637]"
+                        >
+                          Open full cart
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {wishlist.length === 0 ? (
+                    <div className="rounded-3xl border border-dashed border-green-200 bg-green-50 p-8 text-center text-slate-700">
+                      <p className="text-lg font-semibold">Wishlist is empty</p>
+                      <p className="mt-2 text-sm text-slate-500">Save your favorites and view them here anytime.</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSidebarPanel(null);
+                          navigate("/shop");
+                        }}
+                        className="mt-5 rounded-full bg-[#0e6827] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#168637]"
+                      >
+                        Shop products
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {wishlist.map((item) => {
+                        const name = item.name || item.product_name || item.productName || "Product";
+                        const image = item.image || item.product_image || item.thumbnail_image || item.product_images?.[0] || "/placeholder.png";
+                        const price = item.price || item.offer_price || 0;
+
+                        return (
+                          <div key={item.id || item._id || item.product_id} className="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
+                            <div className="flex gap-4">
+                              <img
+                                src={image}
+                                alt={name}
+                                className="h-20 w-20 rounded-3xl object-cover"
+                                onError={(e) => { e.target.src = "/placeholder.png"; }}
+                              />
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="font-semibold text-slate-900 line-clamp-2">{name}</p>
+                                    <p className="mt-1 text-sm text-slate-500">₹{price}</p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeFromWishlist(item.id || item._id || item.product_id)}
+                                    className="rounded-full bg-slate-100 p-2 text-slate-500 hover:bg-slate-200"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => navigate(`/products/${item.id || item.product_id}`)}
+                                  className="mt-4 rounded-full border border-green-200 bg-white px-3 py-2 text-sm font-semibold text-[#0e6827] hover:bg-green-50"
+                                >
+                                  View item
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </aside>
+        </div>
+      )}
 
       {/* Bottom Header - Green Navbar */}
       <div className="hidden md:block">
