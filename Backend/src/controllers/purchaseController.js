@@ -126,9 +126,13 @@ const initPurchaseTables = async () => {
             "transaction_number VARCHAR(100)", "reference_number VARCHAR(100)",
             "due_date DATE", "notes TEXT", "created_by VARCHAR(100)"
         ];
+        const [existingCols] = await pool.query(`SHOW COLUMNS FROM purchases`);
+        const existingColNames = existingCols.map(c => c.Field.toLowerCase());
         for (const col of purchaseCols) {
-            const colName = col.split(' ')[0];
-            try { await pool.query(`ALTER TABLE purchases ADD COLUMN IF NOT EXISTS ${col}`); } catch(e){}
+            const colName = col.split(' ')[0].toLowerCase();
+            if (!existingColNames.includes(colName)) {
+                try { await pool.query(`ALTER TABLE purchases ADD COLUMN ${col}`); } catch(e){ console.log('Col add skip:', colName, e.message); }
+            }
         }
 
         // 4. Purchase Items
@@ -271,6 +275,59 @@ const logAudit = async (pool, action, module, refId, refNumber, desc, user) => {
 
 /* ─── Auto-generate codes ────────────────────────────────── */
 const generateCode = (prefix) => `${prefix}-${Date.now().toString().slice(-7)}`;
+
+const getTableColumns = async (connection, tableName) => {
+    const [rows] = await connection.query(`SHOW COLUMNS FROM \`${tableName}\``);
+    return new Set(rows.map((row) => row.Field));
+};
+
+const insertRow = async (connection, tableName, data) => {
+    const columns = await getTableColumns(connection, tableName);
+    const entries = Object.entries(data).filter(([key, value]) => columns.has(key) && value !== undefined);
+
+    if (entries.length === 0) {
+        throw new Error(`No supported columns found for ${tableName}`);
+    }
+
+    const columnList = entries.map(([key]) => `\`${key}\``).join(', ');
+    const placeholders = entries.map(() => '?').join(', ');
+    const values = entries.map(([, value]) => value);
+
+    const [result] = await connection.query(`INSERT INTO \`${tableName}\` (${columnList}) VALUES (${placeholders})`, values);
+    return result;
+};
+
+const insertStockLedgerEntry = async (connection, payload) => {
+    const columns = await getTableColumns(connection, 'stock_ledger');
+    const data = {
+        product_id: payload.product_id,
+        batch_number: payload.batch_number,
+        transaction_type: payload.transaction_type || 'Purchase',
+        reference_id: payload.reference_id,
+        reference_number: payload.reference_number,
+        created_by: payload.created_by,
+    };
+
+    if (columns.has('quantity')) {
+        data.quantity = payload.quantity;
+    } else if (columns.has('quantity_in')) {
+        data.quantity_in = payload.quantity;
+    }
+
+    if (columns.has('quantity_out')) {
+        data.quantity_out = 0;
+    }
+
+    if (columns.has('opening_stock')) {
+        data.opening_stock = 0;
+    }
+
+    if (columns.has('closing_stock')) {
+        data.closing_stock = payload.quantity;
+    }
+
+    return insertRow(connection, 'stock_ledger', data);
+};
 
 /* =========================================
    DASHBOARD
@@ -526,45 +583,86 @@ const createPurchase = async (req, res) => {
         const balance_amount = (parseFloat(net_amount) || 0) - (parseFloat(paid_amount) || 0);
 
         // 1. Insert purchase header
-        const [purchaseResult] = await connection.query(`
-            INSERT INTO purchases (grn_number, po_id, supplier_id, supplier_invoice_no, invoice_date, warehouse, purchase_type,
-                subtotal, discount_percent, discount_amount, tax_amount, transport_charge, other_charge, round_off, net_amount,
-                paid_amount, balance_amount, payment_method, payment_status, due_date, transaction_number, reference_number, notes, created_by)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-            [grn_number, po_id||null, supplier_id, supplier_invoice_no, invoice_date, warehouse||'Main Warehouse',
-             purchase_type||'Credit Purchase', subtotal||0, discount_percent||0, discount_amount||0, tax_amount||0,
-             transport_charge||0, other_charge||0, round_off||0, net_amount||0, paid_amount||0, balance_amount,
-             payment_method||'Credit', payment_status||'Unpaid', due_date||null, transaction_number||null, reference_number||null, notes||null, created_by||'Admin']);
+        const purchaseResult = await insertRow(connection, 'purchases', {
+            purchase_number: grn_number,
+            grn_number,
+            po_id: po_id || null,
+            supplier_id,
+            supplier_invoice_no,
+            invoice_date,
+            warehouse: warehouse || 'Main Warehouse',
+            purchase_type: purchase_type || 'Credit Purchase',
+            subtotal: subtotal || 0,
+            discount_percent: discount_percent || 0,
+            discount_amount: discount_amount || 0,
+            tax_amount: tax_amount || 0,
+            transport_charge: transport_charge || 0,
+            other_charge: other_charge || 0,
+            round_off: round_off || 0,
+            net_amount: net_amount || 0,
+            paid_amount: paid_amount || 0,
+            balance_amount,
+            payment_method: payment_method || 'Credit',
+            payment_status: payment_status || 'Unpaid',
+            due_date: due_date || null,
+            transaction_number: transaction_number || null,
+            reference_number: reference_number || null,
+            notes: notes || null,
+            created_by: created_by || 'Admin'
+        });
 
         const purchase_id = purchaseResult.insertId;
 
         // 2. Insert items + stock ledger
         if (items && items.length > 0) {
             for (const item of items) {
-                await connection.query(`
-                    INSERT INTO purchase_items (purchase_id, product_id, product_name, barcode, sku, batch_number, lot_number,
-                        quantity, free_quantity, unit, unit_price, landing_cost, discount_percent, discount_amount,
-                        tax_percent, tax_amount, mrp, selling_price, expiry_date, manufacturing_date, total_price)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-                    [purchase_id, item.product_id||null, item.product_name, item.barcode||null, item.sku||null,
-                     item.batch_number||null, item.lot_number||null, item.quantity, item.free_quantity||0,
-                     item.unit||'Pcs', item.unit_price, item.landing_cost||item.unit_price,
-                     item.discount_percent||0, item.discount_amount||0, item.tax_percent||0, item.tax_amount||0,
-                     item.mrp||0, item.selling_price||0, item.expiry_date||null, item.manufacturing_date||null, item.total_price]);
+                await insertRow(connection, 'purchase_items', {
+                    purchase_id,
+                    product_id: item.product_id || null,
+                    product_name: item.product_name,
+                    barcode: item.barcode || null,
+                    sku: item.sku || null,
+                    batch_number: item.batch_number || null,
+                    lot_number: item.lot_number || null,
+                    quantity: item.quantity,
+                    free_quantity: item.free_quantity || 0,
+                    unit: item.unit || 'Pcs',
+                    unit_price: item.unit_price,
+                    landing_cost: item.landing_cost || item.unit_price,
+                    discount_percent: item.discount_percent || 0,
+                    discount_amount: item.discount_amount || 0,
+                    tax_percent: item.tax_percent || 0,
+                    tax_amount: item.tax_amount || 0,
+                    mrp: item.mrp || 0,
+                    selling_price: item.selling_price || 0,
+                    expiry_date: item.expiry_date || null,
+                    manufacturing_date: item.manufacturing_date || null,
+                    total_price: item.total_price
+                });
 
-                await connection.query(`
-                    INSERT INTO stock_ledger (product_id, batch_number, transaction_type, reference_id, reference_number, quantity_in, quantity_out, expiry_date, created_by)
-                    VALUES (?, ?, 'Purchase', ?, ?, ?, 0, ?, ?)`,
-                    [item.product_id||null, item.batch_number||null, purchase_id, grn_number, item.quantity, item.expiry_date||null, created_by||'Admin']);
+                await insertStockLedgerEntry(connection, {
+                    product_id: item.product_id || null,
+                    batch_number: item.batch_number || null,
+                    transaction_type: 'Purchase',
+                    reference_id: purchase_id,
+                    reference_number: grn_number,
+                    quantity: item.quantity,
+                    expiry_date: item.expiry_date || null,
+                    created_by: created_by || 'Admin'
+                });
             }
         }
 
         // 3. Record payment if any paid
         if (parseFloat(paid_amount) > 0) {
-            await connection.query(`
-                INSERT INTO purchase_payments (purchase_id, payment_date, payment_method, amount, transaction_number, reference_number)
-                VALUES (?, ?, ?, ?, ?, ?)`,
-                [purchase_id, invoice_date, payment_method||'Cash', paid_amount, transaction_number||null, reference_number||null]);
+            await insertRow(connection, 'purchase_payments', {
+                purchase_id,
+                payment_date: invoice_date,
+                payment_method: payment_method || 'Cash',
+                amount: paid_amount,
+                transaction_number: transaction_number || null,
+                reference_number: reference_number || null
+            });
         }
 
         // 4. Update supplier outstanding balance
@@ -621,8 +719,16 @@ const addPayment = async (req, res) => {
             return res.status(400).json({ success: false, message: `Amount exceeds balance of ₹${purchase.balance_amount}` });
         }
 
-        await connection.query(`INSERT INTO purchase_payments (purchase_id, payment_date, payment_method, amount, transaction_number, reference_number, remarks, created_by) VALUES (?,?,?,?,?,?,?,?)`,
-            [purchase_id, payment_date, payment_method||'Cash', amount, transaction_number||null, reference_number||null, remarks||null, created_by||'Admin']);
+        await insertRow(connection, 'purchase_payments', {
+            purchase_id,
+            payment_date,
+            payment_method: payment_method || 'Cash',
+            amount,
+            transaction_number: transaction_number || null,
+            reference_number: reference_number || null,
+            remarks: remarks || null,
+            created_by: created_by || 'Admin'
+        });
 
         const newPaid = parseFloat(purchase.paid_amount) + parseFloat(amount);
         const newBalance = parseFloat(purchase.net_amount) - newPaid;
@@ -667,22 +773,36 @@ const createReturn = async (req, res) => {
         const return_number = generateCode('PRN');
         const total_amount = (items||[]).reduce((s, i) => s + parseFloat(i.total_price||0), 0);
 
-        const [returnResult] = await connection.query(`
-            INSERT INTO purchase_returns (return_number, purchase_id, supplier_id, return_date, total_amount, reason, notes, status, created_by)
-            VALUES (?,?,?,?,?,?,?,'Pending',?)`,
-            [return_number, purchase_id||null, supplier_id, return_date, total_amount, reason, notes||null, created_by||'Admin']);
+        const returnResult = await insertRow(connection, 'purchase_returns', {
+            return_number,
+            purchase_id: purchase_id || null,
+            supplier_id,
+            return_date,
+            total_amount,
+            reason,
+            status: 'Pending',
+            created_by: created_by || 'Admin'
+        });
 
         const return_id = returnResult.insertId;
 
         for (const item of (items||[])) {
-            await connection.query(`
-                INSERT INTO purchase_return_items (return_id, product_id, product_name, quantity, unit_price, total_price)
-                VALUES (?,?,?,?,?,?)`,
-                [return_id, item.product_id||null, item.product_name, item.quantity, item.unit_price, item.total_price]);
-            await connection.query(`
-                INSERT INTO stock_ledger (product_id, transaction_type, reference_id, reference_number, quantity_in, quantity_out, created_by)
-                VALUES (?, 'Purchase Return', ?, ?, 0, ?, ?)`,
-                [item.product_id||null, return_id, return_number, item.quantity, created_by||'Admin']);
+            await insertRow(connection, 'purchase_return_items', {
+                purchase_return_id: return_id,
+                product_id: item.product_id || null,
+                quantity: item.quantity,
+                return_price: item.unit_price,
+                total: item.total_price
+            });
+
+            await insertStockLedgerEntry(connection, {
+                product_id: item.product_id || null,
+                transaction_type: 'Purchase Return',
+                reference_id: return_id,
+                reference_number: return_number,
+                quantity: item.quantity,
+                created_by: created_by || 'Admin'
+            });
         }
 
         await connection.query(`UPDATE suppliers SET outstanding_balance = GREATEST(0, outstanding_balance - ?) WHERE id=?`, [total_amount, supplier_id]);

@@ -529,6 +529,21 @@ const CreateBilling = () => {
                                         placeholder="Search product name or code..."
                                         value={productSearchTerm}
                                         onChange={(e) => setProductSearchTerm(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                const val = e.target.value.toLowerCase().trim();
+                                                const matched = products.filter(p => !val || (p.name || "").toString().toLowerCase().includes(val) || (p.product_code || "").toString().toLowerCase().includes(val));
+                                                if (matched.length > 0) {
+                                                    const p = matched[0];
+                                                    if (selectMode) toggleSelectItem(p);
+                                                    else {
+                                                        handleProductClick(p);
+                                                        setProductSearchTerm("");
+                                                    }
+                                                }
+                                            }
+                                        }}
                                         className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl focus:bg-white border-2 border-transparent focus:border-blue-100 transition-all text-sm outline-none font-bold"
                                     />
 

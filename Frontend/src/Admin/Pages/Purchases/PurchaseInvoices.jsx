@@ -36,6 +36,8 @@ const PurchaseInvoices = () => {
   const [productSearch, setProductSearch] = useState("");
   const [productDropdownIdx, setProductDropdownIdx] = useState(null);
   const searchRef = useRef(null);
+  const scanInputRef = useRef(null);
+  const [scanValue, setScanValue] = useState("");
 
   const [form, setForm] = useState({
     supplier_id: "", po_id: "", supplier_invoice_no: "", invoice_date: new Date().toISOString().split('T')[0],
@@ -66,7 +68,10 @@ const PurchaseInvoices = () => {
       ]);
       if (invRes.data.success) setInvoices(invRes.data.purchases);
       if (supRes.data.success) setSuppliers(supRes.data.suppliers.filter(s => s.status === 'Active'));
-      if (prodRes.data.success) setProducts(prodRes.data.products);
+      // /products/all returns a plain array OR { success, products }
+      const prodData = prodRes.data;
+      const prodArray = Array.isArray(prodData) ? prodData : (prodData.products || []);
+      setProducts(prodArray);
       if (poRes.data.success) setOrders(poRes.data.orders.filter(o => !['Fully Received','Cancelled'].includes(o.status)));
     } catch (err) { toast.error("Failed to load data"); }
     finally { setLoading(false); }
@@ -81,7 +86,47 @@ const PurchaseInvoices = () => {
       discount_percent: 0, transport_charge: 0, other_charge: 0, round_off: 0 });
     setItems([{ ...EMPTY_ITEM }]);
     setPaidAmount(0);
+    setScanValue("");
     setIsModalOpen(true);
+    setTimeout(() => scanInputRef.current?.focus(), 100);
+  };
+
+  const handleScanBarcode = (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const code = e.target.value.trim();
+    if (!code) return;
+    const matched = searchProduct(code, products);
+    if (!matched.length) {
+      toast.error(`Product "${code}" not found`);
+      setScanValue("");
+      return;
+    }
+    const product = matched[0];
+    setItems(prev => {
+      const updated = [...prev];
+      // Find first empty row, else add new row
+      const emptyIdx = updated.findIndex(i => !i.product_id);
+      const target = calcItem({
+        ...EMPTY_ITEM,
+        product_id: product.id,
+        product_name: product.title || product.name,
+        barcode: product.barcode || "",
+        sku: product.sku || "",
+        mrp: product.mrp || product.price || 0,
+        selling_price: product.price || 0,
+        unit_price: product.purchase_price || product.price || 0,
+      });
+      if (emptyIdx !== -1) {
+        updated[emptyIdx] = target;
+      } else {
+        updated.push(target);
+      }
+      return updated;
+    });
+    toast.success(`Added: ${product.title || product.name}`);
+    setScanValue("");
+    scanInputRef.current?.focus();
   };
 
   const handleFormChange = (e) => {
@@ -119,17 +164,34 @@ const PurchaseInvoices = () => {
     setProductSearch("");
   };
 
-  const filteredProducts = products.filter(p => {
-    const q = productSearch.toLowerCase();
-    return !q || (p.title||p.name||"").toLowerCase().includes(q) || (p.barcode||"").includes(q) || (p.sku||"").toLowerCase().includes(q);
-  }).slice(0, 12);
+  const searchProduct = (q, list) => {
+    const v = (q || "").toLowerCase().trim();
+    if (!v) return list;
+    // 1. Exact match (case-insensitive) on barcode / product_code / sku
+    const exact = list.filter(p =>
+      (p.barcode||"").toLowerCase() === v ||
+      (p.product_code||"").toLowerCase() === v ||
+      (p.sku||"").toLowerCase() === v
+    );
+    if (exact.length > 0) return exact;
+    // 2. Partial match on any field
+    return list.filter(p =>
+      (p.name||p.title||"").toLowerCase().includes(v) ||
+      (p.barcode||"").toLowerCase().includes(v) ||
+      (p.product_code||"").toLowerCase().includes(v) ||
+      (p.sku||"").toLowerCase().includes(v)
+    );
+  };
+  const filteredProducts = searchProduct(productSearch, products).slice(0, 12);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.supplier_id) return toast.error("Please select a supplier");
-    if (items.length === 0 || !items.some(i => i.product_name)) return toast.error("Add at least one product");
-    for (const item of items) {
-      if (!item.product_name) return toast.error("Fill in product name for all rows");
+    // Only consider rows where a product has been typed/selected
+    const filledItems = items.filter(i => i.product_name || i.product_id);
+    if (filledItems.length === 0) return toast.error("Add at least one product");
+    for (const item of filledItems) {
+      if (!item.product_id) return toast.error(`"${item.product_name}" was typed but not selected from the dropdown. Please pick it from the list.`);
       if ((parseFloat(item.quantity)||0) <= 0) return toast.error("Quantity must be > 0 for all items");
     }
     const paid = parseFloat(paidAmount) || 0;
@@ -139,7 +201,7 @@ const PurchaseInvoices = () => {
         ...form,
         subtotal, discount_amount: discountTotal + headerDisc, tax_amount: taxTotal,
         net_amount: netAmount, paid_amount: paid, balance_amount: balance, payment_status: payStatus,
-        items: items.filter(i => i.product_name), created_by: "Admin"
+        items: filledItems, created_by: "Admin"
       });
       if (res.data.success) {
         toast.success(`GRN Created: ${res.data.grn_number}`);
@@ -294,7 +356,7 @@ const PurchaseInvoices = () => {
             </div>
 
             <div className="flex-1 overflow-y-auto p-5">
-              <form id="grn-form" onSubmit={handleSubmit} className="space-y-6">
+              <form id="grn-form" onSubmit={handleSubmit} onKeyDown={(e) => { if (e.target.tagName === 'INPUT' && e.key === 'Enter') e.preventDefault(); }} className="space-y-6">
 
                 {/* ── Header ── */}
                 <div className="bg-gray-50 rounded-2xl p-5">
@@ -347,6 +409,22 @@ const PurchaseInvoices = () => {
                       <FiPlus size={12} /> Add Row
                     </button>
                   </div>
+                  {/* ── Barcode Scanner Bar ── */}
+                  <div className="flex items-center gap-3 mb-3 p-3 bg-indigo-50 border border-indigo-200 rounded-xl">
+                    <div className="flex items-center gap-2 text-indigo-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 5v4M3 15v4M7 5v4M7 15v4M11 5v4M11 15v4M15 5v4M15 15v4M19 5v4M19 15v4M3 9h2M7 9h2M11 9h2M15 9h2M19 9h2M3 15h2M7 15h2M11 15h2M15 15h2M19 15h2"/></svg>
+                    </div>
+                    <input
+                      ref={scanInputRef}
+                      type="text"
+                      value={scanValue}
+                      onChange={(e) => setScanValue(e.target.value)}
+                      onKeyDown={handleScanBarcode}
+                      placeholder="Scan barcode or type product code and press Enter..."
+                      className="flex-1 px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-400"
+                    />
+                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest whitespace-nowrap">Scanner Ready</span>
+                  </div>
                   <div className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden">
                     <div className="overflow-x-auto">
                       <table className="w-full min-w-[1200px] text-left">
@@ -376,6 +454,14 @@ const PurchaseInvoices = () => {
                                   value={productDropdownIdx === idx ? productSearch : (item.product_name || "")}
                                   onFocus={() => { setProductDropdownIdx(idx); setProductSearch(item.product_name || ""); }}
                                   onChange={(e) => { setProductSearch(e.target.value); updateItem(idx, 'product_name', e.target.value); }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      const matched = searchProduct(e.target.value, products);
+                                      if (matched.length > 0) selectProduct(idx, matched[0]);
+                                      else toast.error(`Product "${e.target.value}" not found`);
+                                    }
+                                  }}
                                   placeholder="Search product..."
                                   className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium outline-none focus:ring-1 focus:ring-indigo-400"
                                 />
@@ -385,7 +471,7 @@ const PurchaseInvoices = () => {
                                       <button key={p.id} type="button" onClick={() => selectProduct(idx, p)}
                                         className="w-full text-left px-3 py-2.5 hover:bg-indigo-50 border-b border-gray-50 last:border-0">
                                         <p className="text-xs font-bold text-slate-800">{p.title||p.name}</p>
-                                        <p className="text-[10px] text-gray-400">{p.barcode||p.sku||'No code'} • ₹{p.price}</p>
+                                        <p className="text-[10px] text-gray-400">{p.product_code||p.barcode||p.sku||'No code'} • ₹{p.price}</p>
                                       </button>
                                     ))}
                                   </div>

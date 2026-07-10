@@ -125,11 +125,18 @@ const createOrder = async (req, res) => {
         ]);
 
         if (items && items.length > 0) {
+            // check which columns exist on order_items to avoid inserting into missing columns
+            let orderItemColsSet = new Set();
+            try {
+                const [cols] = await connection.query("SHOW COLUMNS FROM order_items");
+                orderItemColsSet = new Set(cols.map(c => c.Field));
+            } catch (e) {
+                // table may not exist yet; initOrdersTable should have created it above
+            }
+
             for (const item of items) {
-                await connection.query(`
-                    INSERT INTO order_items (order_id, product_id, name, variant_info, variant_color, variant_size, price, quantity, total, image)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [
+                const cols = ['order_id','product_id','name','variant_info','variant_color','variant_size','price','quantity','total'];
+                const vals = [
                     order_id,
                     item.product_id || item.id,
                     item.name,
@@ -138,9 +145,17 @@ const createOrder = async (req, res) => {
                     item.variant_size || item.size || null,
                     item.price,
                     item.quantity,
-                    item.total || (parseFloat(item.price) * item.quantity),
-                    item.image || null
-                ]);
+                    item.total || (parseFloat(item.price) * item.quantity)
+                ];
+
+                if (orderItemColsSet.has('image')) {
+                    cols.push('image');
+                    vals.push(item.image || null);
+                }
+
+                const placeholders = cols.map(() => '?').join(', ');
+                const colList = cols.join(', ');
+                await connection.query(`INSERT INTO order_items (${colList}) VALUES (${placeholders})`, vals);
             }
         }
 
