@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import api from "../../../api";
-import { FiShoppingBag, FiPlus, FiSearch, FiX, FiCheck, FiEye, FiDownload, FiFilter } from "react-icons/fi";
+import { FiShoppingBag, FiPlus, FiSearch, FiX, FiCheck, FiEye, FiDownload, FiFilter, FiUpload, FiFileText } from "react-icons/fi";
 import { toast } from "react-hot-toast";
+import * as XLSX from "xlsx";
 
 const PAYMENT_METHODS = ["Cash","UPI","Debit Card","Credit Card","Bank Transfer","Cheque","Credit","Mixed"];
 const PURCHASE_TYPES = ["Cash Purchase","Credit Purchase","Direct Purchase","Purchase Against PO"];
@@ -37,7 +38,9 @@ const PurchaseInvoices = () => {
   const [productDropdownIdx, setProductDropdownIdx] = useState(null);
   const searchRef = useRef(null);
   const scanInputRef = useRef(null);
+  const fileInputRef = useRef(null);
   const [scanValue, setScanValue] = useState("");
+  const [importLoading, setImportLoading] = useState(false);
 
   const [form, setForm] = useState({
     supplier_id: "", po_id: "", supplier_invoice_no: "", invoice_date: new Date().toISOString().split('T')[0],
@@ -227,6 +230,149 @@ const PurchaseInvoices = () => {
     } catch { toast.error("Export failed"); }
   };
 
+  // ─── Download blank import template ───
+  const downloadTemplate = () => {
+    const headers = [
+      ["product_code", "product_name_or_barcode", "batch_number", "quantity", "free_quantity",
+       "unit_price", "discount_percent", "tax_percent", "mrp", "selling_price", "expiry_date"]
+    ];
+    const example = [
+      ["SPM001", "Test Organic Apples (or leave blank if product_code filled)", "BATCH-001", 10, 0, 150.00, 5, 18, 200, 180, "2027-12-31"],
+      ["SPM002", "", "BATCH-002", 5, 0, 300.00, 0, 12, 400, 350, "2027-06-30"],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...example]);
+    ws['!cols'] = [
+      { wch: 14 }, { wch: 40 }, { wch: 14 }, { wch: 10 }, { wch: 12 },
+      { wch: 12 }, { wch: 16 }, { wch: 12 }, { wch: 10 }, { wch: 14 }, { wch: 14 }
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Purchase Items");
+    XLSX.writeFile(wb, "purchase_items_template.xlsx");
+    toast.success("Template downloaded! Fill product_code (e.g. SPM001) to match products.");
+  };
+
+  // ─── Handle Excel/CSV import ───
+  const handleImportFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Reset input so same file can be re-imported
+    e.target.value = "";
+
+    setImportLoading(true);
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: "array", cellDates: true });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+        if (!rows.length) { toast.error("File is empty or could not be parsed."); setImportLoading(false); return; }
+
+        const notFound = [];
+        const parsedItems = rows.map((row) => {
+          // Normalise keys: lowercase, trim, spaces -> underscores
+          const r = {};
+          Object.keys(row).forEach(k => { r[k.toLowerCase().trim().replace(/\s+/g, '_')] = row[k]; });
+
+          // Build a prioritised list of identifiers to try:
+          // 1. product_code  (e.g. SPM001)
+          // 2. barcode       (full barcode number)
+          // 3. sku
+          // 4. product_name / product_name_or_barcode  (partial name match)
+          const productCode = String(r.product_code || "").trim();
+          const barcodeVal  = String(r.barcode || "").trim();
+          const skuVal      = String(r.sku || "").trim();
+          const nameVal     = String(r.product_name_or_barcode || r.product_name || r.name || "").trim();
+
+          let product = null;
+
+          // Try exact product_code match first (most reliable)
+          if (productCode) {
+            const found = products.filter(p =>
+              (p.product_code || "").toLowerCase() === productCode.toLowerCase()
+            );
+            if (found.length > 0) product = found[0];
+          }
+          // Then exact barcode
+          if (!product && barcodeVal) {
+            const found = products.filter(p =>
+              (p.barcode || "").toLowerCase() === barcodeVal.toLowerCase()
+            );
+            if (found.length > 0) product = found[0];
+          }
+          // Then exact sku
+          if (!product && skuVal) {
+            const found = products.filter(p =>
+              (p.sku || "").toLowerCase() === skuVal.toLowerCase()
+            );
+            if (found.length > 0) product = found[0];
+          }
+          // Finally fall back to name-based search
+          if (!product && nameVal) {
+            const matched = searchProduct(nameVal, products);
+            if (matched.length > 0) product = matched[0];
+          }
+
+          const query = productCode || barcodeVal || skuVal || nameVal;
+          if (!product) notFound.push(query || "(empty)");
+
+          const expiryRaw = r.expiry_date || r.expiry || "";
+          let expiryStr = "";
+          if (expiryRaw instanceof Date) {
+            expiryStr = expiryRaw.toISOString().split('T')[0];
+          } else if (expiryRaw) {
+            // Try to parse dd/mm/yyyy or yyyy-mm-dd
+            const parts = String(expiryRaw).split(/[\/\-]/);
+            if (parts.length === 3) {
+              if (parts[0].length === 4) expiryStr = expiryRaw; // yyyy-mm-dd
+              else expiryStr = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+            }
+          }
+
+          return calcItem({
+            ...EMPTY_ITEM,
+            product_id:       product?.id || "",
+            product_name:     product ? (product.title || product.name) : query,
+            barcode:          product?.barcode || "",
+            sku:              product?.sku || "",
+            batch_number:     String(r.batch_number || r.batch || ""),
+            quantity:         parseFloat(r.quantity || r.qty || 1) || 1,
+            free_quantity:    parseFloat(r.free_quantity || r.free || 0) || 0,
+            unit_price:       parseFloat(r.unit_price || r.price || product?.purchase_price || product?.price || 0) || 0,
+            discount_percent: parseFloat(r.discount_percent || r.discount || 0) || 0,
+            tax_percent:      parseFloat(r.tax_percent || r.tax || product?.tax_percent || 0) || 0,
+            mrp:              parseFloat(r.mrp || product?.mrp || product?.price || 0) || 0,
+            selling_price:    parseFloat(r.selling_price || r.sale_price || product?.price || 0) || 0,
+            expiry_date:      expiryStr,
+          });
+        });
+
+        // Replace existing rows (keep one empty row if all imports failed)
+        const validItems = parsedItems.filter(i => i.product_id);
+        if (validItems.length === 0 && notFound.length > 0) {
+          toast.error(`No matching products found. Check the product names/barcodes.`);
+          setImportLoading(false);
+          return;
+        }
+
+        setItems(validItems.length > 0 ? parsedItems : [{ ...EMPTY_ITEM }]);
+
+        if (notFound.length > 0) {
+          toast(`⚠️ ${notFound.length} product(s) not matched: ${notFound.slice(0,3).join(', ')}${notFound.length > 3 ? '...' : ''}`, { duration: 5000 });
+        } else {
+          toast.success(`✅ Imported ${parsedItems.length} item(s) successfully!`);
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to parse file. Please use the correct template.");
+      }
+      setImportLoading(false);
+    };
+    reader.onerror = () => { toast.error("Could not read file."); setImportLoading(false); };
+    reader.readAsArrayBuffer(file);
+  };
+
   const filtered = invoices.filter(i => {
     const q = search.toLowerCase();
     const matchSearch = !q || (i.grn_number||"").toLowerCase().includes(q) || (i.supplier_name||"").toLowerCase().includes(q) || (i.supplier_invoice_no||"").toLowerCase().includes(q);
@@ -405,9 +551,43 @@ const PurchaseInvoices = () => {
                 <div>
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-xs font-black text-indigo-600 uppercase tracking-widest">Line Items</h3>
-                    <button type="button" onClick={addItem} className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-1">
-                      <FiPlus size={12} /> Add Row
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {/* Download Template */}
+                      <button
+                        type="button"
+                        onClick={downloadTemplate}
+                        title="Download import template"
+                        className="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors flex items-center gap-1"
+                      >
+                        <FiFileText size={12} /> Template
+                      </button>
+
+                      {/* Import Excel/CSV */}
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={importLoading}
+                        title="Import items from Excel or CSV"
+                        className="text-xs font-bold text-purple-600 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-lg hover:bg-purple-100 transition-colors flex items-center gap-1 disabled:opacity-50"
+                      >
+                        {importLoading
+                          ? <><div className="w-3 h-3 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" /> Importing…</>
+                          : <><FiUpload size={12} /> Import Excel/CSV</>
+                        }
+                      </button>
+                      {/* hidden file input */}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".xlsx,.xls,.csv"
+                        className="hidden"
+                        onChange={handleImportFile}
+                      />
+
+                      <button type="button" onClick={addItem} className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-1">
+                        <FiPlus size={12} /> Add Row
+                      </button>
+                    </div>
                   </div>
                   {/* ── Barcode Scanner Bar ── */}
                   <div className="flex items-center gap-3 mb-3 p-3 bg-indigo-50 border border-indigo-200 rounded-xl">
