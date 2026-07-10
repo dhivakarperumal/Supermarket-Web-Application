@@ -23,6 +23,7 @@ const Checkout = () => {
   const [distanceInfo, setDistanceInfo] = useState({ loading: false, error: "", distanceKm: null });
   const buyNowQuantity = location.state?.quantity || 1;
   const SHOP_ADDRESS = "NH 179A, Salem - Tirupattur - Vaniyambadi Rd, Thiruppathur, Tamil Nadu 635601";
+  const SHOP_COORDINATES = { lat: 12.4968, lng: 78.5663 };
 
   const fetchAddresses = async () => {
     try {
@@ -94,21 +95,12 @@ const Checkout = () => {
     setDistanceInfo((prev) => ({ ...prev, loading: true, error: "" }));
 
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
+      (position) => {
         try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(SHOP_ADDRESS)}`
-          );
-          const data = await response.json();
-
-          if (!data?.length) {
-            throw new Error("Shop address could not be located.");
-          }
-
-          const shopLat = parseFloat(data[0].lat);
-          const shopLng = parseFloat(data[0].lon);
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
+          const shopLat = SHOP_COORDINATES.lat;
+          const shopLng = SHOP_COORDINATES.lng;
           const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
 
           setDistanceInfo({ loading: false, error: "", distanceKm: Number(distance.toFixed(1)) });
