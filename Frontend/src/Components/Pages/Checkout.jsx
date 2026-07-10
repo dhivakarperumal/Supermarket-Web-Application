@@ -114,6 +114,13 @@ const Checkout = () => {
     fetchDeliveryCharges();
   }, []);
 
+  // Recalculate delivery charge when distance or charges change
+  useEffect(() => {
+    if (distanceInfo.distanceKm && deliveryCharges) {
+      console.log("Recalculating delivery charge with distance:", distanceInfo.distanceKm, "and charges:", deliveryCharges);
+    }
+  }, [distanceInfo.distanceKm, deliveryCharges]);
+
   const calculateDeliveryCharge = (distanceKm, orderSubtotal) => {
     if (!deliveryCharges) return { charge: 0, message: "Delivery charges not available" };
     if (distanceKm === null || distanceKm === undefined) return { charge: 0, message: "" };
