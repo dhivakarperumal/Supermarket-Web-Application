@@ -87,6 +87,22 @@ const Header = ({ onMenuClick }) => {
     }
   }, [showSearch]);
 
+  // Global shortcut: press `/` to focus search (when not typing in other inputs)
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "/") {
+        const tag = document.activeElement?.tagName || "";
+        if (tag !== "INPUT" && tag !== "TEXTAREA") {
+          e.preventDefault();
+          setShowSearch(true);
+          setTimeout(() => searchInputRef.current?.focus(), 100);
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const getPageTitle = () => {
     if (pageTitles[location.pathname]) return pageTitles[location.pathname];
     for (const [path, title] of Object.entries(pageTitles)) {
