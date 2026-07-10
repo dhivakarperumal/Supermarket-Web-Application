@@ -640,7 +640,7 @@ const Checkout = () => {
                   <div className="mt-6 space-y-3 text-sm text-slate-600">
                     <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
                     <div className="flex justify-between">
-                      <span>Shipping</span>
+                      <span>Delivery Charges</span>
                       <span className={shipping === 0 ? "font-semibold text-green-600" : "font-semibold text-slate-800"}>
                         {shipping === 0 ? "Free" : `₹${shipping.toFixed(2)}`}
                       </span>
