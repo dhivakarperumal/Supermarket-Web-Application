@@ -226,181 +226,446 @@ const Navbar = () => {
         </PageContainer>
       </div>
 
-      {/* Cart/Wishlist Sidebar Drawer */}
+      {/* =======================
+    PREMIUM CART/WISHLIST SIDEBAR
+======================= */}
       {sidebarPanel && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSidebarPanel(null)} />
-          <aside className="relative ml-auto h-full w-full max-w-md overflow-y-auto bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-              <div className="flex items-center gap-3">
-                {sidebarPanel === "cart" ? (
-                  <ShoppingCart className="text-green-700" size={22} />
-                ) : (
-                  <Heart className="text-green-700" size={22} />
-                )}
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {sidebarPanel === "cart" ? "Your Cart" : "Wishlist"}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {sidebarPanel === "cart"
-                      ? `${cart.length} item${cart.length === 1 ? "" : "s"}`
-                      : `${wishlist.length} saved item${wishlist.length === 1 ? "" : "s"}`}
-                  </p>
+        <div className="fixed inset-0 z-[100] flex">
+
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+            onClick={() => setSidebarPanel(null)}
+          />
+
+          {/* Sidebar */}
+          <aside className="relative ml-auto h-full w-full max-w-md bg-[#f7f9f7] shadow-[0_0_40px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col animate-[slideIn_.3s_ease]">
+
+            {/* Yellow Top Border */}
+            <div className="h-1.5 bg-[#ffc107]" />
+
+            {/* Header */}
+            <div className="bg-[#0e6827] text-white px-6 py-5">
+
+              <div className="flex items-center justify-between">
+
+                <div className="flex items-center gap-4">
+
+                  <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+
+                    {sidebarPanel === "cart" ? (
+                      <ShoppingCart size={24} />
+                    ) : (
+                      <Heart size={24} />
+                    )}
+
+                  </div>
+
+                  <div>
+
+                    <h2 className="text-xl font-bold">
+
+                      {sidebarPanel === "cart"
+                        ? "Shopping Cart"
+                        : "My Wishlist"}
+
+                    </h2>
+
+                    <p className="text-sm text-green-100 mt-1">
+
+                      {sidebarPanel === "cart"
+                        ? `${cart.length} Item${cart.length !== 1 ? "s" : ""}`
+                        : `${wishlist.length} Saved Item${wishlist.length !== 1 ? "s" : ""}`}
+
+                    </p>
+
+                  </div>
+
                 </div>
+
+                <button
+                  onClick={() => setSidebarPanel(null)}
+                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition flex items-center justify-center"
+                >
+                  <X size={22} />
+                </button>
+
               </div>
-              <button type="button" onClick={() => setSidebarPanel(null)} className="text-slate-500 hover:text-slate-800">
-                <X size={20} />
-              </button>
+
             </div>
 
-            <div className="p-5">
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-5">
+
               {sidebarPanel === "cart" ? (
+
                 <>
                   {cart.length === 0 ? (
-                    <div className="rounded-3xl border border-dashed border-green-200 bg-green-50 p-8 text-center text-slate-700">
-                      <p className="text-lg font-semibold">Your cart is empty</p>
-                      <p className="mt-2 text-sm text-slate-500">Add items to your cart and they will appear here.</p>
+
+                    <div className="flex flex-col items-center justify-center text-center bg-white rounded-3xl shadow-lg p-10 mt-6">
+
+                      <div className="w-24 h-24 rounded-full bg-green-50 flex items-center justify-center mb-6">
+
+                        <ShoppingCart
+                          size={42}
+                          className="text-[#0e6827]"
+                        />
+
+                      </div>
+
+                      <h3 className="text-2xl font-bold text-[#0e6827]">
+
+                        Your Cart is Empty
+
+                      </h3>
+
+                      <p className="text-gray-500 mt-3 leading-relaxed">
+
+                        Looks like you haven't added anything yet.
+                        Start shopping and fill your cart with fresh groceries.
+
+                      </p>
+
                       <button
-                        type="button"
                         onClick={() => {
                           setSidebarPanel(null);
                           navigate("/shop");
                         }}
-                        className="mt-5 rounded-full bg-[#0e6827] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#168637]"
+                        className="mt-8 bg-[#ffc107] hover:bg-yellow-400 text-black font-bold px-8 py-3 rounded-xl transition-all duration-300 shadow-lg hover:scale-105"
                       >
-                        Continue shopping
+                        Continue Shopping
                       </button>
+
                     </div>
+
                   ) : (
-                    <div className="space-y-4">
+
+                    <div className="space-y-5">
+
+                      {/* Cart Items Start Here */}
+
                       {cart.map((item) => {
-                        const name = item.name || item.product_name || item.productName || "Product";
-                        const image = item.image || item.product_image || item.thumbnail_image || item.product_images?.[0] || "/placeholder.png";
-                        const price = item.offer_price || item.price || 0;
+                        const name =
+                          item.name ||
+                          item.product_name ||
+                          item.productName ||
+                          "Product";
+
+                        const image =
+                          item.image ||
+                          item.product_image ||
+                          item.thumbnail_image ||
+                          item.product_images?.[0] ||
+                          "/placeholder.png";
+
+                        const price =
+                          item.offer_price ||
+                          item.price ||
+                          0;
 
                         return (
-                          <div key={item.id || item._id || item.product_id} className="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
-                            <div className="flex gap-4">
-                              <img src={image} alt={name} className="h-20 w-20 rounded-3xl object-cover" onError={(e) => { e.target.src = "/placeholder.png"; }} />
-                              <div className="flex-1">
-                                <div className="flex items-start justify-between gap-3">
-                                  <div>
-                                    <p className="font-semibold text-slate-900 line-clamp-2">{name}</p>
-                                    <p className="mt-1 text-sm text-slate-500">₹{price}</p>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => removeFromCart(item.id || item._id || item.product_id)}
-                                    className="rounded-full bg-slate-100 p-2 text-slate-500 hover:bg-slate-200"
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
-                                </div>
-                                <div className="mt-4 flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => updateCartQuantity(item.id || item._id || item.product_id, Math.max(1, (item.quantity || 1) - 1))}
-                                    className="h-8 w-8 rounded-full border border-gray-200 bg-white text-slate-700 hover:border-green-300"
-                                  >
-                                    <Minus size={14} />
-                                  </button>
-                                  <span className="min-w-[32px] text-center text-sm font-semibold">{item.quantity || 1}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => updateCartQuantity(item.id || item._id || item.product_id, (item.quantity || 1) + 1)}
-                                    className="h-8 w-8 rounded-full border border-gray-200 bg-white text-slate-700 hover:border-green-300"
-                                  >
-                                    <Plus size={14} />
-                                  </button>
+                          <div
+                            key={item.id || item._id || item.product_id}
+                            className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-green-100 overflow-hidden"
+                          >
+                            <div className="flex gap-4 p-4">
+
+                              {/* Product Image */}
+                              <div className="relative">
+                                <img
+                                  src={image}
+                                  alt={name}
+                                  className="h-24 w-24 rounded-xl border-2 border-green-100 object-cover bg-white"
+                                  onError={(e) => {
+                                    e.target.src = "/placeholder.png";
+                                  }}
+                                />
+
+                                <div className="absolute -top-2 -right-2 bg-[#ffc107] text-black text-[10px] font-bold px-2 py-1 rounded-full shadow">
+                                  Fresh
                                 </div>
                               </div>
+
+                              {/* Product Details */}
+                              <div className="flex-1 flex flex-col justify-between">
+
+                                <div>
+
+                                  <div className="flex items-start justify-between gap-3">
+
+                                    <div>
+
+                                      <h3 className="font-bold text-gray-800 line-clamp-2 leading-6">
+                                        {name}
+                                      </h3>
+
+                                      <p className="mt-2 text-2xl font-bold text-[#0e6827]">
+                                        ₹{price}
+                                      </p>
+
+                                    </div>
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        removeFromCart(
+                                          item.id ||
+                                          item._id ||
+                                          item.product_id
+                                        )
+                                      }
+                                      className="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center"
+                                    >
+                                      <Trash2 size={18} />
+                                    </button>
+
+                                  </div>
+
+                                </div>
+
+                                {/* Quantity */}
+                                <div className="mt-5 flex items-center justify-between">
+
+                                  <div className="flex items-center bg-green-50 rounded-xl p-1">
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        updateCartQuantity(
+                                          item.id ||
+                                          item._id ||
+                                          item.product_id,
+                                          Math.max(
+                                            1,
+                                            (item.quantity || 1) - 1
+                                          )
+                                        )
+                                      }
+                                      className="h-9 w-9 rounded-lg bg-[#0e6827] text-white hover:bg-green-700 transition flex items-center justify-center"
+                                    >
+                                      <Minus size={15} />
+                                    </button>
+
+                                    <span className="w-12 text-center font-bold text-[#0e6827]">
+                                      {item.quantity || 1}
+                                    </span>
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        updateCartQuantity(
+                                          item.id ||
+                                          item._id ||
+                                          item.product_id,
+                                          (item.quantity || 1) + 1
+                                        )
+                                      }
+                                      className="h-9 w-9 rounded-lg bg-[#0e6827] text-white hover:bg-green-700 transition flex items-center justify-center"
+                                    >
+                                      <Plus size={15} />
+                                    </button>
+
+                                  </div>
+
+                                  <div className="text-right">
+
+                                    <p className="text-xs text-gray-500">
+                                      Total
+                                    </p>
+
+                                    <p className="text-lg font-bold text-[#0e6827]">
+                                      ₹
+                                      {(
+                                        price *
+                                        (item.quantity || 1)
+                                      ).toLocaleString()}
+                                    </p>
+
+                                  </div>
+
+                                </div>
+
+                              </div>
+
                             </div>
                           </div>
                         );
                       })}
 
-                      <div className="rounded-3xl border border-green-100 bg-green-50 p-4 text-sm text-slate-700">
-                        <div className="flex items-center justify-between">
-                          <span>Subtotal</span>
-                          <span className="font-semibold">₹{cartTotal.toLocaleString()}</span>
+                      {/* Subtotal Card */}
+
+                      <div className="mt-6 rounded-3xl bg-[#0e6827] text-white shadow-xl p-6">
+
+                        <div className="flex justify-between items-center">
+
+                          <span className="text-green-100">
+                            Cart Subtotal
+                          </span>
+
+                          <span className="text-3xl font-bold text-[#ffc107]">
+                            ₹{cartTotal.toLocaleString()}
+                          </span>
+
                         </div>
+
                         <button
                           type="button"
                           onClick={() => navigate("/cart")}
-                          className="mt-4 w-full rounded-full bg-[#0e6827] px-4 py-2 text-sm font-semibold text-white hover:bg-[#168637]"
+                          className="mt-6 w-full rounded-xl bg-[#ffc107] py-3 text-black font-bold hover:bg-yellow-400 transition-all duration-300"
                         >
-                          Open full cart
+                          Proceed to Cart →
                         </button>
+
                       </div>
+
                     </div>
+
                   )}
+
                 </>
               ) : (
                 <>
                   {wishlist.length === 0 ? (
-                    <div className="rounded-3xl border border-dashed border-green-200 bg-green-50 p-8 text-center text-slate-700">
-                      <p className="text-lg font-semibold">Wishlist is empty</p>
-                      <p className="mt-2 text-sm text-slate-500">Save your favorites and view them here anytime.</p>
+
+                    <div className="flex flex-col items-center justify-center text-center bg-white rounded-3xl shadow-lg p-10 mt-6">
+
+                      <div className="w-24 h-24 rounded-full bg-red-50 flex items-center justify-center mb-6">
+
+                        <Heart
+                          size={42}
+                          className="text-red-500"
+                        />
+
+                      </div>
+
+                      <h3 className="text-2xl font-bold text-[#0e6827]">
+                        Your Wishlist is Empty
+                      </h3>
+
+                      <p className="mt-3 text-gray-500 leading-relaxed">
+                        Save products you love and they'll appear
+                        here for quick access anytime.
+                      </p>
+
                       <button
-                        type="button"
                         onClick={() => {
                           setSidebarPanel(null);
                           navigate("/shop");
                         }}
-                        className="mt-5 rounded-full bg-[#0e6827] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#168637]"
+                        className="mt-8 bg-[#ffc107] hover:bg-yellow-400 text-black font-bold px-8 py-3 rounded-xl transition-all duration-300 shadow-lg hover:scale-105"
                       >
-                        Shop products
+                        Browse Products
                       </button>
+
                     </div>
+
                   ) : (
-                    <div className="space-y-4">
+
+                    <div className="space-y-5">
+
                       {wishlist.map((item) => {
-                        const name = item.name || item.product_name || item.productName || "Product";
-                        const image = item.image || item.product_image || item.thumbnail_image || item.product_images?.[0] || "/placeholder.png";
-                        const price = item.price || item.offer_price || 0;
+
+                        const name =
+                          item.name ||
+                          item.product_name ||
+                          item.productName ||
+                          "Product";
+
+                        const image =
+                          item.image ||
+                          item.product_image ||
+                          item.thumbnail_image ||
+                          item.product_images?.[0] ||
+                          "/placeholder.png";
+
+                        const price =
+                          item.offer_price ||
+                          item.price ||
+                          0;
 
                         return (
-                          <div key={item.id || item._id || item.product_id} className="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
-                            <div className="flex gap-4">
+
+                          <div
+                            key={item.id || item._id || item.product_id}
+                            className="bg-white rounded-2xl border border-green-100 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
+                          >
+
+                            <div className="flex gap-4 p-4">
+
+                              {/* Image */}
                               <img
                                 src={image}
                                 alt={name}
-                                className="h-20 w-20 rounded-3xl object-cover"
-                                onError={(e) => { e.target.src = "/placeholder.png"; }}
+                                className="h-24 w-24 rounded-xl border-2 border-green-100 object-cover bg-white"
+                                onError={(e) => {
+                                  e.target.src = "/placeholder.png";
+                                }}
                               />
-                              <div className="flex-1">
-                                <div className="flex items-start justify-between gap-3">
+
+                              {/* Details */}
+                              <div className="flex-1 flex flex-col justify-between">
+
+                                <div className="flex items-start justify-between">
+
                                   <div>
-                                    <p className="font-semibold text-slate-900 line-clamp-2">{name}</p>
-                                    <p className="mt-1 text-sm text-slate-500">₹{price}</p>
+
+                                    <h3 className="font-bold text-gray-800 line-clamp-2">
+                                      {name}
+                                    </h3>
+
+                                    <p className="mt-2 text-2xl font-bold text-[#0e6827]">
+                                      ₹{price}
+                                    </p>
+
                                   </div>
+
                                   <button
-                                    type="button"
-                                    onClick={() => removeFromWishlist(item.id || item._id || item.product_id)}
-                                    className="rounded-full bg-slate-100 p-2 text-slate-500 hover:bg-slate-200"
+                                    onClick={() =>
+                                      removeFromWishlist(
+                                        item.id ||
+                                        item._id ||
+                                        item.product_id
+                                      )
+                                    }
+                                    className="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center"
                                   >
-                                    <Trash2 size={16} />
+                                    <Trash2 size={18} />
                                   </button>
+
                                 </div>
+
                                 <button
-                                  type="button"
-                                  onClick={() => navigate(`/products/${item.id || item.product_id}`)}
-                                  className="mt-4 rounded-full border border-green-200 bg-white px-3 py-2 text-sm font-semibold text-[#0e6827] hover:bg-green-50"
+                                  onClick={() => {
+                                    setSidebarPanel(null);
+                                    navigate(
+                                      `/products/${item.id || item.product_id}`
+                                    );
+                                  }}
+                                  className="mt-5 w-full rounded-xl bg-[#0e6827] py-3 text-white font-semibold hover:bg-green-700 transition"
                                 >
-                                  View item
+                                  View Product
                                 </button>
+
                               </div>
+
                             </div>
+
                           </div>
+
                         );
+
                       })}
+
                     </div>
+
                   )}
                 </>
               )}
+
             </div>
+
           </aside>
+
         </div>
       )}
 
