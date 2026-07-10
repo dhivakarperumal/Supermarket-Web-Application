@@ -41,7 +41,7 @@ export default function HeroSlider() {
     }, [bannersCache, setBannersCache]);
 
     if (loading) return (
-        <div className="w-full h-[80vh] bg-slate-50 animate-pulse flex items-center justify-center">
+        <div className="w-full h-[70vh] bg-slate-50 animate-pulse flex items-center justify-center">
             <p className="text-slate-300 font-serif italic text-xl">Curating Elegance...</p>
         </div>
     );

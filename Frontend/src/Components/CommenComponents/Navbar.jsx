@@ -90,10 +90,10 @@ const Navbar = () => {
   }, 0);
 
   return (
-    <div className="sticky top-0 z-40 bg-white py-4 border-b border-gray-100">
+    <div className="sticky top-0 z-40 bg-white pt-1 border-b border-gray-100">
 
       {/* Top Header - White */}
-      <div className="relative z-[80] bg-white py-4 border-b border-gray-100 overflow-visible">
+      <div className="relative z-[80] bg-white border-b border-gray-100 overflow-visible">
         <PageContainer>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8">
 
@@ -102,7 +102,7 @@ const Navbar = () => {
               <img
                 src={logo}
                 alt="Supermarket Logo"
-                className="h-10 md:h-14 object-contain"
+                className="h-10 md:h-18 object-contain"
               />
               {/* Mobile Menu Button */}
               <button
@@ -216,9 +216,9 @@ const Navbar = () => {
 
       {/* Bottom Header - Green Navbar */}
       <div className="hidden md:block">
-        <div className="sticky top-0 z-30 bg-[#0e6827] border-b-4 border-[#0b511d] shadow-md">
+        <div className="sticky top-0 z-30 bg-[#0e6827] border-[#0b511d] shadow-md">
           <PageContainer>
-            <div className="grid grid-cols-3 items-center h-12">
+            <div className="grid grid-cols-3 items-center h-9">
 
               <div className="flex justify-start items-center h-full gap-4">
                 {/* Categories Dropdown Button */}
@@ -276,7 +276,7 @@ const Navbar = () => {
                   Shop
                 </NavLink>
 
-                {categories.slice(0, 7).map((cat) => (
+                {categories.slice(0, 4).map((cat) => (
                   <NavLink
                     key={cat.id}
                     to={`/category/${cat.slug || cat.name}`}

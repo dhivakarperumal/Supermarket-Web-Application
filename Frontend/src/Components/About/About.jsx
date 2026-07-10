@@ -7,6 +7,7 @@ import {
   FaLeaf,
   FaShippingFast,
   FaTags,
+  FaShieldAlt,
 } from "react-icons/fa";
 
 export default function About() {
@@ -44,16 +45,16 @@ export default function About() {
 
             <Heading title="Where Freshness Meets Convenience" />
 
-            <p className="   text-gray-600 leading-8 text-lg">
+            {/* <p className="   text-gray-600 leading-8 text-lg">
               We provide farm-fresh fruits, vegetables, groceries,
               dairy products, beverages, household essentials, and
               daily needs at affordable prices. Our mission is to make
               grocery shopping easy, convenient, and enjoyable for every
               family.
-            </p>
+            </p> */}
 
             {/* Features */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
 
               {/* Card 1 */}
               <div className="group relative overflow-hidden rounded-2xl border border-green-500 bg-white p-6 shadow-2xl transition-all duration-300 hover:border-green-100 hover:shadow-md">
@@ -121,6 +122,32 @@ export default function About() {
                       Fresh fruits and vegetables sourced directly from trusted local farms every day.
                     </p>
                   </div>
+                </div>
+
+              </div>
+
+              {/* Card 4 */}
+              <div className="group relative overflow-hidden rounded-2xl border border-green-500 bg-white p-6 shadow-2xl transition-all duration-300 hover:border-green-100 hover:shadow-md">
+
+                {/* Top Line */}
+                <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-green-500 to-lime-400 scale-x-100 group-hover:scale-x-0 transition-transform duration-300 origin-left"></div>
+
+                <div className="flex items-start gap-4">
+
+                  <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-green-600 text-white flex items-center justify-center text-2xl mt-1 transition-all duration-300 group-hover:bg-green-100 group-hover:text-green-600">
+                    <FaShieldAlt />
+                  </div>
+
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900">
+                      Quality Assured
+                    </h4>
+
+                    <p className="text-gray-500 text-sm leading-6 mt-2">
+                      Every product is carefully inspected to ensure premium quality and freshness before delivery.
+                    </p>
+                  </div>
+
                 </div>
 
               </div>

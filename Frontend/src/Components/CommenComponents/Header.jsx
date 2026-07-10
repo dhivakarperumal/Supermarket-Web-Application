@@ -14,7 +14,7 @@ const Header = () => {
   return (
     <div className="hidden md:block bg-[#0b511d] text-white text-[13px] border-b border-green-800">
       <PageContainer>
-        <div className="h-9 flex items-center justify-between">
+        <div className="h-8 flex items-center justify-between">
 
           {/* Left */}
           <div className="flex items-center gap-2 font-medium">

@@ -49,7 +49,7 @@ const TrendingProducts = () => {
       <PageContainer>
         <div className="py-5">
           <Heading title="Trending Products" />
-          <div className="grid grid-cols-2 lg:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="bg-white rounded-3xl border border-gray-100 overflow-hidden animate-pulse">
                 <div className="w-full h-80 bg-gray-100"></div>
@@ -82,7 +82,7 @@ const TrendingProducts = () => {
             480: { slidesPerView: 2 },
             640: { slidesPerView: 3 },
             768: { slidesPerView: 4 },
-            1024: { slidesPerView: 6 },
+            1024: { slidesPerView: 5 },
           }}
         >
           {Array.isArray(products) && products.map((product) => (
