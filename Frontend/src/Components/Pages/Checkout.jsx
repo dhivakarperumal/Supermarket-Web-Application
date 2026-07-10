@@ -25,11 +25,8 @@ const Checkout = () => {
   const [deliveryChargeError, setDeliveryChargeError] = useState("");
   const buyNowQuantity = location.state?.quantity || 1;
   const SHOP_ADDRESS =
-    "3, 1st St, Mohammed Pura, Flower Bazar, Ambur, Tamil Nadu 635802";
-  const SHOP_COORDINATES = {
-    lat: 12.7854,
-    lng: 78.7184,
-  };
+    "NH 179A, Salem - Tirupattur - Vaniyambadi Rd, Thiruppathur, Tamil Nadu 635601 ";
+  const SHOP_COORDINATES = { lat: 12.4968, lng: 78.5663 };
 
   const fetchAddresses = async () => {
     try {
@@ -82,7 +79,7 @@ const Checkout = () => {
     try {
       const res = await api.get("/delivery-charges");
       console.log("Delivery charges API response:", res.data);
-      
+
       let chargesData = null;
       // API returns { success: true, data: settings }
       if (res.data?.data) {
@@ -95,7 +92,7 @@ const Checkout = () => {
           chargesData = res.data;
         }
       }
-      
+
       if (chargesData && chargesData.id) {
         setDeliveryCharges(chargesData);
         console.log("Delivery charges set to:", chargesData);
@@ -488,12 +485,12 @@ const Checkout = () => {
                   </div>
                   <p className="text-sm text-slate-500">Click the button below to fetch your current location and estimate the distance to our shop.</p>
 
-                  
-                    <div className="mb-4 rounded-lg bg-blue-50 p-3 text-sm">
-                      <p className="text-slate-700">
-                        <span className="font-semibold">Max Delivery Distance:</span> {deliveryCharges?.maximum_delivery_distance || "N/A"} km
-                      </p>
-                    </div>
+
+                  <div className="mb-4 rounded-lg bg-blue-50 p-3 text-sm">
+                    <p className="text-slate-700">
+                      <span className="font-semibold">Max Delivery Distance:</span> {deliveryCharges?.maximum_delivery_distance || "N/A"} km
+                    </p>
+                  </div>
 
                   <div className="mt-4 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">
                     {!distanceInfo.distanceKm && !distanceInfo.error && !distanceInfo.loading ? (
