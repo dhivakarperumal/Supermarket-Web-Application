@@ -24,6 +24,7 @@ const reportsRouter = require("./src/routers/reportsRouter");
 const attendanceRouter = require("./src/routers/attendanceRouter");
 const leaveRouter = require("./src/routers/leaveRouter");
 const salaryRouter = require("./src/routers/salaryRouter");
+const purchaseRouter = require("./src/routers/purchaseRoutes");
 
 dotenv.config();
 
@@ -79,6 +80,7 @@ app.use("/api/reports", reportsRouter);
 app.use("/api/attendance", attendanceRouter);
 app.use("/api/leave", leaveRouter);
 app.use("/api/salary", salaryRouter);
+app.use("/api/purchases", purchaseRouter);
 
 // Port
 const PORT = process.env.PORT || 5000;
@@ -90,4 +92,8 @@ const startServer = async () => {
   });
 };
 
-startServer();
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = app;

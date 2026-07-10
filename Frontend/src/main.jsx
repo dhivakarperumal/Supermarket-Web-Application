@@ -68,6 +68,17 @@ const LeaveManagement = React.lazy(() => import("./Admin/Staff/LeaveManagement.j
 const SalaryManagement = React.lazy(() => import("./Admin/Staff/SalaryManagement.jsx"));
 const Payslip = React.lazy(() => import("./Admin/Staff/Payslip.jsx"));
 
+// Lazy Load Purchase Components
+const PurchaseDashboard = React.lazy(() => import("./Admin/Pages/Purchases/PurchaseDashboard.jsx"));
+const Suppliers = React.lazy(() => import("./Admin/Pages/Purchases/Suppliers.jsx"));
+const PurchaseOrdersList = React.lazy(() => import("./Admin/Pages/Purchases/PurchaseOrders.jsx"));
+const PurchaseInvoices = React.lazy(() => import("./Admin/Pages/Purchases/PurchaseInvoices.jsx"));
+const PurchaseReturns = React.lazy(() => import("./Admin/Pages/Purchases/PurchaseReturns.jsx"));
+const PurchasePayments = React.lazy(() => import("./Admin/Pages/Purchases/PurchasePayments.jsx"));
+const PurchaseReports = React.lazy(() => import("./Admin/Pages/Purchases/PurchaseReports.jsx"));
+const PurchaseImport = React.lazy(() => import("./Admin/Pages/Purchases/PurchaseImport.jsx"));
+
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -142,6 +153,17 @@ const router = createBrowserRouter([
       { path: "dealer/all", element: <Dealers /> },
       { path: "dealer/:id", element: <DealerDetail /> },
       { path: "dealer/purchase-order/new", element: <PurchaseOrder /> },
+
+      // Purchases
+      { path: "purchases/dashboard", element: <PurchaseDashboard /> },
+      { path: "purchases/suppliers", element: <Suppliers /> },
+      { path: "purchases/orders", element: <PurchaseOrdersList /> },
+      { path: "purchases/all", element: <PurchaseInvoices /> },
+      { path: "purchases/returns", element: <PurchaseReturns /> },
+      { path: "purchases/payments", element: <PurchasePayments /> },
+      { path: "purchases/reports", element: <PurchaseReports /> },
+      { path: "purchases/import", element: <PurchaseImport /> },
+
       { path: "dealer/mapping", element: <DealerProductMapping /> },
       { path: "dealer/add", element: <AddDealer /> },
       { path: "dealer/orders", element: <Orders statusFilter="All" /> },

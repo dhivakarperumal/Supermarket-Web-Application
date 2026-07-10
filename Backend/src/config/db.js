@@ -1,5 +1,6 @@
 const mysql = require("mysql2/promise");
 const { createUsersTable } = require("./initDatabase");
+const { initPurchaseTables } = require("../controllers/purchaseController");
 
 let pool;
 
@@ -45,6 +46,7 @@ const getLargePacketConnection = async () => {
 
 const initDatabase = async () => {
   await createUsersTable();
+  await initPurchaseTables();
 };
 
 module.exports = {
