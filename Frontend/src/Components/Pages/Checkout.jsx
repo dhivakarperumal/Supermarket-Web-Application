@@ -22,8 +22,12 @@ const Checkout = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [distanceInfo, setDistanceInfo] = useState({ loading: false, error: "", distanceKm: null });
   const buyNowQuantity = location.state?.quantity || 1;
-  const SHOP_ADDRESS = "NH 179A, Salem - Tirupattur - Vaniyambadi Rd, Thiruppathur, Tamil Nadu 635601";
-  const SHOP_COORDINATES = { lat: 12.4968, lng: 78.5663 };
+  const SHOP_ADDRESS =
+    "3, 1st St, Mohammed Pura, Flower Bazar, Ambur, Tamil Nadu 635802";
+  const SHOP_COORDINATES = {
+    lat: 12.7854,
+    lng: 78.7184,
+  };
 
   const fetchAddresses = async () => {
     try {
@@ -519,7 +523,7 @@ const Checkout = () => {
 
               <aside className="lg:sticky lg:top-24">
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-                 
+
                   <div className="mt-6 space-y-3 text-sm text-slate-600">
                     <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal}</span></div>
                     <div className="flex justify-between"><span>Shipping</span><span className="font-semibold text-green-600">Free</span></div>
