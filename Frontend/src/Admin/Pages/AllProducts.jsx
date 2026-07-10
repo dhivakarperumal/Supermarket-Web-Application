@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../api";
 import { toast, Toaster } from "react-hot-toast";
 import { FaRupeeSign } from "react-icons/fa";
+import jsPDF from "jspdf";
+import JsBarcode from "jsbarcode";
 import {
     FiPlus,
     FiSearch,
@@ -17,7 +19,8 @@ import {
     FiChevronRight,
     FiPackage,
     FiLayout,
-    FiDatabase
+    FiDatabase,
+    FiDownload
 } from "react-icons/fi";
 
 const AllProducts = () => {
@@ -220,6 +223,64 @@ const AllProducts = () => {
         return `https://ui-avatars.com/api/?name=${encodeURIComponent(product.name || 'P')}&background=random`;
     };
 
+    const downloadBarcodesPDF = () => {
+        if (!products || products.length === 0) {
+            toast.error("No products available to generate barcodes.");
+            return;
+        }
+
+        toast.loading("Generating Barcode PDF...", { id: "barcode-pdf" });
+        const doc = new jsPDF();
+        
+        let x = 10;
+        let y = 10;
+        const width = 50;
+        const height = 25;
+        const paddingX = 15;
+        const paddingY = 15;
+        const columns = 3;
+        const rows = 10;
+        
+        const canvas = document.createElement("canvas");
+
+        products.forEach((product, index) => {
+            if (index > 0 && index % (columns * rows) === 0) {
+                doc.addPage();
+                x = 10;
+                y = 10;
+            } else if (index > 0 && index % columns === 0) {
+                x = 10;
+                y += height + paddingY;
+            }
+
+            const barcodeValue = product.barcode || product.product_code || `SKU${product.id}`;
+            
+            try {
+                JsBarcode(canvas, barcodeValue, {
+                    format: "CODE128",
+                    displayValue: true,
+                    fontSize: 14,
+                    margin: 2,
+                    width: 2,
+                    height: 40
+                });
+                
+                const imgData = canvas.toDataURL("image/jpeg");
+                doc.addImage(imgData, 'JPEG', x, y, width, height);
+                doc.setFontSize(8);
+                const maxLen = 25;
+                const nameStr = product.name.length > maxLen ? product.name.substring(0, maxLen) + '...' : product.name;
+                doc.text(nameStr, x + width/2, y - 2, { align: "center" });
+            } catch (e) {
+                console.error("Barcode generation error", e);
+            }
+            x += width + paddingX;
+        });
+
+        doc.save("Product_Barcodes.pdf");
+        toast.success("PDF Downloaded!", { id: "barcode-pdf" });
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 min-h-screen pb-20">
 
@@ -329,6 +390,12 @@ const AllProducts = () => {
                             </select>
                         </div>
                          <div className="flex items-center gap-2">
+                    <button
+                        onClick={downloadBarcodesPDF}
+                        className="flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-slate-700 px-4 py-3 rounded-md font-black text-xs uppercase tracking-widest transition-all shadow-sm active:scale-95"
+                    >
+                        <FiDownload size={14}/> PDF Barcodes
+                    </button>
                     <div className="flex bg-gray-100 p-1 rounded-xl">
                         <button onClick={() => setViewMode("table")} className={`p-2 rounded-lg transition-all text-sm ${viewMode === "table" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-slate-600"}`}>
                             <FiList size={16}/>

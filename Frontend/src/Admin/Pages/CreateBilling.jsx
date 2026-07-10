@@ -705,7 +705,7 @@ const CreateBilling = () => {
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
                     <div className="bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden relative shadow-2xl">
                         <div className="p-6 bg-blue-600 text-white flex justify-between items-center"><div><h3 className="font-black">Camera Scanner</h3><p className="text-[8px] uppercase tracking-[0.2em] opacity-70">Focus on product barcode</p></div><button onClick={() => setShowCameraScanner(false)} className="bg-white/20 p-2 rounded-xl"><FiX /></button></div>
-                        <div className="p-4 bg-slate-100"><div id="reader" className="w-full aspect-[4/3] rounded-2xl overflow-hidden border-4 border-white shadow-inner bg-black"></div></div>
+                        <div className="p-4 bg-slate-100"><div id="reader" className="w-full aspect-[4/3] rounded-2xl overflow-hidden border-4 border-white shadow-inner bg-white text-slate-800"></div></div>
                         <div className="p-6 text-center text-[10px] font-black uppercase text-gray-400 tracking-widest">Ensure good lighting and hold steady</div>
                     </div>
                 </div>
