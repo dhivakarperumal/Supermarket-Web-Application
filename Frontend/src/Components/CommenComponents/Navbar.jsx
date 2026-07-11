@@ -337,7 +337,10 @@ const Navbar = () => {
 
                 <>
                   {/* Budget Settings - Always Show */}
-                  <div className="bg-white rounded-2xl shadow-md border border-green-100 overflow-hidden">
+                  <div
+                    className="bg-white rounded-2xl shadow-md border border-green-100 overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                  >
 
                     {/* Header */}
                     <button
@@ -458,55 +461,14 @@ const Navbar = () => {
 
                   ) : (
                     <>
-                      <div className="flex-1 overflow-y-auto p-5 space-y-5">
-
-                        {/* Budget Settings Section */}
-                        {/* <div className="bg-white rounded-2xl shadow-md p-4 border border-green-100">
-                        <h3 className="mb-3 text-sm font-bold text-slate-900">Budget Settings</h3>
-                        <div className="flex flex-col gap-2">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="navBudgetMode"
-                              className="w-3.5 h-3.5 text-green-600 focus:ring-green-500"
-                              checked={!localBudgetMode}
-                              onChange={() => handleBudgetModeChange(false)}
-                            />
-                            <span className="text-xs font-medium text-slate-700">Without Budget</span>
-                          </label>
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="navBudgetMode"
-                              className="w-3.5 h-3.5 text-green-600 focus:ring-green-500"
-                              checked={localBudgetMode}
-                              onChange={() => handleBudgetModeChange(true)}
-                            />
-                            <span className="text-xs font-medium text-slate-700">With Budget</span>
-                          </label>
-                        </div>
-
-                        {localBudgetMode && (
-                          <div className="mt-3 flex gap-2">
-                            <div className="relative flex-1">
-                              <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 text-xs">₹</span>
-                              <input
-                                type="number"
-                                value={localBudgetAmount}
-                                onChange={(e) => setLocalBudgetAmount(Number(e.target.value))}
-                                placeholder="Amount"
-                                className="w-full rounded-lg border border-gray-200 py-1.5 pl-7 pr-2 text-xs focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
-                              />
-                            </div>
-                            <button
-                              onClick={handleBudgetAmountSave}
-                              className="rounded-lg bg-[#0e6827] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#168637]"
-                            >
-                              Save
-                            </button>
-                          </div>
-                        )}
-                      </div> */}
+                      <div
+                        className="flex-1 overflow-y-auto p-5 space-y-5"
+                        onClick={() => {
+                          if (showBudgetSettings) {
+                            setShowBudgetSettings(false);
+                          }
+                        }}
+                      >
 
                         {/* Cart Items Start Here */}
 
