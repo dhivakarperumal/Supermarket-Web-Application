@@ -88,14 +88,16 @@ const QuickViewModal = ({ product, onClose }) => {
     product?.image_url,
   ];
 
-  const allImages = Array.from(
-    new Set(
-      imageCandidates
-        .flatMap((item) => normalizeImageList(item))
-        .map(resolveImage)
-        .filter(Boolean)
-    )
-  );
+  const allImages = React.useMemo(() => {
+    return Array.from(
+      new Set(
+        imageCandidates
+          .flatMap((item) => normalizeImageList(item))
+          .map(resolveImage)
+          .filter(Boolean)
+      )
+    );
+  }, [selectedVariant, product]);
 
   // Update image whenever the selected variant changes
   useEffect(() => {
