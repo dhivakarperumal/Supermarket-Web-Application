@@ -241,9 +241,6 @@ ${itemsHtml}
       const orderRes = await api.get(`/orders/${order.id}`);
       setSelectedOrder(orderRes.data);
 
-      const addressRes = await api.get(`/addresses/${order.id}`);
-      setAddress(addressRes.data);
-
       setShowPopup(true);
     } catch (error) {
       console.error("Failed to load order details", error);
@@ -527,31 +524,136 @@ ${itemsHtml}
                     </h3>
 
                     <div className="border border-gray-100 rounded-2xl p-6 bg-gradient-to-br from-primary/5 to-transparent shadow-sm">
-                      {address ? (
-                        <div className="text-sm text-gray-700 space-y-1">
-                          <p className="font-semibold">
-                            {address.customer_name}
-                          </p>
+                      {selectedOrder ? (() => {
+                        let addr = selectedOrder.shipping_address;
+                        if (typeof addr === 'string') {
+                          try { addr = JSON.parse(addr); } catch(e) {}
+                        }
+                        const cName = addr?.customer_name || selectedOrder.customer_name;
+                        const sAddr = addr?.street_address || selectedOrder.street_address;
+                        const city = addr?.city || selectedOrder.city;
+                        const dist = addr?.district || selectedOrder.district;
+                        const state = addr?.state || selectedOrder.state;
+                        const zip = addr?.zip_code || selectedOrder.zip_code;
+                        const country = addr?.country || selectedOrder.country;
+                        const phone = addr?.customer_phone || selectedOrder.customer_phone;
+                        const email = addr?.customer_email || selectedOrder.customer_email;
 
-                          <p>{address.street_address}</p>
-
-                          <p>
-                            {address.city}, {address.district}
-                          </p>
-
-                          <p>
-                            {address.state} - {address.zip_code}
-                          </p>
-
-                          <p>{address.country}</p>
-
-                          <p>Phone: {address.customer_phone}</p>
-
-                          <p>Email: {address.customer_email}</p>
-                        </div>
-                      ) : (
+                        return (
+                          <div className="text-sm text-gray-700 space-y-1">
+                            <p className="font-semibold">{cName || 'N/A'}</p>
+                            <p>{sAddr}</p>
+                            <p>{city}, {dist}</p>
+                            <p>{state} {zip ? `- ${zip}` : ''}</p>
+                            <p>{country}</p>
+                            <p>Phone: {phone}</p>
+                            <p>Email: {email}</p>
+                          </div>
+                        );
+                      })() : (
                         <p className="text-gray-500">Address not available</p>
                       )}
+                    </div>
+                  </div>
+
+                  {/* ORDER TRACKING TIMELINE */}
+                  <div>
+                    <h3 className="text-lg font-bold text-primary-dark mb-4">
+                      Order Tracking
+                    </h3>
+                    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                      <div className="relative">
+                        {/* Timeline Line */}
+                        <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gray-200"></div>
+
+                        {/* Steps */}
+                        <div className="space-y-6">
+                          {/* Step 1: Placed */}
+                          <div className="relative flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${true ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                              <Package size={20} />
+                            </div>
+                            <div>
+                              <h4 className={`font-bold ${true ? "text-gray-800" : "text-gray-400"}`}>Order Placed</h4>
+                              <p className="text-xs text-gray-500">We have received your order</p>
+                            </div>
+                          </div>
+
+                          {/* Step 2: Processing */}
+                          <div className="relative flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${["processing", "shipped", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                              <Clock size={20} />
+                            </div>
+                            <div>
+                              <h4 className={`font-bold ${["processing", "shipped", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "text-gray-800" : "text-gray-400"}`}>Processing</h4>
+                              <p className="text-xs text-gray-500">Your order is being prepared</p>
+                            </div>
+                          </div>
+
+                          {/* Step 3: Shipped */}
+                          <div className="relative flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${["shipped", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                              <Truck size={20} />
+                            </div>
+                            <div>
+                              <h4 className={`font-bold ${["shipped", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "text-gray-800" : "text-gray-400"}`}>Shipped</h4>
+                              <p className="text-xs text-gray-500">Your order is on the way</p>
+                            </div>
+                          </div>
+
+                          {/* Step 4: Delivered */}
+                          <div className="relative flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${selectedOrder.status?.toLowerCase() === "delivered" ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                              <CheckCircle size={20} />
+                            </div>
+                            <div>
+                              <h4 className={`font-bold ${selectedOrder.status?.toLowerCase() === "delivered" ? "text-gray-800" : "text-gray-400"}`}>Delivered</h4>
+                              <p className="text-xs text-gray-500">Order has been delivered</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* EXPANDED ORDER SUMMARY */}
+                  <div>
+                    <h3 className="text-lg font-bold text-primary-dark mb-4">
+                      Expanded Order Summary
+                    </h3>
+                    <div className="bg-[#f8faec] border border-green-100 rounded-2xl p-6 shadow-sm">
+                      <div className="space-y-3 text-sm text-gray-700">
+                        
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">Subtotal (Before Discount)</span>
+                          <span className="font-bold">₹{selectedOrder.subtotal_before_discount || selectedOrder.total_amount}</span>
+                        </div>
+
+                        {selectedOrder.coupon_code && (
+                          <div className="flex justify-between items-center text-green-700">
+                            <span className="font-medium">Coupon Discount ({selectedOrder.coupon_code})</span>
+                            <span className="font-bold">-₹{selectedOrder.coupon_discount || 0}</span>
+                          </div>
+                        )}
+
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">Delivery Method</span>
+                          <span className="font-bold capitalize">{selectedOrder.delivery_method || 'delivery'}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center text-gray-600">
+                          <span className="font-medium">Delivery Charges</span>
+                          <span className="font-bold">
+                            {selectedOrder.delivery_charge > 0 ? `₹${selectedOrder.delivery_charge}` : "Free"}
+                          </span>
+                        </div>
+
+                      </div>
+
+                      <div className="mt-4 pt-4 border-t border-green-200 flex justify-between items-center">
+                        <span className="text-lg font-bold text-primary-dark">Total Paid</span>
+                        <span className="text-xl font-bold text-[#0e6827]">₹{selectedOrder.total_amount}</span>
+                      </div>
                     </div>
                   </div>
 
