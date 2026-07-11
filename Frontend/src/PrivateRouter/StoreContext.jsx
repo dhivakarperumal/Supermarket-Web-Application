@@ -34,7 +34,7 @@ export const StoreProvider = ({ children }) => {
     const updateBudget = async (mode, amount) => {
         if (!user?.user_id) return;
         try {
-            await api.put(`/users/budget/${user.user_id}`, { budget_mode: mode, budget_amount: amount });
+            await api.put(`/auth/users/budget/${user.user_id}`, { budget_mode: mode, budget_amount: amount });
             setBudgetMode(mode);
             setBudgetAmount(amount);
             if (authContext && authContext.setUser) {
