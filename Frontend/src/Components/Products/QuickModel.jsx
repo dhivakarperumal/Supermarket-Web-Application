@@ -168,14 +168,14 @@ const QuickViewModal = ({ product, onClose }) => {
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 z-50 w-11 h-11 rounded-full bg-white shadow-lg hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center cursor-pointer"
+          className="absolute top-4 right-4 lg:top-5 lg:right-5 z-[100] w-11 h-11 rounded-full bg-white border border-gray-200 shadow-xl hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center cursor-pointer"
         >
           <FiX size={22} />
         </button>
 
         {/* Header */}
         <div className="bg-gradient-to-r from-[#0e6827] via-[#168637] to-[#0b511d] px-8 py-5 text-white">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between pr-16 lg:pr-20">
             <div>
               <p className="text-green-200 text-sm uppercase tracking-widest">
                 Premium Grocery
@@ -187,7 +187,7 @@ const QuickViewModal = ({ product, onClose }) => {
             </div>
 
             {product.offer && (
-              <div className="bg-[#ffc107] text-black font-bold px-5 py-2 rounded-full shadow-lg">
+              <div className="mr-2 lg:mr-4 bg-[#ffc107] text-black font-bold text-xs sm:text-sm px-3 sm:px-5 py-2 rounded-full shadow-lg whitespace-nowrap">
                 {Math.floor(product.offer)}% OFF
               </div>
             )}
