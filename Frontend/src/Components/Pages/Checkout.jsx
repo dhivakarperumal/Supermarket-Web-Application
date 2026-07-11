@@ -688,7 +688,7 @@ const Checkout = () => {
         key: "rzp_test_SGj8n5SyKSE10b",
         amount: total * 100,
         currency: "INR",
-        name: "Saree World",
+        name: "Priyam Supermarket",
         description: "Order Payment",
         handler: async function (response) {
           console.log("Payment Success:", response);
@@ -854,7 +854,7 @@ const Checkout = () => {
                     <input name="customer_phone" placeholder="Phone Number" value={form.customer_phone} onChange={handleChange} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
                   </div>
                 </div>
-
+                {deliveryMethod === "delivery" && (
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
                   <div className="mb-4 flex items-center gap-2">
                     <FiMapPin className="text-[#0e6827]" />
