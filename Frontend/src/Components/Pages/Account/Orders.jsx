@@ -367,6 +367,28 @@ export default function Orders() {
                           ₹{selectedOrder.total_amount}
                         </p>
                       </div>
+
+                      {selectedOrder.tracking_number && (
+                        <div>
+                          <p className="text-xs uppercase text-gray-400 font-semibold tracking-wide">
+                            Tracking ID
+                          </p>
+                          <p className="font-semibold text-primary-dark">
+                            {selectedOrder.tracking_number}
+                          </p>
+                        </div>
+                      )}
+
+                      {selectedOrder.courier_name && (
+                        <div>
+                          <p className="text-xs uppercase text-gray-400 font-semibold tracking-wide">
+                            Courier
+                          </p>
+                          <p className="font-semibold text-primary-dark">
+                            {selectedOrder.courier_name}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* SHIPPING ADDRESS */}
