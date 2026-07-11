@@ -3,6 +3,7 @@ import PageContainer from "../../CommenComponents/PageContainer";
 import { Package, Truck, CheckCircle, Clock, XCircle } from "lucide-react";
 import { AuthContext } from "../../../PrivateRouter/AuthContext";
 import api from "../../../api";
+import { toast } from "react-hot-toast";
 
 const StatusBadge = ({ status }) => {
   const getStatusConfig = () => {
@@ -54,6 +55,24 @@ export default function Orders() {
   const [showPopup, setShowPopup] = useState(false);
   const [loadingOrder, setLoadingOrder] = useState(false);
   const [address, setAddress] = useState(null);
+  const [trackOrderId, setTrackOrderId] = useState("");
+
+  const handleTrackOrder = () => {
+    if (!trackOrderId.trim()) {
+      toast.error("Please enter an Order ID");
+      return;
+    }
+    
+    const foundOrder = orders.find(
+      (o) => o.id.toString() === trackOrderId.trim() || o.order_id === trackOrderId.trim()
+    );
+
+    if (foundOrder) {
+      openOrderDetails(foundOrder);
+    } else {
+      toast.error("Order not found or invalid Order ID");
+    }
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -96,9 +115,29 @@ export default function Orders() {
       <PageContainer>
         <div className="mx-auto max-w-5xl space-y-6">
           <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-700">Orders</p>
-            <h1 className="mt-2 text-3xl font-bold text-gray-900">My Orders</h1>
-            <p className="mt-2 text-sm text-gray-500">Track your purchases and view order details in one place.</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-700">Orders</p>
+                <h1 className="mt-2 text-3xl font-bold text-gray-900">My Orders</h1>
+                <p className="mt-2 text-sm text-gray-500">Track your purchases and view order details in one place.</p>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Enter Order ID"
+                  className="w-full md:w-48 px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0e6827]"
+                  value={trackOrderId}
+                  onChange={(e) => setTrackOrderId(e.target.value)}
+                />
+                <button
+                  onClick={handleTrackOrder}
+                  className="bg-[#0e6827] text-white px-5 py-2 rounded-xl font-semibold hover:bg-[#168637] transition whitespace-nowrap cursor-pointer"
+                >
+                  Track Order
+                </button>
+              </div>
+            </div>
           </div>
 
           {orders.length === 0 ? (

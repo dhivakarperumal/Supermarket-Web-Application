@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Package, Truck, CheckCircle, Clock } from "lucide-react";
+import { Package, Truck, CheckCircle, Clock, XCircle } from "lucide-react";
 import { AuthContext } from "../../PrivateRouter/AuthContext";
 import api from "../../api";
 import { Printer } from "lucide-react";
 import PageContainer from "../CommenComponents/PageContainer";
+import { toast } from "react-hot-toast";
 
 const StatusBadge = ({ status }) => {
 
@@ -213,6 +214,24 @@ ${itemsHtml}
   const [showPopup, setShowPopup] = useState(false);
   const [loadingOrder, setLoadingOrder] = useState(false);
   const [address, setAddress] = useState(null);
+  const [trackOrderId, setTrackOrderId] = useState("");
+
+  const handleTrackOrder = () => {
+    if (!trackOrderId.trim()) {
+      toast.error("Please enter an Order ID");
+      return;
+    }
+    
+    const foundOrder = orders.find(
+      (o) => o.id.toString() === trackOrderId.trim() || o.order_id === trackOrderId.trim()
+    );
+
+    if (foundOrder) {
+      openOrderDetails(foundOrder);
+    } else {
+      toast.error("Order not found or invalid Order ID");
+    }
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -253,7 +272,25 @@ ${itemsHtml}
     <div className="min-h-screen bg-[#FDFBF7] py-10">
       <PageContainer>
         <div className=" space-y-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
+            
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Enter Order ID"
+                className="w-full md:w-56 px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                value={trackOrderId}
+                onChange={(e) => setTrackOrderId(e.target.value)}
+              />
+              <button
+                onClick={handleTrackOrder}
+                className="bg-primary text-white px-5 py-2 rounded-xl font-semibold hover:opacity-90 transition whitespace-nowrap cursor-pointer"
+              >
+                Track Order
+              </button>
+            </div>
+          </div>
 
           {orders.length === 0 ? (
             <p className="text-gray-500">No orders found</p>
