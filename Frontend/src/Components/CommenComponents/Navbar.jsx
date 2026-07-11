@@ -947,8 +947,8 @@ const Navbar = () => {
 
               {/* Hot Deals */}
               <div className="flex justify-end">
-                <Link to="/shop" className="bg-[#e53935] text-white flex items-center gap-1.5 px-4 py-1.5 rounded text-[13px] font-bold hover:bg-red-700 transition shadow-sm h-8">
-                  Hot Deals <span className="text-sm">🔥</span>
+                <Link to="/combo" className="bg-[#e53935] text-white flex items-center gap-1.5 px-4 py-1.5 rounded text-[13px] font-bold hover:bg-red-700 transition shadow-sm h-8">
+                  Combo <span className="text-sm">🔥</span>
                 </Link>
               </div>
 
