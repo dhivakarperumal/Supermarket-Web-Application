@@ -18,12 +18,40 @@ import {
 import logo from "/logo.png";
 import PageContainer from "./PageContainer";
 import api from "../../api";
+import { toast } from "react-hot-toast";
 import { FiHome, FiShoppingBag, FiGrid, FiFileText, FiPhone, FiChevronDown, FiChevronRight, FiTag } from "react-icons/fi";
 
 const Navbar = () => {
 
   const { user, logout } = useContext(AuthContext);
-  const { cart, wishlist, removeFromCart, removeFromWishlist, updateCartQuantity } = useContext(StoreContext);
+  const { cart, wishlist, removeFromCart, removeFromWishlist, updateCartQuantity, budgetMode, budgetAmount, updateBudget } = useContext(StoreContext);
+  // const [mobilePages, setMobilePages] = useState(false);
+  // const navigate = useNavigate();
+
+  const [localBudgetMode, setLocalBudgetMode] = useState(budgetMode);
+  const [localBudgetAmount, setLocalBudgetAmount] = useState(budgetAmount);
+
+  useEffect(() => {
+    setLocalBudgetMode(budgetMode);
+    setLocalBudgetAmount(budgetAmount);
+  }, [budgetMode, budgetAmount]);
+
+  const handleBudgetModeChange = (mode) => {
+    setLocalBudgetMode(mode);
+    if (!mode) {
+      updateBudget(false, localBudgetAmount);
+    } else {
+      updateBudget(true, localBudgetAmount);
+    }
+  };
+
+  const handleBudgetAmountSave = () => {
+    if (localBudgetAmount <= 0) {
+      toast.error("Please enter a valid budget amount");
+      return;
+    }
+    updateBudget(true, localBudgetAmount);
+  };
   const [mobilePages, setMobilePages] = useState(false);
   const navigate = useNavigate();
 
@@ -94,6 +122,10 @@ const Navbar = () => {
     const qty = item.quantity || 1;
     return acc + price * qty;
   }, 0);
+
+  const isOverBudget = budgetMode && cartTotal > budgetAmount;
+  const isAtBudget = budgetMode && cartTotal === budgetAmount;
+  const isUnderBudget = budgetMode && cartTotal < budgetAmount;
 
   return (
     <div className="sticky top-0 z-40 bg-white pt-1 border-b border-gray-100">
@@ -344,6 +376,54 @@ const Navbar = () => {
                     <>
                       <div className="flex-1 overflow-y-auto p-5 space-y-5">
 
+                        {/* Budget Settings Section */}
+                        <div className="bg-white rounded-2xl shadow-md p-4 border border-green-100">
+                          <h3 className="mb-3 text-sm font-bold text-slate-900">Budget Settings</h3>
+                          <div className="flex flex-col gap-2">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input 
+                                type="radio" 
+                                name="navBudgetMode" 
+                                className="w-3.5 h-3.5 text-green-600 focus:ring-green-500" 
+                                checked={!localBudgetMode}
+                                onChange={() => handleBudgetModeChange(false)}
+                              />
+                              <span className="text-xs font-medium text-slate-700">Without Budget</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input 
+                                type="radio" 
+                                name="navBudgetMode" 
+                                className="w-3.5 h-3.5 text-green-600 focus:ring-green-500"
+                                checked={localBudgetMode}
+                                onChange={() => handleBudgetModeChange(true)}
+                              />
+                              <span className="text-xs font-medium text-slate-700">With Budget</span>
+                            </label>
+                          </div>
+
+                          {localBudgetMode && (
+                            <div className="mt-3 flex gap-2">
+                              <div className="relative flex-1">
+                                <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 text-xs">₹</span>
+                                <input
+                                  type="number"
+                                  value={localBudgetAmount}
+                                  onChange={(e) => setLocalBudgetAmount(Number(e.target.value))}
+                                  placeholder="Amount"
+                                  className="w-full rounded-lg border border-gray-200 py-1.5 pl-7 pr-2 text-xs focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                                />
+                              </div>
+                              <button
+                                onClick={handleBudgetAmountSave}
+                                className="rounded-lg bg-[#0e6827] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#168637]"
+                              >
+                                Save
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
                         {/* Cart Items Start Here */}
 
                         {cart.map((item) => {
@@ -494,8 +574,6 @@ const Navbar = () => {
                           );
                         })}
 
-
-
                       </div>
 
                       {/* Fixed Bottom */}
@@ -515,13 +593,38 @@ const Navbar = () => {
 
                           </div>
 
+                          {budgetMode && (
+                            <div className="mt-4 bg-white/10 rounded-xl p-3 border border-white/20">
+                              <div className="flex justify-between text-xs mb-2">
+                                <span className="font-medium text-green-100">Budget Usage</span>
+                                <span className="font-bold text-white">₹{cartTotal} / ₹{budgetAmount}</span>
+                              </div>
+                              <div className="h-1.5 w-full bg-black/20 rounded-full overflow-hidden">
+                                <div 
+                                  className={`h-full rounded-full transition-all duration-300 ${isOverBudget ? 'bg-red-400' : isAtBudget ? 'bg-amber-400' : 'bg-white'}`}
+                                  style={{ width: `${Math.min((cartTotal / (budgetAmount || 1)) * 100, 100)}%` }}
+                                />
+                              </div>
+                              <div className="mt-2 text-[10px] font-medium leading-tight">
+                                {isOverBudget ? (
+                                  <span className="text-red-300">You have exceeded your budget by ₹{cartTotal - budgetAmount}. Please remove items.</span>
+                                ) : isAtBudget ? (
+                                  <span className="text-amber-300">You have reached your budget limit.</span>
+                                ) : (
+                                  <span className="text-green-200">You can still buy items worth ₹{budgetAmount - cartTotal}.</span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
                           <button
                             type="button"
                             onClick={() => {
                               setSidebarPanel(null);
                               navigate("/checkout");
                             }}
-                            className="mt-4 w-full rounded-xl bg-[#ffc107] py-3 text-sm font-bold text-black hover:bg-yellow-400 transition"
+                            disabled={isOverBudget}
+                            className={`mt-4 w-full rounded-xl py-3 text-sm font-bold transition ${isOverBudget ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-[#ffc107] text-black hover:bg-yellow-400'}`}
                           >
                             Proceed to Checkout →
                           </button> 
