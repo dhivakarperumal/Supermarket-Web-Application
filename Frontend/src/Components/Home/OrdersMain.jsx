@@ -506,34 +506,32 @@ ${itemsHtml}
                     <StatusBadge status={selectedOrder.status} />
                   </div>
 
-                   {selectedOrder.tracking_number && (
-                        <div>
-                          <p className="text-xs uppercase text-gray-400 font-semibold tracking-wide">
-                            Tracking ID
-                          </p>
-                          <p className="font-semibold text-primary-dark">
-                            {selectedOrder.tracking_number}
-                          </p>
-                        </div>
-                      )}
-
-                      {selectedOrder.courier_name && (
-                        <div>
-                          <p className="text-xs uppercase text-gray-400 font-semibold tracking-wide">
-                            Courier
-                          </p>
-                          <p className="font-semibold text-primary-dark">
-                            {selectedOrder.courier_name}
-                          </p>
-                        </div>
-                      )}
-
                   <div className="flex justify-between border-b border-primary/10 pb-2">
                     <span className="text-gray-500">Customer</span>
                     <span className="font-semibold">
                       {selectedOrder.customer_name}
                     </span>
                   </div>
+
+                  {selectedOrder.tracking_number && (
+                    <div className="flex justify-between border-b border-primary/10 pb-2">
+                      <span className="text-gray-500">Tracking ID</span>
+                      <span className="font-semibold text-primary-dark">
+                        {selectedOrder.tracking_number}
+                      </span>
+                    </div>
+                  )}
+
+                  {selectedOrder.courier_name && (
+                    <div className="flex justify-between border-b border-primary/10 pb-2">
+                      <span className="text-gray-500">Courier</span>
+                      <span className="font-semibold text-primary-dark">
+                        {selectedOrder.courier_name}
+                      </span>
+                    </div>
+                  )}
+
+
 
                   <div className="flex justify-between border-b border-primary/10 pb-2">
                     <span className="text-gray-500">Phone</span>
@@ -549,7 +547,7 @@ ${itemsHtml}
                     </span>
                   </div>
 
-                  
+
 
                 </div>
 
