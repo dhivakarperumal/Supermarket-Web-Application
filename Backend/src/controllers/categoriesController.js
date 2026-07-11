@@ -48,17 +48,19 @@ const createCategory = async (req, res) => {
         images: JSON.stringify(
           Array.isArray(images) ? images : [images],
         ),
+        show_in_navbar: req.body.show_in_navbar === undefined ? 1 : (req.body.show_in_navbar ? 1 : 0),
       };
 
       const [result] = await connection.execute(
-        `INSERT INTO categories (catId, name, description, subcategory, images, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+        `INSERT INTO categories (catId, name, description, subcategory, images, show_in_navbar, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         [
           categoryPayload.catId,
           categoryPayload.name,
           categoryPayload.description,
           categoryPayload.subcategory,
           categoryPayload.images,
+          categoryPayload.show_in_navbar,
         ],
       );
 
@@ -187,14 +189,16 @@ const updateCategory = async (req, res) => {
       const updatedImages = JSON.stringify(
         Array.isArray(images) ? images : parseJsonField(existing.images),
       );
+      const showInNavbarVal = req.body.show_in_navbar === undefined ? existing.show_in_navbar : (req.body.show_in_navbar ? 1 : 0);
 
       await connection.execute(
-        `UPDATE categories SET name = ?, description = ?, subcategory = ?, images = ?, updated_at = NOW() WHERE catId = ?`,
+        `UPDATE categories SET name = ?, description = ?, subcategory = ?, images = ?, show_in_navbar = ?, updated_at = NOW() WHERE catId = ?`,
         [
           name,
           description || existing.description,
           updatedSubcategory,
           updatedImages,
+          showInNavbarVal,
           catId,
         ],
       );
