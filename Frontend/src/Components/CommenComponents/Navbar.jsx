@@ -959,19 +959,73 @@ const Navbar = () => {
 
       {/* Logout Modal */}
       {logoutConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-xl shadow-xl w-[320px] p-6 text-center">
-            <h2 className="text-lg font-bold text-gray-800 mb-2">Confirm Logout</h2>
-            <p className="text-sm text-gray-500 mb-6">Are you sure you want to logout?</p>
-            <div className="flex justify-center gap-3">
-              <button onClick={() => setLogoutConfirm(false)} className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-50 transition">
-                Cancel
-              </button>
-              <button onClick={confirmLogout} className="px-5 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition">
-                Logout
-              </button>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+
+          <div className="relative w-[92%] max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl animate-[zoomIn_.25s_ease]">
+
+            {/* Top Yellow Line */}
+            <div className="h-1.5 bg-[#ffc107]" />
+
+            {/* Header */}
+            <div className="bg-[#0e6827] px-6 py-5 text-white">
+
+              <div className="flex items-center gap-4">
+
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10">
+                  <User size={28} />
+                </div>
+
+                <div>
+                  <h2 className="text-xl font-bold">
+                    Confirm Logout
+                  </h2>
+
+                  <p className="mt-1 text-sm text-green-100">
+                    You are about to sign out of your account.
+                  </p>
+                </div>
+
+              </div>
+
             </div>
+
+            {/* Body */}
+            <div className="px-6 py-7 text-center">
+
+              <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-50">
+                <User size={36} className="text-red-500" />
+              </div>
+
+              <h3 className="text-xl font-bold text-gray-800">
+                Are you sure?
+              </h3>
+
+              <p className="mt-3 text-sm leading-6 text-gray-500">
+                You'll need to sign in again to access your account and continue shopping.
+              </p>
+
+              <div className="mt-8 flex gap-4">
+
+                <button
+                  onClick={() => setLogoutConfirm(false)}
+                  className="flex-1 rounded-xl border border-gray-200 bg-white py-3 font-semibold text-gray-700 transition hover:border-[#0e6827] hover:bg-green-50 hover:text-[#0e6827]"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={confirmLogout}
+                  className="flex-1 rounded-xl bg-[#ffc107] py-3 font-bold text-black shadow-lg transition hover:scale-105 hover:bg-yellow-400"
+                >
+                  Logout
+                </button>
+
+              </div>
+
+            </div>
+
           </div>
+
         </div>
       )}
 
