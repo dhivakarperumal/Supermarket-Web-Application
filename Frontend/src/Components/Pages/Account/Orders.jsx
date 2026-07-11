@@ -407,12 +407,111 @@ export default function Orders() {
                       </div>
                     </div>
 
+                    {/* ORDER TRACKING TIMELINE */}
+                    <div>
+                      <h3 className="text-lg font-bold text-primary-dark mb-4">
+                        Order Tracking
+                      </h3>
+                      <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                        <div className="relative">
+                          {/* Timeline Line */}
+                          <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gray-200"></div>
+
+                          {/* Steps */}
+                          <div className="space-y-6">
+                            {/* Step 1: Placed */}
+                            <div className="relative flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${true ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                                <Package size={20} />
+                              </div>
+                              <div>
+                                <h4 className={`font-bold ${true ? "text-gray-800" : "text-gray-400"}`}>Order Placed</h4>
+                                <p className="text-xs text-gray-500">We have received your order</p>
+                              </div>
+                            </div>
+
+                            {/* Step 2: Processing */}
+                            <div className="relative flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${["processing", "shipped", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                                <Clock size={20} />
+                              </div>
+                              <div>
+                                <h4 className={`font-bold ${["processing", "shipped", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "text-gray-800" : "text-gray-400"}`}>Processing</h4>
+                                <p className="text-xs text-gray-500">Your order is being prepared</p>
+                              </div>
+                            </div>
+
+                            {/* Step 3: Shipped */}
+                            <div className="relative flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${["shipped", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                                <Truck size={20} />
+                              </div>
+                              <div>
+                                <h4 className={`font-bold ${["shipped", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "text-gray-800" : "text-gray-400"}`}>Shipped</h4>
+                                <p className="text-xs text-gray-500">Your order is on the way</p>
+                              </div>
+                            </div>
+
+                            {/* Step 4: Delivered */}
+                            <div className="relative flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${selectedOrder.status?.toLowerCase() === "delivered" ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                                <CheckCircle size={20} />
+                              </div>
+                              <div>
+                                <h4 className={`font-bold ${selectedOrder.status?.toLowerCase() === "delivered" ? "text-gray-800" : "text-gray-400"}`}>Delivered</h4>
+                                <p className="text-xs text-gray-500">Order has been delivered</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ORDER SUMMARY (INCLUDING BUDGET, COUPON, DELIVERY) */}
+                    <div>
+                      <h3 className="text-lg font-bold text-primary-dark mb-4">
+                        Order Summary
+                      </h3>
+                      <div className="bg-[#f8faec] border border-green-100 rounded-2xl p-6 shadow-sm">
+                        <div className="space-y-3 text-sm text-gray-700">
+                          
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">Subtotal (Before Discount)</span>
+                            <span className="font-bold">₹{selectedOrder.subtotal_before_discount || selectedOrder.total_amount}</span>
+                          </div>
+
+                          {selectedOrder.coupon_code && (
+                            <div className="flex justify-between items-center text-green-700">
+                              <span className="font-medium">Coupon Discount ({selectedOrder.coupon_code})</span>
+                              <span className="font-bold">-₹{selectedOrder.coupon_discount || 0}</span>
+                            </div>
+                          )}
+
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">Delivery Method</span>
+                            <span className="font-bold capitalize">{selectedOrder.delivery_method || 'delivery'}</span>
+                          </div>
+
+                          <div className="flex justify-between items-center text-gray-600">
+                            <span className="font-medium">Delivery Charges</span>
+                            <span className="font-bold">
+                              {selectedOrder.delivery_charge > 0 ? `₹${selectedOrder.delivery_charge}` : "Free"}
+                            </span>
+                          </div>
+
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t border-green-200 flex justify-between items-center">
+                          <span className="text-lg font-bold text-primary-dark">Total Paid</span>
+                          <span className="text-xl font-bold text-[#0e6827]">₹{selectedOrder.total_amount}</span>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* FOOTER */}
 
-                    <div className="mt-6 border-t border-gray-100 pt-6 flex justify-between items-center">
-                      <p className="text-xl font-bold text-primary-dark">
-                        Total: ₹{selectedOrder.total_amount}
-                      </p>
+                    <div className="mt-6 border-t border-gray-100 pt-6 flex justify-end items-center">
+
 
                       <button
                         onClick={() => setShowPopup(false)}
