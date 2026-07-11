@@ -61,6 +61,7 @@ const Navbar = () => {
   const [logoutConfirm, setLogoutConfirm] = useState(false);
   const [sidebarPanel, setSidebarPanel] = useState(null); // 'cart' | 'wishlist' | null
   const [categories, setCategories] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
   const [categoryMenu, setCategoryMenu] = useState(false);
   const [pagesMenu, setPagesMenu] = useState(false);
   const [mobileCategory, setMobileCategory] = useState(false);
@@ -106,6 +107,7 @@ const Navbar = () => {
     const fetchCategories = async () => {
       try {
         const res = await api.get("/categories");
+        setAllCategories(res.data);
         // Filter: only show categories where show_in_navbar is true (or not set, default visible)
         const visible = res.data.filter(c => c.show_in_navbar !== false);
         setCategories(visible);
@@ -855,7 +857,7 @@ const Navbar = () => {
 
                   {categoryMenu && (
                     <div className="absolute top-full left-0 w-64 bg-white border border-gray-200 shadow-xl overflow-hidden z-50">
-                      {categories.length > 0 ? categories.map((cat) => (
+                      {allCategories.length > 0 ? allCategories.map((cat) => (
                         <NavLink
                           key={cat.id}
                           to={`/category/${cat.slug || cat.name}`}
@@ -1112,7 +1114,7 @@ const Navbar = () => {
                     All Categories
                   </div>
                   <div className="p-2">
-                    {categories.map((cat) => (
+                    {allCategories.map((cat) => (
                       <NavLink
                         key={cat.id}
                         to={`/category/${cat.slug || cat.name}`}
