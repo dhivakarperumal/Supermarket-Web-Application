@@ -329,310 +329,366 @@ const Navbar = () => {
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 flex flex-col min-h-0 m-5">
 
               {sidebarPanel === "cart" ? (
 
-                <>
-                  {cart.length === 0 ? (
-
-                    <div className="flex flex-col items-center justify-center text-center bg-white rounded-3xl shadow-lg p-10 mt-6">
-
-                      <div className="w-24 h-24 rounded-full bg-green-50 flex items-center justify-center mb-6">
-
-                        <ShoppingCart
-                          size={42}
-                          className="text-[#0e6827]"
-                        />
-
-                      </div>
-
-                      <h3 className="text-lg font-bold text-[#0e6827]">
-
-                        Your Cart is Empty
-
+              
+                  <>
+                    {/* Budget Settings - Always Show */}
+                    <div className="bg-white rounded-2xl shadow-md p-4 border border-green-100 mb-5">
+                      <h3 className="mb-3 text-sm font-bold text-slate-900">
+                        Budget Settings
                       </h3>
 
-                      <p className="text-sm text-gray-500 mt-2 leading-6">
+                      <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="navBudgetMode"
+                            className="w-3.5 h-3.5 text-green-600 focus:ring-green-500"
+                            checked={!localBudgetMode}
+                            onChange={() => handleBudgetModeChange(false)}
+                          />
+                          <span className="text-xs font-medium text-slate-700">
+                            Without Budget
+                          </span>
+                        </label>
 
-                        Looks like you haven't added anything yet.
-                        Start shopping and fill your cart with fresh groceries.
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="navBudgetMode"
+                            className="w-3.5 h-3.5 text-green-600 focus:ring-green-500"
+                            checked={localBudgetMode}
+                            onChange={() => handleBudgetModeChange(true)}
+                          />
+                          <span className="text-xs font-medium text-slate-700">
+                            With Budget
+                          </span>
+                        </label>
+                      </div>
 
-                      </p>
+                      {localBudgetMode && (
+                        <div className="mt-3 flex gap-2">
+                          <div className="relative flex-1">
+                            <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 text-xs">
+                              ₹
+                            </span>
 
-                      <button
-                        onClick={() => {
-                          setSidebarPanel(null);
-                          navigate("/shop");
-                        }}
-                        className="mt-8 bg-[#ffc107] hover:bg-yellow-400 text-black font-bold px-8 py-3 rounded-xl transition-all duration-300 shadow-lg hover:scale-105"
-                      >
-                        Continue Shopping
-                      </button>
+                            <input
+                              type="number"
+                              value={localBudgetAmount}
+                              onChange={(e) =>
+                                setLocalBudgetAmount(Number(e.target.value))
+                              }
+                              placeholder="Amount"
+                              className="w-full rounded-lg border border-gray-200 py-1.5 pl-7 pr-2 text-xs focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                            />
+                          </div>
+
+                          <button
+                            onClick={handleBudgetAmountSave}
+                            className="rounded-lg bg-[#0e6827] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#168637]"
+                          >
+                            Save
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Empty Cart */}
+                    {cart.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center text-center bg-white rounded-3xl shadow-lg p-10">
+                        <div className="w-24 h-24 rounded-full bg-green-50 flex items-center justify-center mb-6">
+                          <ShoppingCart
+                            size={42}
+                            className="text-[#0e6827]"
+                          />
+                        </div>
+
+                        <h3 className="text-lg font-bold text-[#0e6827]">
+                          Your Cart is Empty
+                        </h3>
+
+                        <p className="text-sm text-gray-500 mt-2 leading-6">
+                          Looks like you haven't added anything yet.
+                          Start shopping and fill your cart with fresh groceries.
+                        </p>
+
+                        <button
+                          onClick={() => {
+                            setSidebarPanel(null);
+                            navigate("/shop");
+                          }}
+                          className="mt-8 bg-[#ffc107] hover:bg-yellow-400 text-black font-bold px-8 py-3 rounded-xl transition-all duration-300 shadow-lg hover:scale-105"
+                        >
+                          Continue Shopping
+                        </button>
+                      </div>
+                    
+
+                  ) : (
+                  <>
+                    <div className="flex-1 overflow-y-auto p-5 space-y-5">
+
+                      {/* Budget Settings Section */}
+                      {/* <div className="bg-white rounded-2xl shadow-md p-4 border border-green-100">
+                        <h3 className="mb-3 text-sm font-bold text-slate-900">Budget Settings</h3>
+                        <div className="flex flex-col gap-2">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="navBudgetMode"
+                              className="w-3.5 h-3.5 text-green-600 focus:ring-green-500"
+                              checked={!localBudgetMode}
+                              onChange={() => handleBudgetModeChange(false)}
+                            />
+                            <span className="text-xs font-medium text-slate-700">Without Budget</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="navBudgetMode"
+                              className="w-3.5 h-3.5 text-green-600 focus:ring-green-500"
+                              checked={localBudgetMode}
+                              onChange={() => handleBudgetModeChange(true)}
+                            />
+                            <span className="text-xs font-medium text-slate-700">With Budget</span>
+                          </label>
+                        </div>
+
+                        {localBudgetMode && (
+                          <div className="mt-3 flex gap-2">
+                            <div className="relative flex-1">
+                              <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 text-xs">₹</span>
+                              <input
+                                type="number"
+                                value={localBudgetAmount}
+                                onChange={(e) => setLocalBudgetAmount(Number(e.target.value))}
+                                placeholder="Amount"
+                                className="w-full rounded-lg border border-gray-200 py-1.5 pl-7 pr-2 text-xs focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                              />
+                            </div>
+                            <button
+                              onClick={handleBudgetAmountSave}
+                              className="rounded-lg bg-[#0e6827] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#168637]"
+                            >
+                              Save
+                            </button>
+                          </div>
+                        )}
+                      </div> */}
+
+                      {/* Cart Items Start Here */}
+
+                      {cart.map((item) => {
+                        const name =
+                          item.name ||
+                          item.product_name ||
+                          item.productName ||
+                          "Product";
+
+                        const image =
+                          item.image ||
+                          item.product_image ||
+                          item.thumbnail_image ||
+                          item.product_images?.[0] ||
+                          "/placeholder.png";
+
+                        const price =
+                          item.offer_price ||
+                          item.price ||
+                          0;
+
+                        return (
+                          <div
+                            key={item.id || item._id || item.product_id}
+                            className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-green-100 overflow-hidden"
+                          >
+                            <div className="flex gap-4 p-4">
+
+                              {/* Product Image */}
+                              <div className="relative">
+                                <img
+                                  src={image}
+                                  alt={name}
+                                  className="h-24 w-24 rounded-xl border-2 border-green-100 object-cover bg-white"
+                                  onError={(e) => {
+                                    e.target.src = "/placeholder.png";
+                                  }}
+                                />
+
+                                <div className="absolute -top-2 -right-2 bg-[#ffc107] text-black text-[10px] font-bold px-2 py-1 rounded-full shadow">
+                                  Fresh
+                                </div>
+                              </div>
+
+                              {/* Product Details */}
+                              <div className="flex-1 flex flex-col justify-between">
+
+                                <div>
+
+                                  <div className="flex items-start justify-between gap-3">
+
+                                    <div>
+
+                                      <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 leading-5">
+                                        {name}
+                                      </h3>
+
+                                      <p className="mt-1 text-sm font-bold text-[#0e6827]">
+                                        ₹{price}
+                                      </p>
+
+                                    </div>
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        removeFromCart(
+                                          item.id ||
+                                          item._id ||
+                                          item.product_id
+                                        )
+                                      }
+                                      className="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center"
+                                    >
+                                      <Trash2 size={18} />
+                                    </button>
+
+                                  </div>
+
+                                </div>
+
+                                {/* Quantity */}
+                                <div className="mt-5 flex items-center justify-between">
+
+                                  <div className="flex items-center bg-green-50 rounded-xl p-1">
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        updateCartQuantity(
+                                          item.id ||
+                                          item._id ||
+                                          item.product_id,
+                                          Math.max(
+                                            1,
+                                            (item.quantity || 1) - 1
+                                          )
+                                        )
+                                      }
+                                      className="h-7 w-7 rounded-lg bg-[#0e6827] text-white hover:bg-green-700 transition flex items-center justify-center"
+                                    >
+                                      <Minus size={15} />
+                                    </button>
+
+                                    <span className="w-10 text-center text-sm font-semibold text-[#0e6827]">
+                                      {item.quantity || 1}
+                                    </span>
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        updateCartQuantity(
+                                          item.id ||
+                                          item._id ||
+                                          item.product_id,
+                                          (item.quantity || 1) + 1
+                                        )
+                                      }
+                                      className="h-7 w-7 rounded-lg bg-[#0e6827] text-white hover:bg-green-700 transition flex items-center justify-center"
+                                    >
+                                      <Plus size={15} />
+                                    </button>
+
+                                  </div>
+
+                                  <div className="text-right">
+
+                                    <p className="text-xs text-gray-500">
+                                      Total
+                                    </p>
+
+                                    <p className="text-base font-bold text-[#0e6827]">
+                                      ₹
+                                      {(
+                                        price *
+                                        (item.quantity || 1)
+                                      ).toLocaleString()}
+                                    </p>
+
+                                  </div>
+
+                                </div>
+
+                              </div>
+
+                            </div>
+                          </div>
+                        );
+                      })}
 
                     </div>
 
-                  ) : (
-                    <>
-                      <div className="flex-1 overflow-y-auto p-5 space-y-5">
+                    {/* Fixed Bottom */}
+                    <div className="border-t border-green-200 bg-white p-5 shadow-[0_-6px_20px_rgba(0,0,0,0.08)]">
 
-                        {/* Budget Settings Section */}
-                        <div className="bg-white rounded-2xl shadow-md p-4 border border-green-100">
-                          <h3 className="mb-3 text-sm font-bold text-slate-900">Budget Settings</h3>
-                          <div className="flex flex-col gap-2">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input 
-                                type="radio" 
-                                name="navBudgetMode" 
-                                className="w-3.5 h-3.5 text-green-600 focus:ring-green-500" 
-                                checked={!localBudgetMode}
-                                onChange={() => handleBudgetModeChange(false)}
-                              />
-                              <span className="text-xs font-medium text-slate-700">Without Budget</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input 
-                                type="radio" 
-                                name="navBudgetMode" 
-                                className="w-3.5 h-3.5 text-green-600 focus:ring-green-500"
-                                checked={localBudgetMode}
-                                onChange={() => handleBudgetModeChange(true)}
-                              />
-                              <span className="text-xs font-medium text-slate-700">With Budget</span>
-                            </label>
-                          </div>
+                      <div className="rounded-2xl bg-[#0e6827] text-white p-5">
 
-                          {localBudgetMode && (
-                            <div className="mt-3 flex gap-2">
-                              <div className="relative flex-1">
-                                <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 text-xs">₹</span>
-                                <input
-                                  type="number"
-                                  value={localBudgetAmount}
-                                  onChange={(e) => setLocalBudgetAmount(Number(e.target.value))}
-                                  placeholder="Amount"
-                                  className="w-full rounded-lg border border-gray-200 py-1.5 pl-7 pr-2 text-xs focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
-                                />
-                              </div>
-                              <button
-                                onClick={handleBudgetAmountSave}
-                                className="rounded-lg bg-[#0e6827] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#168637]"
-                              >
-                                Save
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                        <div className="flex justify-between items-center">
 
-                        {/* Cart Items Start Here */}
+                          <span className="text-sm text-green-100">
+                            Cart Subtotal
+                          </span>
 
-                        {cart.map((item) => {
-                          const name =
-                            item.name ||
-                            item.product_name ||
-                            item.productName ||
-                            "Product";
-
-                          const image =
-                            item.image ||
-                            item.product_image ||
-                            item.thumbnail_image ||
-                            item.product_images?.[0] ||
-                            "/placeholder.png";
-
-                          const price =
-                            item.offer_price ||
-                            item.price ||
-                            0;
-
-                          return (
-                            <div
-                              key={item.id || item._id || item.product_id}
-                              className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-green-100 overflow-hidden"
-                            >
-                              <div className="flex gap-4 p-4">
-
-                                {/* Product Image */}
-                                <div className="relative">
-                                  <img
-                                    src={image}
-                                    alt={name}
-                                    className="h-24 w-24 rounded-xl border-2 border-green-100 object-cover bg-white"
-                                    onError={(e) => {
-                                      e.target.src = "/placeholder.png";
-                                    }}
-                                  />
-
-                                  <div className="absolute -top-2 -right-2 bg-[#ffc107] text-black text-[10px] font-bold px-2 py-1 rounded-full shadow">
-                                    Fresh
-                                  </div>
-                                </div>
-
-                                {/* Product Details */}
-                                <div className="flex-1 flex flex-col justify-between">
-
-                                  <div>
-
-                                    <div className="flex items-start justify-between gap-3">
-
-                                      <div>
-
-                                        <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 leading-5">
-                                          {name}
-                                        </h3>
-
-                                        <p className="mt-1 text-sm font-bold text-[#0e6827]">
-                                          ₹{price}
-                                        </p>
-
-                                      </div>
-
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          removeFromCart(
-                                            item.id ||
-                                            item._id ||
-                                            item.product_id
-                                          )
-                                        }
-                                        className="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center"
-                                      >
-                                        <Trash2 size={18} />
-                                      </button>
-
-                                    </div>
-
-                                  </div>
-
-                                  {/* Quantity */}
-                                  <div className="mt-5 flex items-center justify-between">
-
-                                    <div className="flex items-center bg-green-50 rounded-xl p-1">
-
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          updateCartQuantity(
-                                            item.id ||
-                                            item._id ||
-                                            item.product_id,
-                                            Math.max(
-                                              1,
-                                              (item.quantity || 1) - 1
-                                            )
-                                          )
-                                        }
-                                        className="h-7 w-7 rounded-lg bg-[#0e6827] text-white hover:bg-green-700 transition flex items-center justify-center"
-                                      >
-                                        <Minus size={15} />
-                                      </button>
-
-                                      <span className="w-10 text-center text-sm font-semibold text-[#0e6827]">
-                                        {item.quantity || 1}
-                                      </span>
-
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          updateCartQuantity(
-                                            item.id ||
-                                            item._id ||
-                                            item.product_id,
-                                            (item.quantity || 1) + 1
-                                          )
-                                        }
-                                        className="h-7 w-7 rounded-lg bg-[#0e6827] text-white hover:bg-green-700 transition flex items-center justify-center"
-                                      >
-                                        <Plus size={15} />
-                                      </button>
-
-                                    </div>
-
-                                    <div className="text-right">
-
-                                      <p className="text-xs text-gray-500">
-                                        Total
-                                      </p>
-
-                                      <p className="text-base font-bold text-[#0e6827]">
-                                        ₹
-                                        {(
-                                          price *
-                                          (item.quantity || 1)
-                                        ).toLocaleString()}
-                                      </p>
-
-                                    </div>
-
-                                  </div>
-
-                                </div>
-
-                              </div>
-                            </div>
-                          );
-                        })}
-
-                      </div>
-
-                      {/* Fixed Bottom */}
-                      <div className="border-t border-green-200 bg-white p-5 shadow-[0_-6px_20px_rgba(0,0,0,0.08)]">
-
-                        <div className="rounded-2xl bg-[#0e6827] text-white p-5">
-
-                          <div className="flex justify-between items-center">
-
-                            <span className="text-sm text-green-100">
-                              Cart Subtotal
-                            </span>
-
-                            <span className="text-2xl font-bold text-[#ffc107]">
-                              ₹{cartTotal.toLocaleString()}
-                            </span>
-
-                          </div>
-
-                          {budgetMode && (
-                            <div className="mt-4 bg-white/10 rounded-xl p-3 border border-white/20">
-                              <div className="flex justify-between text-xs mb-2">
-                                <span className="font-medium text-green-100">Budget Usage</span>
-                                <span className="font-bold text-white">₹{cartTotal} / ₹{budgetAmount}</span>
-                              </div>
-                              <div className="h-1.5 w-full bg-black/20 rounded-full overflow-hidden">
-                                <div 
-                                  className={`h-full rounded-full transition-all duration-300 ${isOverBudget ? 'bg-red-400' : isAtBudget ? 'bg-amber-400' : 'bg-white'}`}
-                                  style={{ width: `${Math.min((cartTotal / (budgetAmount || 1)) * 100, 100)}%` }}
-                                />
-                              </div>
-                              <div className="mt-2 text-[10px] font-medium leading-tight">
-                                {isOverBudget ? (
-                                  <span className="text-red-300">You have exceeded your budget by ₹{cartTotal - budgetAmount}. Please remove items.</span>
-                                ) : isAtBudget ? (
-                                  <span className="text-amber-300">You have reached your budget limit.</span>
-                                ) : (
-                                  <span className="text-green-200">You can still buy items worth ₹{budgetAmount - cartTotal}.</span>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSidebarPanel(null);
-                              navigate("/checkout");
-                            }}
-                            disabled={isOverBudget}
-                            className={`mt-4 w-full rounded-xl py-3 text-sm font-bold transition ${isOverBudget ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-[#ffc107] text-black hover:bg-yellow-400'}`}
-                          >
-                            Proceed to Checkout →
-                          </button> 
+                          <span className="text-2xl font-bold text-[#ffc107]">
+                            ₹{cartTotal.toLocaleString()}
+                          </span>
 
                         </div>
 
+                        {budgetMode && (
+                          <div className="mt-4 bg-white/10 rounded-xl p-3 border border-white/20">
+                            <div className="flex justify-between text-xs mb-2">
+                              <span className="font-medium text-green-100">Budget Usage</span>
+                              <span className="font-bold text-white">₹{cartTotal} / ₹{budgetAmount}</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-black/20 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-300 ${isOverBudget ? 'bg-red-400' : isAtBudget ? 'bg-amber-400' : 'bg-white'}`}
+                                style={{ width: `${Math.min((cartTotal / (budgetAmount || 1)) * 100, 100)}%` }}
+                              />
+                            </div>
+                            <div className="mt-2 text-[10px] font-medium leading-tight">
+                              {isOverBudget ? (
+                                <span className="text-red-300">You have exceeded your budget by ₹{cartTotal - budgetAmount}. Please remove items.</span>
+                              ) : isAtBudget ? (
+                                <span className="text-amber-300">You have reached your budget limit.</span>
+                              ) : (
+                                <span className="text-green-200">You can still buy items worth ₹{budgetAmount - cartTotal}.</span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSidebarPanel(null);
+                            navigate("/checkout");
+                          }}
+                          disabled={isOverBudget}
+                          className={`mt-4 w-full rounded-xl py-3 text-sm font-bold transition ${isOverBudget ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-[#ffc107] text-black hover:bg-yellow-400'}`}
+                        >
+                          Proceed to Checkout →
+                        </button>
+
                       </div>
-                    </>
+
+                    </div>
+                  </>
                   )}
 
                 </>
