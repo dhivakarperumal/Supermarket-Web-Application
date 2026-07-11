@@ -10,6 +10,7 @@ const createDeliveryChargesTable = async (connection) => {
       free_delivery_minimum_order_amount DECIMAL(10,2) DEFAULT 0.00,
       per_km_delivery_charge DECIMAL(10,2) DEFAULT 0.00,
       maximum_delivery_distance DECIMAL(10,2) DEFAULT 0.00,
+      free_delivery_km DECIMAL(10,2) DEFAULT 0.00,
       delivery_area_scope VARCHAR(50) DEFAULT 'City',
       enable_express_delivery TINYINT(1) DEFAULT 0,
       express_delivery_charge DECIMAL(10,2) DEFAULT 0.00,
@@ -20,6 +21,15 @@ const createDeliveryChargesTable = async (connection) => {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
   `);
+
+  try {
+    await connection.query(`
+      ALTER TABLE delivery_charges
+      ADD COLUMN IF NOT EXISTS free_delivery_km DECIMAL(10,2) DEFAULT 0.00
+    `);
+  } catch (err) {
+    console.warn('delivery_charges free_delivery_km migration skipped:', err?.message || err);
+  }
 };
 
 const createUsersTable = async () => {

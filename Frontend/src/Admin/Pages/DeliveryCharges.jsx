@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./Coupons.css"; // Reuse the glassmorphism styles we just built
+import "./Coupons.css"; 
 import { Truck, Save, RotateCcw } from "lucide-react";
 import api from "../../api";
 
@@ -9,6 +9,7 @@ const DeliveryCharges = () => {
     free_delivery_minimum_order_amount: 500,
     per_km_delivery_charge: 10,
     maximum_delivery_distance: 15,
+    free_delivery_km: 0,
     delivery_area_scope: "City",
     enable_express_delivery: true,
     express_delivery_charge: 100,
@@ -28,6 +29,7 @@ const DeliveryCharges = () => {
             free_delivery_minimum_order_amount: data.data.free_delivery_minimum_order_amount ?? 500,
             per_km_delivery_charge: data.data.per_km_delivery_charge ?? 10,
             maximum_delivery_distance: data.data.maximum_delivery_distance ?? 15,
+            free_delivery_km: data.data.free_delivery_km ?? 0,
             delivery_area_scope: data.data.delivery_area_scope || "City",
             enable_express_delivery: Boolean(data.data.enable_express_delivery),
             express_delivery_charge: data.data.express_delivery_charge ?? 100,
@@ -76,6 +78,7 @@ const DeliveryCharges = () => {
       free_delivery_minimum_order_amount: 500,
       per_km_delivery_charge: 10,
       maximum_delivery_distance: 15,
+      free_delivery_km: 0,
       delivery_area_scope: "City",
       enable_express_delivery: true,
       express_delivery_charge: 100,
@@ -113,6 +116,10 @@ const DeliveryCharges = () => {
             <div className="form-group">
               <label className="form-label">Maximum Delivery Distance (KM)</label>
               <input type="number" className="form-input" name="maximum_delivery_distance" placeholder="e.g. 15" value={formData.maximum_delivery_distance} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Free Delivery Distance (KM)</label>
+              <input type="number" className="form-input" name="free_delivery_km" placeholder="e.g. 5" value={formData.free_delivery_km} onChange={handleChange} />
             </div>
             <div className="form-group">
               <label className="form-label">Delivery Area Scope</label>
