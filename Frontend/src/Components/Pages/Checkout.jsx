@@ -1,4 +1,4 @@
-﻿import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { StoreContext } from "../../PrivateRouter/StoreContext";
 import { AuthContext } from "../../PrivateRouter/AuthContext";
@@ -12,6 +12,7 @@ const Checkout = () => {
   const { cart, clearCart } = useContext(StoreContext);
   const { user } = useContext(AuthContext);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  const [deliveryMethod, setDeliveryMethod] = useState("delivery");
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -538,7 +539,7 @@ const Checkout = () => {
 
   const subtotal = checkoutItems.reduce((total, item) => total + parseFloat(item.price || 0) * item.quantity, 0);
   const deliveryInfo = calculateDeliveryCharge(distanceInfo.distanceKm, subtotal);
-  const shipping = deliveryInfo.charge;
+  const shipping = deliveryMethod === "pickup" ? 0 : deliveryInfo.charge;
 
   // Calculate coupon discount
   let discountAmount = 0;
@@ -593,7 +594,8 @@ const Checkout = () => {
         items: orderItems,
         total_amount: total,
         delivery_charge: shipping,
-        distance_km: distanceInfo.distanceKm,
+        delivery_method: deliveryMethod,
+        distance_km: deliveryMethod === "pickup" ? 0 : distanceInfo.distanceKm,
         coupon_code: appliedCoupon?.code || null,
         coupon_discount: discountAmount || 0,
         subtotal_before_discount: subtotal,
@@ -638,32 +640,35 @@ const Checkout = () => {
       toast.error("Please enter phone number");
       return;
     }
-    if (!form.street_address.trim()) {
-      toast.error("Please enter street address");
-      return;
+    if (deliveryMethod === "delivery") {
+      if (!form.street_address.trim()) {
+        toast.error("Please enter street address");
+        return;
+      }
+      if (!form.city.trim()) {
+        toast.error("Please enter city");
+        return;
+      }
+      if (!form.district.trim()) {
+        toast.error("Please enter district");
+        return;
+      }
+      if (!form.state.trim()) {
+        toast.error("Please select state");
+        return;
+      }
+      if (!form.zip_code.trim()) {
+        toast.error("Please enter zip code");
+        return;
+      }
+      if (deliveryInfo.isError) {
+        toast.error(deliveryInfo.message || "Delivery not available for this location");
+        return;
+      }
     }
-    if (!form.city.trim()) {
-      toast.error("Please enter city");
-      return;
-    }
-    if (!form.district.trim()) {
-      toast.error("Please enter district");
-      return;
-    }
-    if (!form.state.trim()) {
-      toast.error("Please select state");
-      return;
-    }
-    if (!form.zip_code.trim()) {
-      toast.error("Please enter zip code");
-      return;
-    }
+
     if (!checkoutItems.length) {
       alert("No product to checkout");
-      return;
-    }
-    if (deliveryInfo.isError) {
-      toast.error(deliveryInfo.message || "Delivery not available for this location");
       return;
     }
 
@@ -727,7 +732,27 @@ const Checkout = () => {
 
             <div className="grid gap-8 lg:grid-cols-[1.6fr_0.9fr]">
               <div className="space-y-6">
+
+                {/* Delivery Method Toggle */}
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+                  <div className="mb-4 flex items-center gap-2">
+                    <FiPackage className="text-[#0e6827]" />
+                    <h2 className="text-lg font-semibold text-slate-800">Order Type</h2>
+                  </div>
+                  <div className="flex gap-4">
+                    <label className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border p-4 font-semibold transition ${deliveryMethod === "delivery" ? "border-[#0e6827] bg-green-50 text-[#0e6827]" : "border-gray-200 text-slate-500 hover:bg-gray-50"}`}>
+                      <input type="radio" name="deliveryMethod" value="delivery" checked={deliveryMethod === "delivery"} onChange={() => setDeliveryMethod("delivery")} className="hidden" />
+                      Home Delivery
+                    </label>
+                    <label className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border p-4 font-semibold transition ${deliveryMethod === "pickup" ? "border-[#0e6827] bg-green-50 text-[#0e6827]" : "border-gray-200 text-slate-500 hover:bg-gray-50"}`}>
+                      <input type="radio" name="deliveryMethod" value="pickup" checked={deliveryMethod === "pickup"} onChange={() => setDeliveryMethod("pickup")} className="hidden" />
+                      Store Pickup
+                    </label>
+                  </div>
+                </div>
+
+                {deliveryMethod === "delivery" && (
+                  <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
                   <div className="mb-4 flex items-center gap-2">
                     <FiMapPin className="text-[#0e6827]" />
                     <h2 className="text-lg font-semibold text-slate-800">Delivery Distance</h2>
@@ -784,6 +809,7 @@ const Checkout = () => {
                     )}
                   </div>
                 </div>
+                )}
 
                 {/* {addresses.length > 0 && (
                   <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
@@ -850,6 +876,7 @@ const Checkout = () => {
                     <input name="country" value="India" readOnly className="cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 px-4 py-3.5 text-sm text-slate-500 outline-none" />
                   </div>
                 </div>
+                )}
 
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
                   <div className="mb-4 flex items-center gap-2">
@@ -891,7 +918,7 @@ const Checkout = () => {
                         {shipping === 0 ? "Free" : `₹${shipping.toFixed(2)}`}
                       </span>
                     </div>
-                    {deliveryInfo.message && (
+                    {deliveryMethod === "delivery" && deliveryInfo.message && (
                       <div className={`text-xs ${deliveryInfo.isError ? "text-red-600" : "text-green-600"}`}>
                         {deliveryInfo.message}
                       </div>
