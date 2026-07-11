@@ -383,6 +383,91 @@ ${itemsHtml}
 
             <div className="p-8 overflow-y-auto space-y-8">
 
+              {/* ORDER TRACKING TIMELINE */}
+              <div>
+                <h3 className="text-lg font-bold text-primary-dark mb-4">
+                  Order Tracking
+                </h3>
+                <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                  <div className="relative">
+                    {/* Timeline Line */}
+                    <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gray-200"></div>
+
+                    {/* Steps */}
+                    <div className="space-y-6">
+                      {selectedOrder.status?.toLowerCase() === "cancelled" ? (
+                        <div className="relative flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full flex items-center justify-center z-10 bg-red-100 text-red-600">
+                            <XCircle size={20} />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-red-600">Cancelled</h4>
+                            <p className="text-xs text-red-500">Order was cancelled</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {/* Step 1: Order Placed */}
+                          <div className="relative flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 bg-green-100 text-[#0e6827]`}>
+                              <Package size={20} />
+                            </div>
+                            <div>
+                              <h4 className={`font-bold text-gray-800`}>Order Placed</h4>
+                              <p className="text-xs text-gray-500">We have received your order</p>
+                            </div>
+                          </div>
+
+                          {/* Step 2: Packing */}
+                          <div className="relative flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${["packing", "shipping", "out for delivery", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                              <Package size={20} />
+                            </div>
+                            <div>
+                              <h4 className={`font-bold ${["packing", "shipping", "out for delivery", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "text-gray-800" : "text-gray-400"}`}>Packing</h4>
+                              <p className="text-xs text-gray-500">Your order is being packed</p>
+                            </div>
+                          </div>
+
+                          {/* Step 3: Shipping */}
+                          <div className="relative flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${["shipping", "out for delivery", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                              <Truck size={20} />
+                            </div>
+                            <div>
+                              <h4 className={`font-bold ${["shipping", "out for delivery", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "text-gray-800" : "text-gray-400"}`}>Shipping</h4>
+                              <p className="text-xs text-gray-500">Your order is on the way</p>
+                            </div>
+                          </div>
+
+                          {/* Step 4: Out for Delivery */}
+                          <div className="relative flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${["out for delivery", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                              <Truck size={20} />
+                            </div>
+                            <div>
+                              <h4 className={`font-bold ${["out for delivery", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "text-gray-800" : "text-gray-400"}`}>Out for Delivery</h4>
+                              <p className="text-xs text-gray-500">Your order is out for delivery</p>
+                            </div>
+                          </div>
+
+                          {/* Step 5: Delivered */}
+                          <div className="relative flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${selectedOrder.status?.toLowerCase() === "delivered" ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                              <CheckCircle size={20} />
+                            </div>
+                            <div>
+                              <h4 className={`font-bold ${selectedOrder.status?.toLowerCase() === "delivered" ? "text-gray-800" : "text-gray-400"}`}>Delivered</h4>
+                              <p className="text-xs text-gray-500">Order has been delivered</p>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* ORDER SUMMARY CARD */}
               <div className="print-area bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
 
@@ -421,6 +506,28 @@ ${itemsHtml}
                     <StatusBadge status={selectedOrder.status} />
                   </div>
 
+                   {selectedOrder.tracking_number && (
+                        <div>
+                          <p className="text-xs uppercase text-gray-400 font-semibold tracking-wide">
+                            Tracking ID
+                          </p>
+                          <p className="font-semibold text-primary-dark">
+                            {selectedOrder.tracking_number}
+                          </p>
+                        </div>
+                      )}
+
+                      {selectedOrder.courier_name && (
+                        <div>
+                          <p className="text-xs uppercase text-gray-400 font-semibold tracking-wide">
+                            Courier
+                          </p>
+                          <p className="font-semibold text-primary-dark">
+                            {selectedOrder.courier_name}
+                          </p>
+                        </div>
+                      )}
+
                   <div className="flex justify-between border-b border-primary/10 pb-2">
                     <span className="text-gray-500">Customer</span>
                     <span className="font-semibold">
@@ -441,6 +548,8 @@ ${itemsHtml}
                       ₹{selectedOrder.total_amount}
                     </span>
                   </div>
+
+                  
 
                 </div>
 
@@ -527,7 +636,7 @@ ${itemsHtml}
                       {selectedOrder ? (() => {
                         let addr = selectedOrder.shipping_address;
                         if (typeof addr === 'string') {
-                          try { addr = JSON.parse(addr); } catch(e) {}
+                          try { addr = JSON.parse(addr); } catch (e) { }
                         }
                         const cName = addr?.customer_name || selectedOrder.customer_name;
                         const sAddr = addr?.street_address || selectedOrder.street_address;
@@ -556,65 +665,7 @@ ${itemsHtml}
                     </div>
                   </div>
 
-                  {/* ORDER TRACKING TIMELINE */}
-                  <div>
-                    <h3 className="text-lg font-bold text-primary-dark mb-4">
-                      Order Tracking
-                    </h3>
-                    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-                      <div className="relative">
-                        {/* Timeline Line */}
-                        <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gray-200"></div>
 
-                        {/* Steps */}
-                        <div className="space-y-6">
-                          {/* Step 1: Placed */}
-                          <div className="relative flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${true ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
-                              <Package size={20} />
-                            </div>
-                            <div>
-                              <h4 className={`font-bold ${true ? "text-gray-800" : "text-gray-400"}`}>Order Placed</h4>
-                              <p className="text-xs text-gray-500">We have received your order</p>
-                            </div>
-                          </div>
-
-                          {/* Step 2: Processing */}
-                          <div className="relative flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${["processing", "shipped", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
-                              <Clock size={20} />
-                            </div>
-                            <div>
-                              <h4 className={`font-bold ${["processing", "shipped", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "text-gray-800" : "text-gray-400"}`}>Processing</h4>
-                              <p className="text-xs text-gray-500">Your order is being prepared</p>
-                            </div>
-                          </div>
-
-                          {/* Step 3: Shipped */}
-                          <div className="relative flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${["shipped", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
-                              <Truck size={20} />
-                            </div>
-                            <div>
-                              <h4 className={`font-bold ${["shipped", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "text-gray-800" : "text-gray-400"}`}>Shipped</h4>
-                              <p className="text-xs text-gray-500">Your order is on the way</p>
-                            </div>
-                          </div>
-
-                          {/* Step 4: Delivered */}
-                          <div className="relative flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${selectedOrder.status?.toLowerCase() === "delivered" ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
-                              <CheckCircle size={20} />
-                            </div>
-                            <div>
-                              <h4 className={`font-bold ${selectedOrder.status?.toLowerCase() === "delivered" ? "text-gray-800" : "text-gray-400"}`}>Delivered</h4>
-                              <p className="text-xs text-gray-500">Order has been delivered</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
 
                   {/* EXPANDED ORDER SUMMARY */}
                   <div>
@@ -623,7 +674,7 @@ ${itemsHtml}
                     </h3>
                     <div className="bg-[#f8faec] border border-green-100 rounded-2xl p-6 shadow-sm">
                       <div className="space-y-3 text-sm text-gray-700">
-                        
+
                         <div className="flex justify-between items-center">
                           <span className="font-medium">Subtotal (Before Discount)</span>
                           <span className="font-bold">₹{selectedOrder.subtotal_before_discount || selectedOrder.total_amount}</span>
