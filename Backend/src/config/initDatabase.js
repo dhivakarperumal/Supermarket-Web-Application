@@ -70,6 +70,8 @@ const createUsersTable = async () => {
         role ENUM('admin', 'user', 'manager', 'dealer', 'store_manager', 'assistant_manager', 'cashier', 'sales_executive', 'inventory_manager', 'stock_keeper', 'billing_staff', 'customer_service', 'delivery_staff') NOT NULL DEFAULT 'user',
         created_by CHAR(36) NOT NULL,
         updated_by CHAR(36) NOT NULL,
+        budget_mode TINYINT(1) DEFAULT 0,
+        budget_amount DECIMAL(10,2) DEFAULT 0.00,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
@@ -143,7 +145,9 @@ const createUsersTable = async () => {
     await connection.query(`
       ALTER TABLE users
       ADD COLUMN IF NOT EXISTS name VARCHAR(255) DEFAULT NULL,
-      ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) DEFAULT NULL
+      ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) DEFAULT NULL,
+      ADD COLUMN IF NOT EXISTS budget_mode TINYINT(1) DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS budget_amount DECIMAL(10,2) DEFAULT 0.00
     `);
 
     await createDeliveryChargesTable(connection);

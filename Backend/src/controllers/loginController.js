@@ -53,6 +53,8 @@ const loginUser = async (req, res) => {
         phone: user.phone,
         role: user.role || "user",
         status: user.status,
+        budget_mode: user.budget_mode ? true : false,
+        budget_amount: parseFloat(user.budget_amount) || 0,
       },
     });
   } catch (error) {
@@ -119,6 +121,8 @@ const googleLogin = async (req, res) => {
         google_id: googleId || null,
         role: "user",
         status: "active",
+        budget_mode: 0,
+        budget_amount: 0,
       };
     }
 
@@ -139,6 +143,8 @@ const googleLogin = async (req, res) => {
         google_id: user.google_id || null,
         role: user.role || "user",
         status: user.status,
+        budget_mode: user.budget_mode ? true : false,
+        budget_amount: parseFloat(user.budget_amount) || 0,
       },
     });
   } catch (error) {

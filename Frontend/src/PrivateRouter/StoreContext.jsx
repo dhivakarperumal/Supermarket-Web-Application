@@ -18,6 +18,37 @@ export const StoreProvider = ({ children }) => {
     const [categoriesCache, setCategoriesCache] = useState([]);
     const [lastFetchTime, setLastFetchTime] = useState(0);
 
+    const [budgetMode, setBudgetMode] = useState(user?.budget_mode || false);
+    const [budgetAmount, setBudgetAmount] = useState(user?.budget_amount || 0);
+
+    useEffect(() => {
+        if (user) {
+            setBudgetMode(user.budget_mode || false);
+            setBudgetAmount(user.budget_amount || 0);
+        } else {
+            setBudgetMode(false);
+            setBudgetAmount(0);
+        }
+    }, [user]);
+
+    const updateBudget = async (mode, amount) => {
+        if (!user?.user_id) return;
+        try {
+            await api.put(`/users/budget/${user.user_id}`, { budget_mode: mode, budget_amount: amount });
+            setBudgetMode(mode);
+            setBudgetAmount(amount);
+            if (authContext && authContext.setUser) {
+                const updatedUser = { ...user, budget_mode: mode, budget_amount: amount };
+                authContext.setUser(updatedUser);
+                localStorage.setItem("user", JSON.stringify(updatedUser));
+            }
+            toast.success("Budget saved!");
+        } catch (err) {
+            console.error("Update budget error:", err);
+            toast.error("Failed to save budget");
+        }
+    };
+
     // ─── Fetch cart from backend ─────────────────────────────────
     const fetchCart = useCallback(async () => {
         if (!user?.user_id) { setCart([]); return; }
@@ -71,6 +102,15 @@ export const StoreProvider = ({ children }) => {
         
         const price = parseFloat(selectedVariant?.sellingPrice || selectedVariant?.selling_price || product.offer_price || product.price || 0);
         const categoryId = product.category_id || product.categoryId || null;
+
+        if (budgetMode) {
+            const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+            const itemTotal = price * qty;
+            if (cartTotal + itemTotal > budgetAmount) {
+                toast.error("Cannot add to cart. Budget exceeded!");
+                return;
+            }
+        }
 
         try {
             await api.post("/cart", {
@@ -127,6 +167,18 @@ export const StoreProvider = ({ children }) => {
         if (qty < 1) return;
         const targetItem = cart.find(i => i.id === cartItemId);
         if (!targetItem) return;
+
+        if (budgetMode) {
+            const currentQty = targetItem.quantity;
+            if (qty > currentQty) {
+                const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                const addedAmount = targetItem.price * (qty - currentQty);
+                if (cartTotal + addedAmount > budgetAmount) {
+                    toast.error("Cannot increase quantity. Budget exceeded!");
+                    return;
+                }
+            }
+        }
 
         try {
             await api.put(`/cart/${cartItemId}`, {
@@ -214,7 +266,8 @@ export const StoreProvider = ({ children }) => {
             videosCache, setVideosCache,
             bannersCache, setBannersCache,
             categoriesCache, setCategoriesCache,
-            lastFetchTime, setLastFetchTime
+            lastFetchTime, setLastFetchTime,
+            budgetMode, budgetAmount, updateBudget
         }}>
             {children}
         </StoreContext.Provider>
