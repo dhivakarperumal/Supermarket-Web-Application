@@ -83,10 +83,6 @@ export default function Orders() {
       const orderRes = await api.get(`/orders/${order.id}`);
       setSelectedOrder(orderRes.data);
 
-      // fetch address using order_id
-      const addressRes = await api.get(`/addresses/${order.id}`);
-      setAddress(addressRes.data);
-
       setShowPopup(true);
     } catch (error) {
       console.error("Failed to load order details", error);
@@ -296,29 +292,33 @@ export default function Orders() {
                       </h3>
 
                       <div className="border border-gray-100 rounded-2xl p-6 bg-linear-to-br from-primary/5 to-transparent shadow-sm">
-                        {address ? (
-                          <div className="text-sm text-gray-700 space-y-1">
-                            <p className="font-semibold">
-                              {address.customer_name}
-                            </p>
+                        {selectedOrder ? (() => {
+                          let addr = selectedOrder.shipping_address;
+                          if (typeof addr === 'string') {
+                            try { addr = JSON.parse(addr); } catch(e) {}
+                          }
+                          const cName = addr?.customer_name || selectedOrder.customer_name;
+                          const sAddr = addr?.street_address || selectedOrder.street_address;
+                          const city = addr?.city || selectedOrder.city;
+                          const dist = addr?.district || selectedOrder.district;
+                          const state = addr?.state || selectedOrder.state;
+                          const zip = addr?.zip_code || selectedOrder.zip_code;
+                          const country = addr?.country || selectedOrder.country;
+                          const phone = addr?.customer_phone || selectedOrder.customer_phone;
+                          const email = addr?.customer_email || selectedOrder.customer_email;
 
-                            <p>{address.street_address}</p>
-
-                            <p>
-                              {address.city}, {address.district}
-                            </p>
-
-                            <p>
-                              {address.state} - {address.zip_code}
-                            </p>
-
-                            <p>{address.country}</p>
-
-                            <p>Phone: {address.customer_phone}</p>
-
-                            <p>Email: {address.customer_email}</p>
-                          </div>
-                        ) : (
+                          return (
+                            <div className="text-sm text-gray-700 space-y-1">
+                              <p className="font-semibold">{cName || 'N/A'}</p>
+                              <p>{sAddr}</p>
+                              <p>{city}, {dist}</p>
+                              <p>{state} {zip ? `- ${zip}` : ''}</p>
+                              <p>{country}</p>
+                              <p>Phone: {phone}</p>
+                              <p>Email: {email}</p>
+                            </div>
+                          );
+                        })() : (
                           <p className="text-gray-500">Address not available</p>
                         )}
                       </div>
