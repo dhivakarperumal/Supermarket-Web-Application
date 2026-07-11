@@ -725,17 +725,6 @@ const Checkout = () => {
       <div className="min-h-screen bg-[#f7f8f3] py-8 sm:py-10">
         <PageContainer>
           <div className="mx-auto ">
-            {/* <div className="mb-8 rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-700">Secure checkout</p>
-                  <h1 className="mt-2 text-3xl font-bold text-slate-900">Checkout</h1>
-                  <p className="mt-2 text-sm text-slate-500">Complete your order in a few simple steps with your preferred payment method.</p>
-                </div>
-                <div className="rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-[#0e6827]">{checkoutItems.length} item{checkoutItems.length === 1 ? "" : "s"}</div>
-              </div>
-            </div> */}
-
             <div className="grid gap-8 lg:grid-cols-[1.6fr_0.9fr]">
               <div className="space-y-6">
 
@@ -759,62 +748,62 @@ const Checkout = () => {
 
                 {deliveryMethod === "delivery" && (
                   <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-                  <div className="mb-4 flex items-center gap-2">
-                    <FiMapPin className="text-[#0e6827]" />
-                    <h2 className="text-lg font-semibold text-slate-800">Delivery Distance</h2>
-                  </div>
-                  <p className="text-sm text-slate-500">Click the button below to fetch your current location and estimate the distance to our shop.</p>
+                    <div className="mb-4 flex items-center gap-2">
+                      <FiMapPin className="text-[#0e6827]" />
+                      <h2 className="text-lg font-semibold text-slate-800">Delivery Distance</h2>
+                    </div>
+                    <p className="text-sm text-slate-500">Click the button below to fetch your current location and estimate the distance to our shop.</p>
 
 
-                  <div className="mb-4 rounded-lg bg-blue-50 p-3 text-sm">
-                    <p className="text-slate-700">
-                      <span className="font-semibold">Max Delivery Distance:</span> {deliveryCharges?.maximum_delivery_distance || "N/A"} km
-                    </p>
-                  </div>
+                    <div className="mb-4 rounded-lg bg-blue-50 p-3 text-sm">
+                      <p className="text-slate-700">
+                        <span className="font-semibold">Max Delivery Distance:</span> {deliveryCharges?.maximum_delivery_distance || "N/A"} km
+                      </p>
+                    </div>
 
-                  <div className="mt-4 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">
-                    {!distanceInfo.distanceKm && !distanceInfo.error && !distanceInfo.loading ? (
-                      <div className="flex flex-col gap-3">
-                        <p className="text-sm text-slate-600">No location fetched yet.</p>
-                        <button type="button" onClick={detectDistanceToShop} className="w-fit rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
-                          Fetch location
-                        </button>
-                      </div>
-                    ) : distanceInfo.loading ? (
-                      <p className="text-sm text-slate-600">Fetching your current location...</p>
-                    ) : distanceInfo.distanceKm !== null ? (
-                      <>
-                        <p className="text-sm text-slate-600">Shop address</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-800">{SHOP_ADDRESS}</p>
-                        <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
-                          <div>
-                            <p className="text-sm text-slate-500">Estimated distance</p>
-                            <p className="text-2xl font-bold text-[#0e6827]">{distanceInfo.distanceKm} km</p>
-                            {deliveryCharges && distanceInfo.distanceKm !== null && (
-                              <p className="mt-2 text-xs text-slate-600">
-                                {deliveryInfo.isError ? (
-                                  <span className="text-red-600">{deliveryInfo.message}</span>
-                                ) : (
-                                  <span className="text-green-600">{deliveryInfo.message}</span>
-                                )}
-                              </p>
-                            )}
-                          </div>
-                          <button type="button" onClick={detectDistanceToShop} className="rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
+                    <div className="mt-4 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">
+                      {!distanceInfo.distanceKm && !distanceInfo.error && !distanceInfo.loading ? (
+                        <div className="flex flex-col gap-3">
+                          <p className="text-sm text-slate-600">No location fetched yet.</p>
+                          <button type="button" onClick={detectDistanceToShop} className="w-fit rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
                             Fetch location
                           </button>
                         </div>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-sm text-slate-600">{distanceInfo.error || "We could not calculate the distance right now."}</p>
-                        <button type="button" onClick={detectDistanceToShop} className="mt-3 rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
-                          Fetch location
-                        </button>
-                      </>
-                    )}
+                      ) : distanceInfo.loading ? (
+                        <p className="text-sm text-slate-600">Fetching your current location...</p>
+                      ) : distanceInfo.distanceKm !== null ? (
+                        <>
+                          <p className="text-sm text-slate-600">Shop address</p>
+                          <p className="mt-1 text-sm font-semibold text-slate-800">{SHOP_ADDRESS}</p>
+                          <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
+                            <div>
+                              <p className="text-sm text-slate-500">Estimated distance</p>
+                              <p className="text-2xl font-bold text-[#0e6827]">{distanceInfo.distanceKm} km</p>
+                              {deliveryCharges && distanceInfo.distanceKm !== null && (
+                                <p className="mt-2 text-xs text-slate-600">
+                                  {deliveryInfo.isError ? (
+                                    <span className="text-red-600">{deliveryInfo.message}</span>
+                                  ) : (
+                                    <span className="text-green-600">{deliveryInfo.message}</span>
+                                  )}
+                                </p>
+                              )}
+                            </div>
+                            <button type="button" onClick={detectDistanceToShop} className="rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
+                              Fetch location
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm text-slate-600">{distanceInfo.error || "We could not calculate the distance right now."}</p>
+                          <button type="button" onClick={detectDistanceToShop} className="mt-3 rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
+                            Fetch location
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
                 )}
 
                 {/* {addresses.length > 0 && (
@@ -861,59 +850,88 @@ const Checkout = () => {
                   </div>
                 </div>
                 {deliveryMethod === "delivery" && (
-                <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-                  <div className="mb-4 flex items-center gap-2">
-                    <FiMapPin className="text-[#0e6827]" />
-                    <h2 className="text-lg font-semibold text-slate-800">Shipping Address</h2>
+                  <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+                    <div className="mb-4 flex items-center gap-2">
+                      <FiMapPin className="text-[#0e6827]" />
+                      <h2 className="text-lg font-semibold text-slate-800">Shipping Address</h2>
+                    </div>
+                    <textarea name="street_address" placeholder="Street Address" value={form.street_address} onChange={handleChange} rows={3} className="mb-4 w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <input name="city" placeholder="City" value={form.city} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                      <input name="district" placeholder="District" value={form.district} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                      <select name="state" value={form.state} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100">
+                        <option value="">Select State</option>
+                        {indianStates.map((state, i) => (
+                          <option key={i} value={state}>{state}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                      <input name="zip_code" placeholder="Zip Code" value={form.zip_code} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                      <input name="country" value="India" readOnly className="cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 px-4 py-3.5 text-sm text-slate-500 outline-none" />
+                    </div>
                   </div>
-                  <textarea name="street_address" placeholder="Street Address" value={form.street_address} onChange={handleChange} rows={3} className="mb-4 w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <input name="city" placeholder="City" value={form.city} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                    <input name="district" placeholder="District" value={form.district} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                    <select name="state" value={form.state} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100">
-                      <option value="">Select State</option>
-                      {indianStates.map((state, i) => (
-                        <option key={i} value={state}>{state}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="mt-4 grid gap-4 md:grid-cols-2">
-                    <input name="zip_code" placeholder="Zip Code" value={form.zip_code} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                    <input name="country" value="India" readOnly className="cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 px-4 py-3.5 text-sm text-slate-500 outline-none" />
-                  </div>
-                </div>
                 )}
 
+              </div>
+
+              <aside className="lg:sticky lg:top-24 space-y-6">
+                {/* Products */}
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-                  <div className="mb-4 flex items-center gap-2">
-                    <FiPackage className="text-[#0e6827]" />
-                    <h2 className="text-lg font-semibold text-slate-800">Your Items</h2>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-slate-800">
+                      Products ({checkoutItems.length})
+                    </h2>
                   </div>
-                  <div className="space-y-4">
+
+                  <div className="max-h-[350px] space-y-3 overflow-y-auto pr-2">
                     {checkoutItems.map((item) => (
-                      <div key={item.id} className="flex items-center gap-4 rounded-[1.25rem] border border-gray-100 bg-gray-50 p-3">
-                        <img src={item.image || "/placeholder.png"} alt={item.name} className="h-20 w-16 rounded-xl object-cover" onError={(e) => { e.target.src = "/placeholder.png"; }} />
-                        <div className="flex-1">
-                          <p className="font-semibold text-slate-800">{item.name}</p>
-                          <div className="mt-1 space-y-1 text-sm text-slate-500">
-                            <p>Qty: {item.quantity}</p>
-                            {item.colorName && (
-                              <p className="flex items-center gap-2">
-                                <span className="h-3 w-3 rounded-full border border-gray-400" style={{ backgroundColor: item.colorHex || item.color || "#ccc" }} />
-                                <span className="font-semibold text-slate-700">{item.colorName}</span>
-                              </p>
-                            )}
-                            {item.size && <p>Size: {item.size}</p>}
-                          </div>
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-3 rounded-xl border border-gray-100 p-3 hover:bg-gray-50"
+                      >
+                        <img
+                          src={item.image || "/placeholder.png"}
+                          alt={item.name}
+                          className="h-16 w-16 rounded-lg object-cover"
+                          onError={(e) => (e.target.src = "/placeholder.png")}
+                        />
+
+                        <div className="flex-1 min-w-0">
+                          <h3 className="truncate text-sm font-semibold text-slate-800">
+                            {item.name}
+                          </h3>
+
+                          <p className="mt-1 text-xs text-slate-500">
+                            Qty: {item.quantity}
+                            {item.size && ` • ${item.size}`}
+                          </p>
+
+                          {item.colorName && (
+                            <div className="mt-1 flex items-center gap-2">
+                              <span
+                                className="h-3 w-3 rounded-full border"
+                                style={{
+                                  backgroundColor:
+                                    item.colorHex || item.color || "#ccc",
+                                }}
+                              />
+                              <span className="text-xs text-slate-500">
+                                {item.colorName}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                        <span className="font-semibold text-slate-800">₹{item.price * item.quantity}</span>
+
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-[#0e6827]">
+                            ₹{(item.price * item.quantity).toFixed(2)}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
-
-              <aside className="lg:sticky lg:top-24">
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
 
                   <div className="mt-6 space-y-3 text-sm text-slate-600">
