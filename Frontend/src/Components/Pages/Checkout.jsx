@@ -373,6 +373,7 @@ const Checkout = () => {
     const perKmCharge = parseFloat(deliveryCharges.per_km_delivery_charge) || 0;
     const maxDistance = parseFloat(deliveryCharges.maximum_delivery_distance) || 100;
     const freeDeliveryThreshold = parseFloat(deliveryCharges.free_delivery_minimum_order_amount) || 0;
+    const freeDeliveryKm = parseFloat(deliveryCharges.free_delivery_km) || 0;
 
     // Check if distance exceeds maximum delivery distance
     if (distanceKm > maxDistance) {
@@ -386,6 +387,11 @@ const Checkout = () => {
     // Apply free delivery if order is above threshold
     if (orderSubtotal >= freeDeliveryThreshold) {
       return { charge: 0, message: `Free delivery on orders ₹${freeDeliveryThreshold} and above` };
+    }
+
+    // Apply free delivery if within free delivery distance
+    if (freeDeliveryKm > 0 && distanceKm <= freeDeliveryKm) {
+      return { charge: 0, message: `Free delivery for locations within ${freeDeliveryKm} km` };
     }
 
     // Calculate delivery charge
