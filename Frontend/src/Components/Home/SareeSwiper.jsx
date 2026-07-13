@@ -116,7 +116,7 @@ const SareeSwiper = () => {
 
           {/* Product Swiper */}
 
-          <div className="flex-1">
+          <div className="flex-1 min-w-0 overflow-hidden">
 
             <Swiper
               modules={[Autoplay]}
@@ -124,7 +124,10 @@ const SareeSwiper = () => {
                 delay: 2500,
                 disableOnInteraction: false,
               }}
-              loop
+              loop={sarees.length > 4}
+              watchOverflow={true}
+              observer={true}
+              observeParents={true}
               spaceBetween={18}
               breakpoints={{
                 0: {
@@ -145,8 +148,10 @@ const SareeSwiper = () => {
               }}
             >
               {sarees.map((product) => (
-                <SwiperSlide key={product.id}>
-                  <ProductCard product={product} />
+                <SwiperSlide key={product.id} className="!h-auto">
+                  <div className="w-full min-w-0">
+                    <ProductCard product={product} />
+                  </div>
                 </SwiperSlide>
               ))}
             </Swiper>
