@@ -9,7 +9,7 @@ const createCategoryTable = async () => {
     await connection.query(`
       CREATE TABLE IF NOT EXISTS categories (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        category_id CHAR(36) NOT NULL UNIQUE,
+        category_id CHAR(36) UNIQUE,
         catId VARCHAR(20) NOT NULL UNIQUE,
         name VARCHAR(255) NOT NULL,
         description TEXT,
@@ -35,9 +35,11 @@ const createCategoryTable = async () => {
 
     // Add new columns for category_id, created_by, updated_by if they don't exist
     try {
-      await connection.query("ALTER TABLE categories ADD COLUMN category_id CHAR(36) NOT NULL UNIQUE");
+      await connection.query("ALTER TABLE categories ADD COLUMN category_id CHAR(36) UNIQUE");
     } catch (e) {
-      if (!e.message.includes("Duplicate column")) {}
+      if (!e.message.includes("Duplicate column")) {
+        console.error("Migration error (category_id):", e.message);
+      }
     }
     
     try {
@@ -50,7 +52,6 @@ const createCategoryTable = async () => {
       await connection.query("ALTER TABLE categories ADD COLUMN updated_by CHAR(36) DEFAULT NULL");
     } catch (e) {
       if (!e.message.includes("Duplicate column")) {}
-    }
     }
   } finally {
     connection.release();
