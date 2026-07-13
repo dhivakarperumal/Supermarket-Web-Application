@@ -22,20 +22,20 @@ import {
   Ticket
 } from "lucide-react";
 
-const Toggle = ({ label, defaultChecked = false }) => (
+const Toggle = ({ label, defaultChecked = false, checked, onChange }) => (
   <div className="toggle-switch">
     <span className="toggle-label">{label}</span>
     <label className="switch">
-      <input type="checkbox" defaultChecked={defaultChecked} />
+      <input type="checkbox" defaultChecked={defaultChecked} checked={checked} onChange={onChange} />
       <span className="slider"></span>
     </label>
   </div>
 );
 
-const Input = ({ label, type = "text", placeholder }) => (
+const Input = ({ label, type = "text", placeholder, value, onChange }) => (
   <div className="form-group">
     <label className="form-label">{label}</label>
-    <input type={type} className="form-input" placeholder={placeholder} />
+    <input type={type} className="form-input" placeholder={placeholder} value={value} onChange={onChange} />
   </div>
 );
 
@@ -78,6 +78,30 @@ const Settings = () => {
   const [availableDevices, setAvailableDevices] = useState([
     { id: 'dev2', name: 'TVS RP3150', mac: 'A1:B2:C3:D4:E5:F6' }
   ]);
+
+  const [receiptSettings, setReceiptSettings] = useState({
+    storeName: '',
+    address: '',
+    phone: '',
+    email: '',
+    gst: '',
+    fssai: '',
+    invoicePrefix: '',
+    invoiceFormat: '',
+    currency: '',
+    dateFormat: 'DD/MM/YYYY',
+    taxDisplay: true,
+    discountDisplay: true,
+    barcodeDisplay: true,
+    qrCodeDisplay: true,
+    footerMessage: 'Visit again!',
+    thankYouMessage: 'Thank you for shopping with us.',
+    returnPolicy: 'No returns after 7 days.'
+  });
+
+  const updateReceiptSetting = (key, value) => {
+    setReceiptSettings(prev => ({ ...prev, [key]: value }));
+  };
 
   const handleSave = () => {
     setActiveTab(null);
@@ -228,24 +252,121 @@ const Settings = () => {
       case 'receipt':
         return (
           <>
-            <Input label="Store Logo Upload" type="file" />
-            <Input label="Store Name" placeholder="Priyam Super Market" />
-            <Input label="Address" placeholder="123 Main Street" />
-            <Input label="Phone Number" placeholder="+91 9876543210" />
-            <Input label="Email" placeholder="contact@priyam.com" />
-            <Input label="GST Number" placeholder="22AAAAA0000A1Z5" />
-            <Input label="FSSAI Number" placeholder="10022000000000" />
-            <Input label="Invoice Prefix" placeholder="INV-" />
-            <Select label="Invoice Number Format" options={['YYYY/MM/DD/0001', '00001', 'INV-00001']} />
-            <Input label="Currency Symbol" placeholder="₹" />
-            <Select label="Date Format" options={['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD']} />
-            <Toggle label="Tax Display" defaultChecked />
-            <Toggle label="Discount Display" defaultChecked />
-            <Toggle label="Barcode Display" defaultChecked />
-            <Toggle label="QR Code Display" defaultChecked />
-            <Input label="Footer Message" placeholder="Visit again!" />
-            <Input label="Thank You Message" placeholder="Thank you for shopping with us." />
-            <Input label="Return Policy" placeholder="No returns after 7 days." />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <Input label="Store Logo Upload" type="file" />
+              <Input label="Store Name" placeholder="Priyam Super Market" value={receiptSettings.storeName} onChange={(e) => updateReceiptSetting('storeName', e.target.value)} />
+              <Input label="Address" placeholder="123 Main Street" value={receiptSettings.address} onChange={(e) => updateReceiptSetting('address', e.target.value)} />
+              <Input label="Phone Number" placeholder="+91 9876543210" value={receiptSettings.phone} onChange={(e) => updateReceiptSetting('phone', e.target.value)} />
+              <Input label="Email" placeholder="contact@priyam.com" value={receiptSettings.email} onChange={(e) => updateReceiptSetting('email', e.target.value)} />
+              <Input label="GST Number" placeholder="22AAAAA0000A1Z5" value={receiptSettings.gst} onChange={(e) => updateReceiptSetting('gst', e.target.value)} />
+              <Input label="FSSAI Number" placeholder="10022000000000" value={receiptSettings.fssai} onChange={(e) => updateReceiptSetting('fssai', e.target.value)} />
+              <Input label="Invoice Prefix" placeholder="INV-" value={receiptSettings.invoicePrefix} onChange={(e) => updateReceiptSetting('invoicePrefix', e.target.value)} />
+              <Select label="Invoice Number Format" options={['YYYY/MM/DD/0001', '00001', 'INV-00001']} value={receiptSettings.invoiceFormat} onChange={(e) => updateReceiptSetting('invoiceFormat', e.target.value)} />
+              <Input label="Currency Symbol" placeholder="₹" value={receiptSettings.currency} onChange={(e) => updateReceiptSetting('currency', e.target.value)} />
+              <Select label="Date Format" options={['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD']} value={receiptSettings.dateFormat} onChange={(e) => updateReceiptSetting('dateFormat', e.target.value)} />
+              <Toggle label="Tax Display" checked={receiptSettings.taxDisplay} onChange={(e) => updateReceiptSetting('taxDisplay', e.target.checked)} />
+              <Toggle label="Discount Display" checked={receiptSettings.discountDisplay} onChange={(e) => updateReceiptSetting('discountDisplay', e.target.checked)} />
+              <Toggle label="Barcode Display" checked={receiptSettings.barcodeDisplay} onChange={(e) => updateReceiptSetting('barcodeDisplay', e.target.checked)} />
+              <Toggle label="QR Code Display" checked={receiptSettings.qrCodeDisplay} onChange={(e) => updateReceiptSetting('qrCodeDisplay', e.target.checked)} />
+              <Input label="Footer Message" placeholder="Visit again!" value={receiptSettings.footerMessage} onChange={(e) => updateReceiptSetting('footerMessage', e.target.value)} />
+              <Input label="Thank You Message" placeholder="Thank you for shopping with us." value={receiptSettings.thankYouMessage} onChange={(e) => updateReceiptSetting('thankYouMessage', e.target.value)} />
+              <Input label="Return Policy" placeholder="No returns after 7 days." value={receiptSettings.returnPolicy} onChange={(e) => updateReceiptSetting('returnPolicy', e.target.value)} />
+            </div>
+
+            {/* Receipt Preview Side */}
+            <div className="receipt-preview-container" style={{ padding: '0 1rem' }}>
+              <h4 style={{ marginBottom: '1rem', color: '#1e293b', fontSize: '1rem', fontWeight: 'bold' }}>Receipt Preview</h4>
+              <div className="receipt-preview-card" style={{
+                background: '#fff',
+                padding: '1.5rem',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                border: '1px dashed #cbd5e1',
+                fontFamily: 'monospace',
+                fontSize: '0.85rem',
+                color: '#333',
+                maxWidth: '350px',
+                margin: '0 auto',
+                position: 'sticky',
+                top: '20px'
+              }}>
+                <div style={{ textAlign: 'center', marginBottom: '1rem', borderBottom: '1px dashed #cbd5e1', paddingBottom: '1rem' }}>
+                  <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', textTransform: 'uppercase' }}>{receiptSettings.storeName || 'STORE NAME'}</h3>
+                  <div>{receiptSettings.address}</div>
+                  <div>Phone: {receiptSettings.phone}</div>
+                  {receiptSettings.email && <div>Email: {receiptSettings.email}</div>}
+                  {receiptSettings.gst && <div>GST: {receiptSettings.gst}</div>}
+                  {receiptSettings.fssai && <div>FSSAI: {receiptSettings.fssai}</div>}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span>Invoice: {receiptSettings.invoicePrefix}0001</span>
+                  <span>Date: {new Date().toLocaleDateString()}</span>
+                </div>
+                
+                <div style={{ borderBottom: '1px dashed #cbd5e1', margin: '0.5rem 0' }}></div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  <span>Item</span>
+                  <span>Total</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <span>Apple 1kg</span>
+                  <span>{receiptSettings.currency}120.00</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <span>Rice 5kg</span>
+                  <span>{receiptSettings.currency}450.00</span>
+                </div>
+                
+                <div style={{ borderBottom: '1px dashed #cbd5e1', margin: '0.5rem 0' }}></div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <span>Subtotal</span>
+                  <span>{receiptSettings.currency}570.00</span>
+                </div>
+                {receiptSettings.taxDisplay && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                    <span>GST (5%)</span>
+                    <span>{receiptSettings.currency}28.50</span>
+                  </div>
+                )}
+                {receiptSettings.discountDisplay && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                    <span>Discount</span>
+                    <span>-{receiptSettings.currency}10.00</span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '1rem' }}>
+                  <span>Total</span>
+                  <span>{receiptSettings.currency}{(570 + (receiptSettings.taxDisplay ? 28.5 : 0) - (receiptSettings.discountDisplay ? 10 : 0)).toFixed(2)}</span>
+                </div>
+                
+                <div style={{ borderBottom: '1px dashed #cbd5e1', margin: '1rem 0' }}></div>
+                
+                {receiptSettings.barcodeDisplay && (
+                  <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                    <div style={{ background: 'repeating-linear-gradient(90deg, #333, #333 2px, transparent 2px, transparent 4px)', height: '40px', width: '80%', margin: '0 auto', marginBottom: '0.25rem' }}></div>
+                    <div style={{ fontSize: '0.75rem' }}>123456789012</div>
+                  </div>
+                )}
+                
+                {receiptSettings.qrCodeDisplay && (
+                  <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                    <div style={{ background: 'conic-gradient(#333 90deg, transparent 90deg)', backgroundSize: '10px 10px', height: '80px', width: '80px', margin: '0 auto' }}></div>
+                    <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Scan to Pay</div>
+                  </div>
+                )}
+                
+                <div style={{ textAlign: 'center', marginTop: '1rem', fontStyle: 'italic' }}>
+                  <div>{receiptSettings.thankYouMessage}</div>
+                  <div>{receiptSettings.footerMessage}</div>
+                  {receiptSettings.returnPolicy && (
+                    <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#666' }}>{receiptSettings.returnPolicy}</div>
+                  )}
+                </div>
+              </div>
+            </div>
           </>
         );
       
