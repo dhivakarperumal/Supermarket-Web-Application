@@ -248,7 +248,8 @@ const Settings = () => {
             <Input label="Return Policy" placeholder="No returns after 7 days." />
           </>
         );
-      case 'payment':
+      
+        case 'payment':
         return (
           <>
             <Select label="Primary Gateway" options={['Razorpay', 'Stripe', 'Paytm', 'PhonePe', 'Google Pay']} />
