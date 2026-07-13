@@ -1,5 +1,6 @@
 const { getPool, getLargePacketConnection } = require("../config/db");
 const { createProductTable } = require("../config/initProductDatabase");
+const crypto = require("crypto");
 
 const parseJsonField = (value) => {
   if (!value) return [];
@@ -50,14 +51,20 @@ const createProduct = async (req, res) => {
         }
       }
 
+      const product_id = crypto.randomUUID();
+      const created_by = req.headers['x-user-id'] || null;
+      const updated_by = req.headers['x-user-id'] || null;
+
       const [result] = await connection.execute(
         `INSERT INTO products (
-          name, product_code, barcode, barcode_image, category, category_id, subcategory, brand, description,
+          product_id, name, product_code, barcode, barcode_image, category, category_id, subcategory, brand, description,
           mrp, selling_price, offer, offer_price, stock_quantity, pricing_options, total_stock,
           expiry_date, manufacturing_date, country_of_origin, supplier, product_images, thumbnail_image,
-          status, featured_product, best_seller, todays_deal, delivery_time, return_available, rating, review_count
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          status, featured_product, best_seller, todays_deal, delivery_time, return_available, rating, review_count,
+          created_by, updated_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
+          product_id,
           data.name,
           data.product_code || "",
           data.barcode || "",
@@ -87,7 +94,9 @@ const createProduct = async (req, res) => {
           data.delivery_time || "",
           data.return_available || false,
           data.rating || 5,
-          data.review_count || 0
+          data.review_count || 0,
+          created_by,
+          updated_by
         ]
       );
 
@@ -274,13 +283,15 @@ const updateProduct = async (req, res) => {
         finalCategoryId = existingRows[0].category_id || null;
       }
 
+      const updated_by = req.headers['x-user-id'] || null;
+
       await connection.execute(
         `UPDATE products SET 
           name = ?, product_code = ?, barcode = ?, barcode_image = ?, category = ?, category_id = ?, subcategory = ?, brand = ?, description = ?,
           mrp = ?, selling_price = ?, offer = ?, offer_price = ?, stock_quantity = ?, pricing_options = ?, total_stock = ?,
           expiry_date = ?, manufacturing_date = ?, country_of_origin = ?, supplier = ?, product_images = ?, thumbnail_image = ?,
           status = ?, featured_product = ?, best_seller = ?, todays_deal = ?, delivery_time = ?, return_available = ?, rating = ?, review_count = ?,
-          updated_at = NOW() 
+          updated_by = ?, updated_at = NOW() 
         WHERE id = ?`,
         [
           data.name,
@@ -313,6 +324,7 @@ const updateProduct = async (req, res) => {
           data.return_available || false,
           data.rating || 5,
           data.review_count || 0,
+          updated_by,
           id
         ]
       );

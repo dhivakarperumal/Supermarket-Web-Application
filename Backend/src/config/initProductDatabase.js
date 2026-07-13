@@ -9,6 +9,7 @@ const createProductTable = async () => {
     await connection.query(`
       CREATE TABLE IF NOT EXISTS products (
         id INT AUTO_INCREMENT PRIMARY KEY,
+        product_id CHAR(36) UNIQUE,
         name VARCHAR(255) NOT NULL,
         product_code VARCHAR(100),
         barcode VARCHAR(100),
@@ -39,6 +40,8 @@ const createProductTable = async () => {
         return_available BOOLEAN DEFAULT FALSE,
         rating DECIMAL(3,2) DEFAULT 5,
         review_count INT DEFAULT 0,
+        created_by CHAR(36) DEFAULT NULL,
+        updated_by CHAR(36) DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
@@ -52,6 +55,15 @@ const createProductTable = async () => {
       `);
     } catch (e) {
       // Column may already exist
+    }
+
+    const alterColumns = [
+      "ALTER TABLE products ADD COLUMN IF NOT EXISTS product_id CHAR(36) UNIQUE",
+      "ALTER TABLE products ADD COLUMN IF NOT EXISTS created_by CHAR(36) DEFAULT NULL",
+      "ALTER TABLE products ADD COLUMN IF NOT EXISTS updated_by CHAR(36) DEFAULT NULL"
+    ];
+    for (const sql of alterColumns) {
+      try { await connection.query(sql); } catch (e) { /* ignore if exists */ }
     }
 
     // Add foreign key constraint if it doesn't exist
