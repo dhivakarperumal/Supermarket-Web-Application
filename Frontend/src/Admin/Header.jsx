@@ -49,6 +49,13 @@ const pageTitles = {
   "/admin/settings": "Settings",
   "/admin/profile": "Profile",
   "/admin/settings/profile": "Profile",
+  "/admin/delivery-charges": "Delivery Charges",
+  "/admin/coupons": "Coupons",
+  "/admin/banners": "Banners",
+  "/admin/staff/salary": "Salary Management",
+  "/admin/staff/leave": "Leave Management",
+  "/admin/staff/attendance": "Attendance Management",
+  "/admin/videos": "Video Management",
 };
 
 const Header = ({ onMenuClick }) => {
