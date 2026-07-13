@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./Coupons.css"; 
+import "./Coupons.css";
 import { Truck, Save, RotateCcw } from "lucide-react";
 import api from "../../api";
 
@@ -95,8 +95,16 @@ const DeliveryCharges = () => {
         </div>
       </div>
 
-      <form className="glass-container form-view" style={{ maxWidth: '900px', margin: '0 auto' }} onSubmit={handleSubmit}>
-        
+      <form
+        className="glass-container form-view"
+        style={{
+          width: "100%",
+          maxWidth: "100%",
+          margin: "0",
+        }}
+        onSubmit={handleSubmit}
+      >
+
         {/* Standard Delivery Settings */}
         <div className="form-section">
           <h3 className="form-section-title"><Truck className="icon" /> Standard Delivery Settings</h3>
