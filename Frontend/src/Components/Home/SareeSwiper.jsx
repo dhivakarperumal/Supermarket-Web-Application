@@ -4,8 +4,12 @@ import { StoreContext } from "../../PrivateRouter/StoreContext";
 import { useContext } from "react";
 
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay } from "swiper/modules";
 import "swiper/css";
+
+import { Autoplay, Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 import ProductCard from "../Products/ProductsCard";
 import Heading from "../Heading";
@@ -119,15 +123,16 @@ const SareeSwiper = () => {
           <div className="flex-1 min-w-0 overflow-hidden">
 
             <Swiper
-              modules={[Autoplay]}
+              modules={[Autoplay, Navigation]}
+              navigation={{
+                nextEl: ".latest-next",
+                prevEl: ".latest-prev",
+              }}
               autoplay={{
                 delay: 2500,
                 disableOnInteraction: false,
               }}
               loop={sarees.length > 4}
-              watchOverflow={true}
-              observer={true}
-              observeParents={true}
               spaceBetween={18}
               breakpoints={{
                 0: {
