@@ -545,6 +545,49 @@ const ProductDetails = () => {
               </div>
             </div>
 
+            {product?.category === "COMBO" && Array.isArray(product?.combo_items) && product.combo_items.length > 0 && (
+              <div className="mt-6 rounded-[1.5rem] border border-gray-100 bg-white p-5 shadow-sm">
+                <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
+                  Combo Includes
+                </p>
+                <div className="flex flex-col gap-3">
+                  {product.combo_items.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                      {item.image && (
+                        <div className="w-12 h-12 bg-white rounded-lg shadow-sm overflow-hidden flex-shrink-0 border border-gray-100 p-1">
+                          <img src={resolveImageUrl(item.image)} alt={item.name} className="w-full h-full object-contain" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-800 text-sm">{item.name}</p>
+                        {item.variant_info && (
+                           <p className="text-xs text-gray-500 font-semibold mt-0.5">{item.variant_info.weight} {item.variant_info.unit}</p>
+                        )}
+                        <div className="flex items-center gap-2 mt-1">
+                          {item.offer_price > 0 || item.selling_price > 0 ? (
+                            <>
+                              <span className="text-sm font-black text-primary">₹{item.offer_price || item.selling_price}</span>
+                              {item.mrp > 0 && <span className="text-xs text-gray-400 line-through font-semibold">₹{item.mrp}</span>}
+                              {(item.mrp > (item.offer_price || item.selling_price)) && (
+                                <span className="text-[10px] bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded font-black">
+                                  {Math.round(((item.mrp - (item.offer_price || item.selling_price)) / item.mrp) * 100)}% OFF
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-sm font-black text-gray-800">₹{item.mrp}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="bg-primary/10 text-primary font-black px-3 py-1 rounded-lg text-sm">
+                        x{item.quantity}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <button
                 onClick={() => addToCart(product, selectedVariant, selectedSize, quantity)}

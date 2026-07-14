@@ -351,6 +351,46 @@ const ProductDetail = () => {
                         </Section>
                     )}
 
+                    {/* Combo Items */}
+                    {product.category === "COMBO" && Array.isArray(product.combo_items) && product.combo_items.length > 0 && (
+                        <Section title="Combo Items" icon={FiPackage} accent>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="bg-blue-50 rounded-xl">
+                                            {["Image", "Item Name", "Variant", "Quantity", "Price"].map(h => (
+                                                <th key={h} className="px-4 py-3 text-[10px] font-black text-blue-600 uppercase tracking-widest first:rounded-l-2xl last:rounded-r-2xl">{h}</th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {product.combo_items.map((item, i) => (
+                                            <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                                <td className="px-4 py-4">
+                                                    {item.image ? (
+                                                        <img src={processUrl(item.image)} alt={item.name} className="w-10 h-10 object-contain rounded-lg border border-gray-100 bg-white" />
+                                                    ) : (
+                                                        <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-300">
+                                                            <FiImage size={16} />
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-4 font-black text-slate-700 text-sm">{item.name}</td>
+                                                <td className="px-4 py-4 text-xs font-bold text-gray-500">
+                                                    {item.variant_info ? `${item.variant_info.weight} ${item.variant_info.unit}` : <span className="text-gray-300">—</span>}
+                                                </td>
+                                                <td className="px-4 py-4 text-sm font-black text-blue-600">x{item.quantity}</td>
+                                                <td className="px-4 py-4 text-sm font-bold text-slate-600">
+                                                    {item.offer_price || item.selling_price > 0 ? `₹${item.offer_price || item.selling_price}` : `₹${item.mrp || 0}`}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </Section>
+                    )}
+
                     {/* Inventory & Sourcing */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Section title="Inventory" icon={BsBox}>
