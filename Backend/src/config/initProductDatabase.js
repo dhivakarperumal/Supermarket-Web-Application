@@ -38,10 +38,20 @@ const createProductTable = async () => {
         return_available BOOLEAN DEFAULT FALSE,
         rating DECIMAL(3,2) DEFAULT 5,
         review_count INT DEFAULT 0,
+        combo_items JSON,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
     `);
+
+    // Add combo_items to existing table if it doesn't exist
+    try {
+      await connection.query("ALTER TABLE products ADD COLUMN combo_items JSON");
+    } catch (err) {
+      if (err.code !== 'ER_DUP_FIELDNAME') {
+        console.error("Error altering table:", err);
+      }
+    }
   } finally {
     connection.release();
   }
