@@ -25,7 +25,7 @@ const attendanceRouter = require("./src/routers/attendanceRouter");
 const leaveRouter = require("./src/routers/leaveRouter");
 const salaryRouter = require("./src/routers/salaryRouter");
 const purchaseRouter = require("./src/routers/purchaseRoutes");
-
+const settingsRouter = require("./src/routers/settingsRouter");
 dotenv.config();
 
 const app = express();
@@ -81,6 +81,7 @@ app.use("/api/attendance", attendanceRouter);
 app.use("/api/leave", leaveRouter);
 app.use("/api/salary", salaryRouter);
 app.use("/api/purchases", purchaseRouter);
+app.use("/api/settings", settingsRouter);
 
 // Port
 const PORT = process.env.PORT || 5000;

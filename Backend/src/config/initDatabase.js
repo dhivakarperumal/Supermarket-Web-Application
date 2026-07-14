@@ -32,6 +32,36 @@ const createDeliveryChargesTable = async (connection) => {
   }
 };
 
+const createReceiptSettingsTable = async (connection) => {
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS receipt_settings (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      store_name VARCHAR(255) DEFAULT NULL,
+      address TEXT DEFAULT NULL,
+      phone VARCHAR(50) DEFAULT NULL,
+      email VARCHAR(255) DEFAULT NULL,
+      gst VARCHAR(50) DEFAULT NULL,
+      fssai VARCHAR(50) DEFAULT NULL,
+      invoice_prefix VARCHAR(50) DEFAULT NULL,
+      invoice_format VARCHAR(50) DEFAULT NULL,
+      currency VARCHAR(10) DEFAULT NULL,
+      date_format VARCHAR(20) DEFAULT NULL,
+      tax_display TINYINT(1) DEFAULT 1,
+      discount_display TINYINT(1) DEFAULT 1,
+      barcode_display TINYINT(1) DEFAULT 1,
+      qr_code_display TINYINT(1) DEFAULT 1,
+      footer_message TEXT DEFAULT NULL,
+      thank_you_message TEXT DEFAULT NULL,
+      return_policy TEXT DEFAULT NULL,
+      store_logo TEXT DEFAULT NULL,
+      created_by VARCHAR(36) DEFAULT NULL,
+      updated_by VARCHAR(36) DEFAULT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )
+  `);
+};
+
 const createUsersTable = async () => {
   const adminConnection = await mysql.createConnection({
     host: process.env.DB_HOST || "127.0.0.1",
@@ -161,6 +191,7 @@ const createUsersTable = async () => {
     `);
 
     await createDeliveryChargesTable(connection);
+    await createReceiptSettingsTable(connection);
     // Fix older rows where created_by was stored as a token/string instead of a UUID
     try {
       await connection.query(`
@@ -187,4 +218,5 @@ const createUsersTable = async () => {
 module.exports = {
   createUsersTable,
   createDeliveryChargesTable,
+  createReceiptSettingsTable,
 };

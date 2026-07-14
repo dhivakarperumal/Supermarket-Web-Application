@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast, Toaster } from "react-hot-toast";
+import api from "../../api";
 import "./Settings.css";
 import { 
   Printer, 
@@ -96,14 +98,68 @@ const Settings = () => {
     qrCodeDisplay: true,
     footerMessage: 'Visit again!',
     thankYouMessage: 'Thank you for shopping with us.',
-    returnPolicy: 'No returns after 7 days.'
+    returnPolicy: 'No returns after 7 days.',
+    storeLogo: ''
   });
+
+  useEffect(() => {
+    fetchReceiptSettings();
+  }, []);
+
+  const fetchReceiptSettings = async () => {
+    try {
+      const response = await api.get("/settings/receipt");
+      if (response.data?.success && response.data?.data) {
+        if (Object.keys(response.data.data).length > 0) {
+          const dbData = response.data.data;
+          setReceiptSettings({
+            storeName: dbData.store_name || '',
+            address: dbData.address || '',
+            phone: dbData.phone || '',
+            email: dbData.email || '',
+            gst: dbData.gst || '',
+            fssai: dbData.fssai || '',
+            invoicePrefix: dbData.invoice_prefix || '',
+            invoiceFormat: dbData.invoice_format || '',
+            currency: dbData.currency || '',
+            dateFormat: dbData.date_format || 'DD/MM/YYYY',
+            taxDisplay: dbData.tax_display === 1,
+            discountDisplay: dbData.discount_display === 1,
+            barcodeDisplay: dbData.barcode_display === 1,
+            qrCodeDisplay: dbData.qr_code_display === 1,
+            footerMessage: dbData.footer_message || '',
+            thankYouMessage: dbData.thank_you_message || '',
+            returnPolicy: dbData.return_policy || '',
+            storeLogo: dbData.store_logo || ''
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching receipt settings:", error);
+      toast.error("Failed to load receipt settings");
+    }
+  };
 
   const updateReceiptSetting = (key, value) => {
     setReceiptSettings(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (activeTab === 'receipt') {
+      try {
+        const response = await api.post("/settings/receipt", receiptSettings);
+        if (response.data?.success) {
+          toast.success("Receipt settings saved successfully!");
+        } else {
+          toast.error("Failed to save receipt settings.");
+        }
+      } catch (error) {
+        console.error("Error saving receipt settings:", error);
+        toast.error("Failed to save receipt settings.");
+      }
+    } else {
+      toast.success("Settings saved successfully!");
+    }
     setActiveTab(null);
   };
 
@@ -515,6 +571,7 @@ const Settings = () => {
 
   return (
     <div className="settings-page">
+      <Toaster position="top-right" />
       <div className="settings-header">
         <div className="settings-title-area">
           <h1>System Settings</h1>
