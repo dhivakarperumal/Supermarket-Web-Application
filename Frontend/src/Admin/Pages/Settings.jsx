@@ -60,9 +60,9 @@ const SETTINGS_CATEGORIES = [
   { id: 'payment', title: 'Payment Integration', desc: 'Gateways, UPI, and Card setups.', icon: <CreditCard size={24} /> },
   { id: 'store', title: 'Store Settings', desc: 'Core business and location info.', icon: <Store size={24} /> },
   { id: 'tax', title: 'Tax & GST', desc: 'Configure GST, SGST, IGST and HSN.', icon: <Percent size={24} /> },
-  { id: 'localization', title: 'Localization', desc: 'Region, Language & formatting.', icon: <Globe size={24} /> },
-  { id: 'barcode', title: 'Barcode & Scanner', desc: 'Barcode formats and scanner inputs.', icon: <Barcode size={24} /> },
-  { id: 'pos', title: 'POS Settings', desc: 'Point of Sale defaults & behavior.', icon: <MonitorSmartphone size={24} /> },
+  // { id: 'localization', title: 'Localization', desc: 'Region, Language & formatting.', icon: <Globe size={24} /> },
+  // { id: 'barcode', title: 'Barcode & Scanner', desc: 'Barcode formats and scanner inputs.', icon: <Barcode size={24} /> },
+  // { id: 'pos', title: 'POS Settings', desc: 'Point of Sale defaults & behavior.', icon: <MonitorSmartphone size={24} /> },
   { id: 'delivery', title: 'Delivery Charges', desc: 'Manage shipping & delivery fees.', icon: <Truck size={24} /> },
   { id: 'coupon', title: 'Coupon Settings', desc: 'Configure discount & promo codes.', icon: <Ticket size={24} /> }
 ];
@@ -792,14 +792,7 @@ const Settings = () => {
           <>
             <Toggle label="Enable GST" defaultChecked />
             <Select label="Default GST Percentage" options={['0%', '5%', '12%', '18%', '28%']} />
-            <Toggle label="CGST Split" defaultChecked />
-            <Toggle label="SGST Split" defaultChecked />
-            <Toggle label="IGST Support" defaultChecked />
             <Select label="Tax Mode" options={['Tax Exclusive', 'Tax Inclusive']} />
-            <Input label="Default HSN Code" placeholder="2106" />
-            <Input label="Default SAC Code" placeholder="9983" />
-            <Input label="Tax Invoice Prefix" placeholder="TAX-" />
-            <Select label="Default Tax Category" options={['Standard Goods', 'Essential Goods', 'Luxury Goods']} />
           </>
         );
       case 'localization':
