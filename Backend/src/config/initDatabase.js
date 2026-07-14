@@ -15,6 +15,7 @@ const createDeliveryChargesTable = async (connection) => {
       enable_express_delivery TINYINT(1) DEFAULT 0,
       express_delivery_charge DECIMAL(10,2) DEFAULT 0.00,
       estimated_delivery_time VARCHAR(100) DEFAULT '',
+      is_enabled TINYINT(1) DEFAULT 1,
       created_by VARCHAR(36) DEFAULT NULL,
       updated_by VARCHAR(36) DEFAULT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

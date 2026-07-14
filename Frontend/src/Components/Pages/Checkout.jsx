@@ -393,6 +393,12 @@ const Checkout = () => {
 
   const calculateDeliveryCharge = (distanceKm, orderSubtotal) => {
     if (!deliveryCharges) return { charge: 0, message: "Delivery charges not available" };
+    
+    // If delivery charges are disabled globally in admin, waive all fees
+    if (deliveryCharges.is_enabled === 0 || deliveryCharges.is_enabled === false) {
+      return { charge: 0, message: "Delivery charges are currently waived/disabled" };
+    }
+
     if (distanceKm === null || distanceKm === undefined) return { charge: 0, message: "" };
 
     const baseCharge = parseFloat(deliveryCharges.base_delivery_charge) || 0;
