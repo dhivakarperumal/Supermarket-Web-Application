@@ -21,9 +21,9 @@ const createProductTable = async () => {
         selling_price DECIMAL(10,2) DEFAULT 0,
         offer DECIMAL(5,2) DEFAULT 0,
         offer_price DECIMAL(10,2) DEFAULT 0,
-        stock_quantity INT DEFAULT 0,
+        stock_quantity DECIMAL(10,3) DEFAULT 0,
         pricing_options JSON,
-        total_stock INT DEFAULT 0,
+        total_stock DECIMAL(10,3) DEFAULT 0,
         expiry_date VARCHAR(50),
         manufacturing_date VARCHAR(50),
         country_of_origin VARCHAR(100),
@@ -49,8 +49,15 @@ const createProductTable = async () => {
       await connection.query("ALTER TABLE products ADD COLUMN combo_items JSON");
     } catch (err) {
       if (err.code !== 'ER_DUP_FIELDNAME') {
-        console.error("Error altering table:", err);
+        console.error("Error altering table combo_items:", err);
       }
+    }
+
+    // Alter stock columns to support decimal values for kg/g/L/ml
+    try {
+      await connection.query("ALTER TABLE products MODIFY COLUMN stock_quantity DECIMAL(10,3) DEFAULT 0, MODIFY COLUMN total_stock DECIMAL(10,3) DEFAULT 0");
+    } catch (err) {
+      console.error("Error altering stock columns to decimal:", err);
     }
   } finally {
     connection.release();

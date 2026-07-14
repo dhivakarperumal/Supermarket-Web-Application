@@ -278,7 +278,7 @@ const CreateBilling = () => {
 
     const handleQuantityChange = (idx, qty) => {
         const updatedItems = [...formData.items];
-        updatedItems[idx].quantity = parseInt(qty) || 1;
+        updatedItems[idx].quantity = parseFloat(qty) || 1;
         updatedItems[idx].total = updatedItems[idx].price * updatedItems[idx].quantity;
         updateTotal(updatedItems);
     };
@@ -656,7 +656,7 @@ const CreateBilling = () => {
                                                     )}
                                                 </td>
                                                 <td className="px-4 py-4 text-slate-500 font-bold">₹{item.price}</td>
-                                                <td className="px-4 py-4"><input type="number" min="1" value={item.quantity} onChange={(e) => handleQuantityChange(i, e.target.value)} className="w-16 bg-gray-50 border border-gray-200 rounded-xl px-2 text-center py-1.5 outline-none font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" /></td>
+                                                <td className="px-4 py-4"><input type="number" min="0.001" step="any" value={item.quantity} onChange={(e) => handleQuantityChange(i, e.target.value)} className="w-16 bg-gray-50 border border-gray-200 rounded-xl px-2 text-center py-1.5 outline-none font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" /></td>
                                                 <td className="px-4 py-4 text-right font-black text-slate-800 text-sm">₹{item.total}</td>
                                                 <td className="px-4 py-4 text-center"><button onClick={() => handleRemoveItem(i)} className="text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-all"><FiTrash2 size={16} /></button></td>
                                             </tr>
