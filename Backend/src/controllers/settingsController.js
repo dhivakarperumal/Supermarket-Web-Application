@@ -106,13 +106,28 @@ exports.updatePaymentSettings = async (req, res) => {
   try {
     const pool = getPool();
     const {
+      cashSupport,
+      onlinePaymentSupport,
       upiSupport,
       upiId,
+      cardSupport,
+      paymentType,
+      razorpayEnabled,
+      razorpayKey,
     } = req.body;
 
     const userId = req.headers['x-user-id'] || null;
     const createdBy = userId;
     const updatedBy = userId;
+
+    const normalizedCashSupport = Number(cashSupport ?? true);
+    const normalizedOnlinePaymentSupport = Number(onlinePaymentSupport ?? true);
+    const normalizedUpiSupport = Number(upiSupport ?? true);
+    const normalizedCardSupport = Number(cardSupport ?? true);
+    const normalizedRazorpayEnabled = Number(razorpayEnabled ?? true);
+    const normalizedPaymentType = paymentType || (normalizedCardSupport ? 'both' : 'upi');
+    const normalizedUpiId = upiId || null;
+    const normalizedRazorpayKey = razorpayKey || null;
 
     const [rows] = await pool.query("SELECT id, payment_id FROM payment_integration LIMIT 1");
 
@@ -121,14 +136,26 @@ exports.updatePaymentSettings = async (req, res) => {
       const paymentId = rows[0].payment_id || crypto.randomUUID();
       await pool.query(
         `UPDATE payment_integration SET
+cash_support=?,
+online_payment_support=?,
 upi_support=?,
 upi_id=?,
+credit_debit_card=?,
+payment_type=?,
+razorpay_enabled=?,
+razorpay_key=?,
 payment_id=?,
 updated_by=?
 WHERE id=?`,
         [
-          upiSupport,
-          upiId,
+          normalizedCashSupport,
+          normalizedOnlinePaymentSupport,
+          normalizedUpiSupport,
+          normalizedUpiId,
+          normalizedCardSupport,
+          normalizedPaymentType,
+          normalizedRazorpayEnabled,
+          normalizedRazorpayKey,
           paymentId,
           updatedBy,
           id
@@ -138,16 +165,28 @@ WHERE id=?`,
       const paymentId = crypto.randomUUID();
       await pool.query(
         `INSERT INTO payment_integration(
+cash_support,
+online_payment_support,
 upi_support,
 upi_id,
+credit_debit_card,
+payment_type,
+razorpay_enabled,
+razorpay_key,
 payment_id,
 created_by,
 updated_by
 )
-VALUES (?, ?, ?, ?, ?)`,
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          upiSupport,
-          upiId,
+          normalizedCashSupport,
+          normalizedOnlinePaymentSupport,
+          normalizedUpiSupport,
+          normalizedUpiId,
+          normalizedCardSupport,
+          normalizedPaymentType,
+          normalizedRazorpayEnabled,
+          normalizedRazorpayKey,
           paymentId,
           createdBy,
           updatedBy

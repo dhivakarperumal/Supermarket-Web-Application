@@ -11,7 +11,10 @@ import PageContainer from "../CommenComponents/PageContainer";
 const Checkout = () => {
   const { cart, clearCart } = useContext(StoreContext);
   const { user } = useContext(AuthContext);
-  const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [paymentSettings, setPaymentSettings] = useState(null);
+  const [onlinePaymentType, setOnlinePaymentType] = useState("upi");
+  const [cardDetails, setCardDetails] = useState({ cardNumber: "", expiry: "", cvv: "" });
   const [deliveryMethod, setDeliveryMethod] = useState("delivery");
   const navigate = useNavigate();
   const location = useLocation();
@@ -112,8 +115,37 @@ const Checkout = () => {
     }
   };
 
+  const fetchPaymentSettings = async () => {
+    try {
+      const response = await api.get("/settings/payment");
+      if (response.data?.success && response.data?.data) {
+        const dbData = response.data.data;
+        const mappedSettings = {
+          cashSupport: dbData.cash_support !== 0 && dbData.cash_support !== "0",
+          onlinePaymentSupport: dbData.online_payment_support !== 0 && dbData.online_payment_support !== "0",
+          upiSupport: dbData.upi_support !== 0 && dbData.upi_support !== "0",
+          paymentType: dbData.payment_type || "upi",
+          razorpayEnabled: dbData.razorpay_enabled !== 0 && dbData.razorpay_enabled !== "0",
+          razorpayKey: dbData.razorpay_key || "",
+        };
+        setPaymentSettings(mappedSettings);
+        const availableMethods = [];
+        if (mappedSettings.cashSupport) availableMethods.push("cash");
+        if (mappedSettings.onlinePaymentSupport) availableMethods.push("online");
+        if (availableMethods.length === 1) {
+          setPaymentMethod(availableMethods[0]);
+        }
+        const defaultOnlineType = mappedSettings.paymentType === "card" ? "card" : mappedSettings.paymentType === "both" ? "upi" : "upi";
+        setOnlinePaymentType(defaultOnlineType);
+      }
+    } catch (error) {
+      console.error("Error fetching payment settings:", error);
+    }
+  };
+
   useEffect(() => {
     fetchDeliveryCharges();
+    fetchPaymentSettings();
   }, []);
 
   // Recalculate delivery charge when distance or charges change
@@ -546,6 +578,9 @@ const Checkout = () => {
   const subtotal = checkoutItems.reduce((total, item) => total + parseFloat(item.price || 0) * item.quantity, 0);
   const deliveryInfo = calculateDeliveryCharge(distanceInfo.distanceKm, subtotal);
   const shipping = deliveryMethod === "pickup" ? 0 : deliveryInfo.charge;
+  const availablePaymentMethods = [];
+  if (paymentSettings?.cashSupport) availablePaymentMethods.push({ value: "cash", label: "Cash" });
+  if (paymentSettings?.onlinePaymentSupport) availablePaymentMethods.push({ value: "online", label: "Online Payment" });
 
   // Calculate coupon discount
   let discountAmount = 0;
@@ -562,6 +597,28 @@ const Checkout = () => {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleCardInputChange = (e) => {
+    const { name, value } = e.target;
+    let formattedValue = value;
+
+    if (name === "cardNumber") {
+      formattedValue = value.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
+    }
+
+    if (name === "expiry") {
+      formattedValue = value.replace(/\D/g, "").slice(0, 4);
+      if (formattedValue.length > 2) {
+        formattedValue = `${formattedValue.slice(0, 2)}/${formattedValue.slice(2)}`;
+      }
+    }
+
+    if (name === "cvv") {
+      formattedValue = value.replace(/\D/g, "").slice(0, 4);
+    }
+
+    setCardDetails((prev) => ({ ...prev, [name]: formattedValue }));
   };
 
   const loadRazorpay = () =>
@@ -595,7 +652,8 @@ const Checkout = () => {
         ...form,
         user_id: user?.user_id,
         email: form.customer_email,
-        payment_status: paymentMethod === "razorpay" ? "paid" : "pending",
+        payment_status: paymentMethod === "online" ? "paid" : "pending",
+        payment_method: paymentMethod === "online" ? (onlinePaymentType === "card" ? "Card" : "Online Payment") : "Cash",
         payment_id: paymentId,
         items: orderItems,
         total_amount: total,
@@ -622,7 +680,7 @@ const Checkout = () => {
         state: "",
         country: "India",
         zip_code: "",
-        payment_method: "Showroom",
+        payment_method: "Cash",
       });
 
       toast.success("Order Placed Successfully!");
@@ -679,9 +737,30 @@ const Checkout = () => {
     }
 
     try {
-      if (paymentMethod === "cod") {
+      if (paymentMethod === "cash") {
         await saveOrder();
         return;
+      }
+
+      if (!paymentSettings?.razorpayEnabled || !paymentSettings?.razorpayKey?.trim()) {
+        toast.error("Razorpay is not configured yet.");
+        return;
+      }
+
+      if (onlinePaymentType === "card") {
+        const cardNumber = cardDetails.cardNumber.replace(/\s/g, "");
+        if (cardNumber.length < 16) {
+          toast.error("Please enter a valid card number.");
+          return;
+        }
+        if (!cardDetails.expiry || cardDetails.expiry.length < 5) {
+          toast.error("Please enter a valid expiry date.");
+          return;
+        }
+        if (!cardDetails.cvv || cardDetails.cvv.length < 3) {
+          toast.error("Please enter a valid CVV.");
+          return;
+        }
       }
 
       const loaded = await loadRazorpay();
@@ -691,7 +770,7 @@ const Checkout = () => {
       }
 
       const options = {
-        key: "rzp_test_SGj8n5SyKSE10b",
+        key: paymentSettings.razorpayKey,
         amount: total * 100,
         currency: "INR",
         name: "Priyam Supermarket",
@@ -884,7 +963,7 @@ const Checkout = () => {
                     </h2>
                   </div>
 
-                  <div className="max-h-[350px] space-y-3 overflow-y-auto pr-2">
+                  <div className="max-h-[22rem] space-y-3 overflow-y-auto pr-2">
                     {checkoutItems.map((item) => (
                       <div
                         key={item.id}
@@ -1003,10 +1082,61 @@ const Checkout = () => {
                       <FiCreditCard />
                       <span>Payment Method</span>
                     </div>
-                    <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-white bg-white px-3 py-3 text-sm text-slate-700 shadow-sm">
-                      <input type="radio" name="payment" value="razorpay" checked={paymentMethod === "razorpay"} onChange={(e) => setPaymentMethod(e.target.value)} />
-                      <span>Online Payment (Razorpay)</span>
-                    </label>
+                    <div className="space-y-3">
+                      {availablePaymentMethods.map((option) => (
+                        <label key={option.value} className="flex cursor-pointer items-center gap-3 rounded-xl border border-white bg-white px-3 py-3 text-sm text-slate-700 shadow-sm">
+                          <input type="radio" name="payment" value={option.value} checked={paymentMethod === option.value} onChange={(e) => setPaymentMethod(e.target.value)} />
+                          <span>{option.label}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {paymentMethod === "online" && (
+                      <div className="mt-3 rounded-xl border border-green-100 bg-white p-3">
+                        {paymentSettings?.paymentType === "both" && (
+                          <div className="mb-3 flex flex-wrap gap-3 text-sm">
+                            <label className="flex items-center gap-2">
+                              <input type="radio" name="onlinePaymentType" value="upi" checked={onlinePaymentType === "upi"} onChange={() => setOnlinePaymentType("upi")} />
+                              <span>UPI</span>
+                            </label>
+                            <label className="flex items-center gap-2">
+                              <input type="radio" name="onlinePaymentType" value="card" checked={onlinePaymentType === "card"} onChange={() => setOnlinePaymentType("card")} />
+                              <span>Card</span>
+                            </label>
+                          </div>
+                        )}
+
+                        {onlinePaymentType === "card" ? (
+                          <div className="space-y-3">
+                            <input
+                              name="cardNumber"
+                              value={cardDetails.cardNumber}
+                              onChange={handleCardInputChange}
+                              placeholder="Card Number"
+                              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100"
+                            />
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <input
+                                name="expiry"
+                                value={cardDetails.expiry}
+                                onChange={handleCardInputChange}
+                                placeholder="MM/YY"
+                                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100"
+                              />
+                              <input
+                                name="cvv"
+                                value={cardDetails.cvv}
+                                onChange={handleCardInputChange}
+                                placeholder="CVV"
+                                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-600">You’ll be redirected to Razorpay for secure UPI payment.</p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-4 flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800">

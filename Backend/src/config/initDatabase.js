@@ -85,9 +85,13 @@ const createPaymentIntegrationTable = async (connection) => {
       payment_id VARCHAR(36) UNIQUE NOT NULL,
       primary_gateway VARCHAR(100) DEFAULT NULL,
       cash_support TINYINT(1) DEFAULT 1,
+      online_payment_support TINYINT(1) DEFAULT 1,
       upi_support TINYINT(1) DEFAULT 1,
       upi_id VARCHAR(255) DEFAULT NULL,
       credit_debit_card TINYINT(1) DEFAULT 1,
+      payment_type VARCHAR(50) DEFAULT 'upi',
+      razorpay_enabled TINYINT(1) DEFAULT 1,
+      razorpay_key VARCHAR(255) DEFAULT NULL,
       merchant_id VARCHAR(255) DEFAULT NULL,
       api_key VARCHAR(255) DEFAULT NULL,
       secret_key VARCHAR(255) DEFAULT NULL,
@@ -106,6 +110,18 @@ const createPaymentIntegrationTable = async (connection) => {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
   `);
+
+  try {
+    await connection.query(`
+      ALTER TABLE payment_integration
+      ADD COLUMN IF NOT EXISTS online_payment_support TINYINT(1) DEFAULT 1,
+      ADD COLUMN IF NOT EXISTS payment_type VARCHAR(50) DEFAULT 'upi',
+      ADD COLUMN IF NOT EXISTS razorpay_enabled TINYINT(1) DEFAULT 1,
+      ADD COLUMN IF NOT EXISTS razorpay_key VARCHAR(255) DEFAULT NULL
+    `);
+  } catch (err) {
+    console.warn('payment_integration migration skipped:', err?.message || err);
+  }
 };
 
 const createUsersTable = async () => {
