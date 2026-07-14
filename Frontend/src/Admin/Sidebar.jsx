@@ -24,6 +24,7 @@ import {
   CalendarCheck,
   FileText,
   Wallet,
+  Home,
 } from "lucide-react";
 
 import { useAuth } from "../PrivateRouter/AuthContext";
@@ -99,15 +100,16 @@ const navItems = [
   //   ],
   // },
 
-  { path: "/admin/dealer/all", label: "All Dealers", icon: List },
+  // { path: "/admin/dealer/all", label: "All Dealers", icon: List },
 
   { path: "/admin/banners", label: "Offers & Discounts", icon: Gift },
   { path: "/admin/coupons", label: "Coupons", icon: Tag },
-  { path: "/admin/delivery-charges", label: "Delivery Charges", icon: Truck },
+  // { path: "/admin/delivery-charges", label: "Delivery Charges", icon: Truck },
   { path: "/admin/reports", label: "Reports", icon: BarChart3 },
   // { path: "/admin/banners", label: "Banners", icon: Image },
   { path: "/admin/reviews", label: "Reviews", icon: Star },
   { path: "/admin/videos", label: "Videos Management", icon: Video },
+  { path: "/", label: "Back to Home", icon: Home },
 ];
 
 /* ================= SIDEBAR ================= */
@@ -183,7 +185,7 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
         role="navigation"
         aria-label="Admin Sidebar"
         className={`
-          fixed top-0 left-0 z-50 h-full
+          fixed top-0 left-0 z-50 h-screen
           flex flex-col
           bg-[#042f1a] border-r border-[#042f1a]
           transition-all duration-300

@@ -52,6 +52,7 @@ const Profile = React.lazy(() => import("./Admin/Pages/Profile.jsx"));
 const OrderDetail = React.lazy(() => import("./Admin/Pages/OrderDetail.jsx"));
 const ProductDetail = React.lazy(() => import("./Admin/Pages/ProductDetail.jsx"));
 const AddProducts = React.lazy(() => import("./Admin/Pages/AddProducts.jsx"));
+const AddCombo = React.lazy(() => import("./Admin/Pages/AddCombo.jsx"));
 const AddDealer = React.lazy(() => import("./Admin/Pages/AddDealer.jsx"));
 const AddInvoice = React.lazy(() => import("./Admin/Pages/AddInvoice.jsx"));
 const CreateOrder = React.lazy(() => import("./Admin/Pages/CreateOrder.jsx"));
@@ -121,6 +122,8 @@ const router = createBrowserRouter([
       { path: "products/all", element: <AllProducts /> },
       { path: "products/add", element: <AddProducts /> },
       { path: "products/edit/:id", element: <AddProducts /> },
+      { path: "combo/add", element: <AddCombo /> },
+      { path: "combo/edit/:id", element: <AddCombo /> },
       { path: "products/category", element: <Category /> },
       { path: "products/stock", element: <StockDetails /> },
       { path: "products/stock/add", element: <AddStock /> },

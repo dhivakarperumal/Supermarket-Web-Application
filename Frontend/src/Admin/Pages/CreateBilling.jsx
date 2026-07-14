@@ -278,7 +278,7 @@ const CreateBilling = () => {
 
     const handleQuantityChange = (idx, qty) => {
         const updatedItems = [...formData.items];
-        updatedItems[idx].quantity = parseInt(qty) || 1;
+        updatedItems[idx].quantity = parseFloat(qty) || 1;
         updatedItems[idx].total = updatedItems[idx].price * updatedItems[idx].quantity;
         updateTotal(updatedItems);
     };
@@ -656,7 +656,7 @@ const CreateBilling = () => {
                                                     )}
                                                 </td>
                                                 <td className="px-4 py-4 text-slate-500 font-bold">₹{item.price}</td>
-                                                <td className="px-4 py-4"><input type="number" min="1" value={item.quantity} onChange={(e) => handleQuantityChange(i, e.target.value)} className="w-16 bg-gray-50 border border-gray-200 rounded-xl px-2 text-center py-1.5 outline-none font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" /></td>
+                                                <td className="px-4 py-4"><input type="number" min="0.001" step="any" value={item.quantity} onChange={(e) => handleQuantityChange(i, e.target.value)} className="w-16 bg-gray-50 border border-gray-200 rounded-xl px-2 text-center py-1.5 outline-none font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" /></td>
                                                 <td className="px-4 py-4 text-right font-black text-slate-800 text-sm">₹{item.total}</td>
                                                 <td className="px-4 py-4 text-center"><button onClick={() => handleRemoveItem(i)} className="text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-all"><FiTrash2 size={16} /></button></td>
                                             </tr>
@@ -705,7 +705,7 @@ const CreateBilling = () => {
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
                     <div className="bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden relative shadow-2xl">
                         <div className="p-6 bg-blue-600 text-white flex justify-between items-center"><div><h3 className="font-black">Camera Scanner</h3><p className="text-[8px] uppercase tracking-[0.2em] opacity-70">Focus on product barcode</p></div><button onClick={() => setShowCameraScanner(false)} className="bg-white/20 p-2 rounded-xl"><FiX /></button></div>
-                        <div className="p-4 bg-slate-100"><div id="reader" className="w-full aspect-[4/3] rounded-2xl overflow-hidden border-4 border-white shadow-inner bg-black"></div></div>
+                        <div className="p-4 bg-slate-100"><div id="reader" className="w-full aspect-[4/3] rounded-2xl overflow-hidden border-4 border-white shadow-inner bg-white text-slate-800"></div></div>
                         <div className="p-6 text-center text-[10px] font-black uppercase text-gray-400 tracking-widest">Ensure good lighting and hold steady</div>
                     </div>
                 </div>

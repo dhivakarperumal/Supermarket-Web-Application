@@ -246,7 +246,7 @@ const Suppliers = () => {
       {/* ─── Add/Edit Modal ─── */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl h-[92vh] flex flex-col">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-7xl h-[92vh] flex flex-col">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-3xl flex-shrink-0">
               <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
                 <FiUsers className="text-indigo-500" /> {editId ? "Edit Supplier" : "Add New Supplier"}

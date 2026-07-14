@@ -61,8 +61,8 @@ const SETTINGS_CATEGORIES = [
   { id: 'store', title: 'Store Settings', desc: 'Core business and location info.', icon: <Store size={24} /> },
   { id: 'tax', title: 'Tax & GST', desc: 'Configure GST, SGST, IGST and HSN.', icon: <Percent size={24} /> },
   { id: 'localization', title: 'Localization', desc: 'Region, Language & formatting.', icon: <Globe size={24} /> },
-  { id: 'barcode', title: 'Barcode & Scanner', desc: 'Barcode formats and scanner inputs.', icon: <Barcode size={24} /> },
-  { id: 'pos', title: 'POS Settings', desc: 'Point of Sale defaults & behavior.', icon: <MonitorSmartphone size={24} /> },
+  
+  
   { id: 'delivery', title: 'Delivery Charges', desc: 'Manage shipping & delivery fees.', icon: <Truck size={24} /> },
   { id: 'coupon', title: 'Coupon Settings', desc: 'Configure discount & promo codes.', icon: <Ticket size={24} /> }
 ];
@@ -117,14 +117,44 @@ const Settings = () => {
     cardCvv: "",
   });
 
+  const [taxSettings, setTaxSettings] = useState({
+    enableGst: true,
+    defaultGstPercentage: '5%',
+    taxMode: 'Tax Exclusive'
+  });
+
   const updatePaymentSetting = (key, value) => {
     setPaymentSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const updateTaxSetting = (key, value) => {
+    setTaxSettings(prev => ({ ...prev, [key]: value }));
   };
 
   useEffect(() => {
     fetchReceiptSettings();
     fetchPaymentSettings();
+    fetchTaxSettings();
   }, []);
+
+  const fetchTaxSettings = async () => {
+    try {
+      const response = await api.get("/settings/tax");
+      if (response.data?.success && response.data?.data) {
+        if (Object.keys(response.data.data).length > 0) {
+          const dbData = response.data.data;
+          setTaxSettings({
+            enableGst: dbData.enable_gst === 1,
+            defaultGstPercentage: dbData.default_gst_percentage || '5%',
+            taxMode: dbData.tax_mode || 'Tax Exclusive',
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching tax settings:", error);
+      toast.error("Failed to load tax settings");
+    }
+  };
 
   const fetchPaymentSettings = async () => {
     try {
@@ -857,14 +887,7 @@ const Settings = () => {
           <>
             <Toggle label="Enable GST" defaultChecked />
             <Select label="Default GST Percentage" options={['0%', '5%', '12%', '18%', '28%']} />
-            <Toggle label="CGST Split" defaultChecked />
-            <Toggle label="SGST Split" defaultChecked />
-            <Toggle label="IGST Support" defaultChecked />
             <Select label="Tax Mode" options={['Tax Exclusive', 'Tax Inclusive']} />
-            <Input label="Default HSN Code" placeholder="2106" />
-            <Input label="Default SAC Code" placeholder="9983" />
-            <Input label="Tax Invoice Prefix" placeholder="TAX-" />
-            <Select label="Default Tax Category" options={['Standard Goods', 'Essential Goods', 'Luxury Goods']} />
           </>
         );
       case 'localization':
