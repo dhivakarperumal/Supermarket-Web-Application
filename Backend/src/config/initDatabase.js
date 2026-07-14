@@ -32,6 +32,39 @@ const createDeliveryChargesTable = async (connection) => {
   }
 };
 
+const createStoreSettingsTable = async (connection) => {
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS store_settings (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      store_id VARCHAR(36) DEFAULT NULL,
+      store_name VARCHAR(255) DEFAULT NULL,
+      store_logo LONGTEXT DEFAULT NULL,
+      email VARCHAR(255) DEFAULT NULL,
+      phone VARCHAR(50) DEFAULT NULL,
+      address TEXT DEFAULT NULL,
+      city VARCHAR(100) DEFAULT NULL,
+      state VARCHAR(100) DEFAULT NULL,
+      country VARCHAR(100) DEFAULT NULL,
+      zip_code VARCHAR(20) DEFAULT NULL,
+      gstin VARCHAR(50) DEFAULT NULL,
+      fssai VARCHAR(50) DEFAULT NULL,
+      business_type VARCHAR(100) DEFAULT 'Supermarket',
+      timezone VARCHAR(100) DEFAULT 'Asia/Kolkata (IST)',
+      language VARCHAR(50) DEFAULT 'English',
+      currency VARCHAR(20) DEFAULT 'INR (₹)',
+      opening_time VARCHAR(10) DEFAULT '09:00',
+      closing_time VARCHAR(10) DEFAULT '21:00',
+      latitude VARCHAR(30) DEFAULT NULL,
+      longitude VARCHAR(30) DEFAULT NULL,
+      created_by VARCHAR(36) DEFAULT NULL,
+      updated_by VARCHAR(36) DEFAULT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )
+  `);
+};
+
+
 const createReceiptSettingsTable = async (connection) => {
   await connection.query(`
     CREATE TABLE IF NOT EXISTS receipt_settings (
@@ -239,6 +272,7 @@ const createUsersTable = async () => {
     await createDeliveryChargesTable(connection);
     await createReceiptSettingsTable(connection);
     await createPaymentIntegrationTable(connection);
+    await createStoreSettingsTable(connection);
     // Fix older rows where created_by was stored as a token/string instead of a UUID
     try {
       await connection.query(`
@@ -267,4 +301,5 @@ module.exports = {
   createDeliveryChargesTable,
   createReceiptSettingsTable,
   createPaymentIntegrationTable,
+  createStoreSettingsTable,
 };

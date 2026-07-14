@@ -241,3 +241,95 @@ VALUES (?, ?, ?, ?, ?, ?)`,
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+// Get Store Settings
+exports.getStoreSettings = async (req, res) => {
+  try {
+    const pool = getPool();
+    const [rows] = await pool.query("SELECT * FROM store_settings LIMIT 1");
+    if (rows.length === 0) {
+      return res.status(200).json({ success: true, data: {} });
+    }
+    return res.status(200).json({ success: true, data: rows[0] });
+  } catch (error) {
+    console.error("Error fetching store settings:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// Update Store Settings
+exports.updateStoreSettings = async (req, res) => {
+  try {
+    const pool = getPool();
+    const {
+      storeName,
+      storeLogo,
+      email,
+      phone,
+      address,
+      city,
+      state,
+      country,
+      zipCode,
+      gstin,
+      fssai,
+      businessType,
+      timezone,
+      language,
+      currency,
+      openingTime,
+      closingTime,
+      latitude,
+      longitude,
+    } = req.body;
+
+    const userId = req.headers['x-user-id'] || null;
+
+    const [rows] = await pool.query("SELECT id, store_id FROM store_settings LIMIT 1");
+
+    if (rows.length > 0) {
+      const id = rows[0].id;
+      const storeId = rows[0].store_id || crypto.randomUUID();
+      await pool.query(
+        `UPDATE store_settings SET
+          store_name=?, store_logo=?, email=?, phone=?, address=?,
+          city=?, state=?, country=?, zip_code=?, gstin=?, fssai=?,
+          business_type=?, timezone=?, language=?, currency=?,
+          opening_time=?, closing_time=?, latitude=?, longitude=?,
+          store_id=?, updated_by=?
+         WHERE id=?`,
+        [
+          storeName, storeLogo, email, phone, address,
+          city, state, country, zipCode, gstin, fssai,
+          businessType, timezone, language, currency,
+          openingTime, closingTime, latitude, longitude,
+          storeId, userId, id
+        ]
+      );
+    } else {
+      const storeId = crypto.randomUUID();
+      await pool.query(
+        `INSERT INTO store_settings (
+          store_name, store_logo, email, phone, address,
+          city, state, country, zip_code, gstin, fssai,
+          business_type, timezone, language, currency,
+          opening_time, closing_time, latitude, longitude,
+          store_id, created_by, updated_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          storeName, storeLogo, email, phone, address,
+          city, state, country, zipCode, gstin, fssai,
+          businessType, timezone, language, currency,
+          openingTime, closingTime, latitude, longitude,
+          storeId, userId, userId
+        ]
+      );
+    }
+
+    res.status(200).json({ success: true, message: "Store settings saved successfully." });
+  } catch (error) {
+    console.error("Error updating store settings:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+

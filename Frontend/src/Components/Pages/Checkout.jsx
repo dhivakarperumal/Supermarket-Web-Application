@@ -30,10 +30,8 @@ const Checkout = () => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
+  const [storeSettings, setStoreSettings] = useState(null);
   const buyNowQuantity = location.state?.quantity || 1;
-  const SHOP_ADDRESS =
-    "NH 179A, Salem - Tirupattur - Vaniyambadi Rd, Thiruppathur, Tamil Nadu 635601 ";
-  const SHOP_COORDINATES = { lat: 12.4968, lng: 78.5663 };
 
   const fetchAddresses = async () => {
     try {
@@ -125,9 +123,23 @@ const Checkout = () => {
     }
   };
 
+  const fetchStoreSettings = async () => {
+    try {
+      const response = await api.get("/settings/store");
+      if (response.data?.success && response.data?.data) {
+        if (Object.keys(response.data.data).length > 0) {
+          setStoreSettings(response.data.data);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching store settings:", error);
+    }
+  };
+
   useEffect(() => {
     fetchDeliveryCharges();
     fetchTaxSettings();
+    fetchStoreSettings();
   }, []);
 
   // Recalculate delivery charge when distance or charges change
@@ -443,8 +455,14 @@ const Checkout = () => {
         try {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
-          const shopLat = SHOP_COORDINATES.lat;
-          const shopLng = SHOP_COORDINATES.lng;
+          
+          if (!storeSettings?.latitude || !storeSettings?.longitude) {
+            setDistanceInfo({ loading: false, error: "Store location is not configured.", distanceKm: null });
+            return;
+          }
+          
+          const shopLat = parseFloat(storeSettings.latitude);
+          const shopLng = parseFloat(storeSettings.longitude);
           const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
 
           // Fetch fresh delivery charges first
@@ -811,7 +829,16 @@ const Checkout = () => {
                       ) : distanceInfo.distanceKm !== null ? (
                         <>
                           <p className="text-sm text-slate-600">Shop address</p>
-                          <p className="mt-1 text-sm font-semibold text-slate-800">{SHOP_ADDRESS}</p>
+                          <p className="mt-1 text-sm font-semibold text-slate-800">
+                            {storeSettings ? (
+                              [storeSettings.address, storeSettings.city, storeSettings.state, storeSettings.zip_code]
+                                .filter(Boolean)
+                                .join(", ")
+                            ) : (
+                              "Store address not available"
+                            )}
+                          </p>
+
                           <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
                             <div>
                               <p className="text-sm text-slate-500">Estimated distance</p>
