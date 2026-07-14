@@ -53,13 +53,24 @@ const createReceiptSettingsTable = async (connection) => {
       footer_message TEXT DEFAULT NULL,
       thank_you_message TEXT DEFAULT NULL,
       return_policy TEXT DEFAULT NULL,
-      store_logo TEXT DEFAULT NULL,
+      store_logo LONGTEXT DEFAULT NULL,
+      receipt_id VARCHAR(36) DEFAULT NULL,
       created_by VARCHAR(36) DEFAULT NULL,
       updated_by VARCHAR(36) DEFAULT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
   `);
+
+  try {
+    await connection.query(`
+      ALTER TABLE receipt_settings
+      ADD COLUMN IF NOT EXISTS receipt_id VARCHAR(36) DEFAULT NULL,
+      MODIFY COLUMN store_logo LONGTEXT DEFAULT NULL
+    `);
+  } catch (err) {
+    console.warn('receipt_settings alter skipped:', err?.message || err);
+  }
 };
 
 const createUsersTable = async () => {

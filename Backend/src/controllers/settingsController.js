@@ -40,8 +40,10 @@ exports.updateReceiptSettings = async (req, res) => {
       storeLogo
     } = req.body;
 
-    const createdBy = req.user?.id || "admin";
-    const updatedBy = req.user?.id || "admin";
+    const userId = req.headers['x-user-id'] || null;
+    const createdBy = userId;
+    const updatedBy = userId;
+    const receiptId = userId;
 
     const [rows] = await pool.query("SELECT id FROM receipt_settings LIMIT 1");
     
@@ -53,12 +55,12 @@ exports.updateReceiptSettings = async (req, res) => {
           invoice_prefix = ?, invoice_format = ?, currency = ?, date_format = ?, 
           tax_display = ?, discount_display = ?, barcode_display = ?, qr_code_display = ?, 
           footer_message = ?, thank_you_message = ?, return_policy = ?, store_logo = ?,
-          updated_by = ?
+          receipt_id = ?, updated_by = ?
          WHERE id = ?`,
         [
           storeName, address, phone, email, gst, fssai, invoicePrefix, invoiceFormat, currency, dateFormat,
           taxDisplay, discountDisplay, barcodeDisplay, qrCodeDisplay, footerMessage, thankYouMessage, returnPolicy, storeLogo,
-          updatedBy, id
+          receiptId, updatedBy, id
         ]
       );
     } else {
@@ -66,12 +68,12 @@ exports.updateReceiptSettings = async (req, res) => {
         `INSERT INTO receipt_settings (
           store_name, address, phone, email, gst, fssai, invoice_prefix, invoice_format, currency, date_format,
           tax_display, discount_display, barcode_display, qr_code_display, footer_message, thank_you_message, return_policy, store_logo,
-          created_by, updated_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          receipt_id, created_by, updated_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           storeName, address, phone, email, gst, fssai, invoicePrefix, invoiceFormat, currency, dateFormat,
           taxDisplay, discountDisplay, barcodeDisplay, qrCodeDisplay, footerMessage, thankYouMessage, returnPolicy, storeLogo,
-          createdBy, updatedBy
+          receiptId, createdBy, updatedBy
         ]
       );
     }

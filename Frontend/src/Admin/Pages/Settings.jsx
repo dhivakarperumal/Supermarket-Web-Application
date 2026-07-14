@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "react-hot-toast";
+import imageCompression from "browser-image-compression";
 import api from "../../api";
 import "./Settings.css";
 import { 
@@ -34,10 +35,10 @@ const Toggle = ({ label, defaultChecked = false, checked, onChange }) => (
   </div>
 );
 
-const Input = ({ label, type = "text", placeholder, value, onChange }) => (
+const Input = ({ label, type = "text", placeholder, value, onChange, accept }) => (
   <div className="form-group">
     <label className="form-label">{label}</label>
-    <input type={type} className="form-input" placeholder={placeholder} value={value} onChange={onChange} />
+    <input type={type} className="form-input" placeholder={placeholder} value={value} onChange={onChange} accept={accept} />
   </div>
 );
 
@@ -142,6 +143,25 @@ const Settings = () => {
 
   const updateReceiptSetting = (key, value) => {
     setReceiptSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleLogoUpload = async (e) => {
+    try {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const options = {
+        maxSizeMB: 0.1,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+      };
+      const compressed = await imageCompression(file, options);
+      const imageUrl = await imageCompression.getDataUrlFromFile(compressed);
+      setReceiptSettings((prev) => ({ ...prev, storeLogo: imageUrl }));
+      toast.success("Logo uploaded successfully. Don't forget to save settings.");
+    } catch (error) {
+      console.error("Logo upload error:", error);
+      toast.error("Logo upload failed.");
+    }
   };
 
   const handleSave = async () => {
@@ -309,7 +329,7 @@ const Settings = () => {
         return (
           <>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <Input label="Store Logo Upload" type="file" />
+              <Input label="Store Logo Upload" type="file" onChange={handleLogoUpload} accept="image/*" />
               <Input label="Store Name" placeholder="Priyam Super Market" value={receiptSettings.storeName} onChange={(e) => updateReceiptSetting('storeName', e.target.value)} />
               <Input label="Address" placeholder="123 Main Street" value={receiptSettings.address} onChange={(e) => updateReceiptSetting('address', e.target.value)} />
               <Input label="Phone Number" placeholder="+91 9876543210" value={receiptSettings.phone} onChange={(e) => updateReceiptSetting('phone', e.target.value)} />
@@ -347,6 +367,9 @@ const Settings = () => {
                 top: '20px'
               }}>
                 <div style={{ textAlign: 'center', marginBottom: '1rem', borderBottom: '1px dashed #cbd5e1', paddingBottom: '1rem' }}>
+                  {receiptSettings.storeLogo && (
+                    <img src={receiptSettings.storeLogo} alt="Store Logo" style={{ maxWidth: '100px', maxHeight: '100px', margin: '0 auto 0.5rem', objectFit: 'contain' }} />
+                  )}
                   <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', textTransform: 'uppercase' }}>{receiptSettings.storeName || 'STORE NAME'}</h3>
                   <div>{receiptSettings.address}</div>
                   <div>Phone: {receiptSettings.phone}</div>
