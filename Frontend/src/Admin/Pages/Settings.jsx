@@ -1040,26 +1040,25 @@ const Settings = () => {
               </div>
             </div>
 
-            {/* Coordinates row (read-only, shown when filled) */}
-            {(storeSettings.latitude || storeSettings.longitude) && (
-              <div style={{ gridColumn: '1 / -1' }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  background: '#ecfdf5',
-                  border: '1px solid #6ee7b7',
-                  borderRadius: '10px',
-                  padding: '0.65rem 1rem',
-                  fontSize: '0.85rem',
-                  color: '#065f46',
-                  fontWeight: '600',
-                }}>
-                  <MapPin size={16} style={{ color: '#10b981', flexShrink: 0 }} />
-                  <span>📍 Lat: {storeSettings.latitude} &nbsp;|&nbsp; Lng: {storeSettings.longitude}</span>
-                </div>
+            {/* Coordinates row */}
+            <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '1rem' }}>
+              <div style={{ flex: 1 }}>
+                <Input
+                  label="Latitude"
+                  placeholder="e.g. 12.479808"
+                  value={storeSettings.latitude}
+                  onChange={(e) => updateStoreSetting('latitude', e.target.value)}
+                />
               </div>
-            )}
+              <div style={{ flex: 1 }}>
+                <Input
+                  label="Longitude"
+                  placeholder="e.g. 78.573702"
+                  value={storeSettings.longitude}
+                  onChange={(e) => updateStoreSetting('longitude', e.target.value)}
+                />
+              </div>
+            </div>
 
             <div style={{ gridColumn: '1 / -1' }}>
               <Input
@@ -1238,20 +1237,9 @@ const Settings = () => {
   return (
     <div className="settings-page">
       <Toaster position="top-right" />
-      <div className="settings-header">
-        <div className="settings-title-area">
-          <h1>System Settings</h1>
-          <p>Configure your supermarket system, billing, payments, and preferences.</p>
-        </div>
+      <div className="settings-header" style={{ display: 'none' }}>
+      </div>
 
-        {!activeTab && (
-          <div className="settings-header-actions">
-            <div style={{ position: 'relative' }}>
-              <Search style={{ position: 'absolute', left: 12, top: 10, color: '#94a3b8' }} size={18} />
-              <input type="text" className="settings-search" placeholder="Search categories..." style={{ paddingLeft: '2.5rem' }} />
-            </div>
-          </div>
-        )}
       </div>
 
       {!activeTab ? (
