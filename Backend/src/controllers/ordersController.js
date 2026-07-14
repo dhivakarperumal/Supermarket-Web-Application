@@ -166,6 +166,50 @@ const createOrder = async (req, res) => {
                 const placeholders = cols.map(() => '?').join(', ');
                 const colList = cols.join(', ');
                 await connection.query(`INSERT INTO order_items (${colList}) VALUES (${placeholders})`, vals);
+
+                // Reduce stock in products table (including variants)
+                const pId = item.product_id || item.id;
+                if (pId) {
+                    const [prodRows] = await connection.query("SELECT total_stock, stock_quantity, pricing_options FROM products WHERE id = ?", [pId]);
+                    if (prodRows.length > 0) {
+                        const prod = prodRows[0];
+                        let updatedPricingOptions = prod.pricing_options;
+
+                        // Parse and update variant stock if needed
+                        if (item.variant_info && prod.pricing_options) {
+                            try {
+                                const options = typeof prod.pricing_options === 'string' ? JSON.parse(prod.pricing_options) : prod.pricing_options;
+                                if (Array.isArray(options)) {
+                                    for (let opt of options) {
+                                        const optWeight = String(opt.weight_volume || opt.quantity || "").trim().toLowerCase();
+                                        const optUnit = String(opt.unit || "").trim().toLowerCase();
+                                        const itemWeight = String(item.variant_info.weight || "").trim().toLowerCase();
+                                        const itemUnit = String(item.variant_info.unit || "").trim().toLowerCase();
+
+                                        if (optWeight === itemWeight && optUnit === itemUnit) {
+                                            opt.stock_quantity = Math.max(0, (parseInt(opt.stock_quantity) || 0) - item.quantity);
+                                            break;
+                                        }
+                                    }
+                                    updatedPricingOptions = JSON.stringify(options);
+                                }
+                            } catch (e) {
+                                console.error("Error parsing pricing_options for stock update:", e);
+                            }
+                        }
+
+                        const optionsString = typeof updatedPricingOptions === 'object' ? JSON.stringify(updatedPricingOptions) : updatedPricingOptions;
+
+                        await connection.query(
+                            `UPDATE products 
+                             SET total_stock = GREATEST(0, IFNULL(total_stock, 0) - ?),
+                                 stock_quantity = GREATEST(0, IFNULL(stock_quantity, 0) - ?),
+                                 pricing_options = ?
+                             WHERE id = ?`,
+                            [item.quantity, item.quantity, optionsString, pId]
+                        );
+                    }
+                }
             }
         }
 
