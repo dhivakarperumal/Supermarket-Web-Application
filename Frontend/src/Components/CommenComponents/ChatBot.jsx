@@ -41,6 +41,7 @@ function detectIntent(text) {
   if (CATEGORY_KEYWORDS.some((k) => lower.includes(k))) return "categories";
   if (ACCOUNT_KEYWORDS.some((k) => lower.includes(k))) return "account";
   if (ADDRESS_KEYWORDS.some((k) => lower.includes(k))) return "address";
+  if (lower === "search products" || lower === "search") return "search_prompt";
   return "search";
 }
 
