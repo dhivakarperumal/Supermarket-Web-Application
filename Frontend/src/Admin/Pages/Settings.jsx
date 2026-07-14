@@ -5,14 +5,14 @@ import imageCompression from "browser-image-compression";
 import { QRCodeSVG } from "qrcode.react";
 import api from "../../api";
 import "./Settings.css";
-import { 
-  Printer, 
-  Receipt, 
-  CreditCard, 
-  Store, 
-  Percent, 
-  Globe, 
-  Barcode, 
+import {
+  Printer,
+  Receipt,
+  CreditCard,
+  Store,
+  Percent,
+  Globe,
+  Barcode,
   MonitorSmartphone,
   Search,
   Save,
@@ -70,11 +70,11 @@ const SETTINGS_CATEGORIES = [
 const Settings = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(null);
-  
+
   // States for Printer specific UI
   const [connectionType, setConnectionType] = useState('USB');
   const [isScanning, setIsScanning] = useState(false);
-  
+
   // Bluetooth devices state
   const [pairedDevices, setPairedDevices] = useState([
     { id: 'dev1', name: 'POS-58 Receipt Printer', mac: '00:11:22:33:44:55' }
@@ -273,10 +273,10 @@ const Settings = () => {
         return (
           <>
             <Select label="Printer Selection" options={['EPSON TM-T82', 'TVS RP 3150', 'Generic POS Printer']} />
-            
-            <Select 
-              label="Connection Type" 
-              options={['USB', 'LAN / Network', 'Bluetooth', 'Wi-Fi']} 
+
+            <Select
+              label="Connection Type"
+              options={['USB', 'LAN / Network', 'Bluetooth', 'Wi-Fi']}
               value={connectionType}
               onChange={(e) => setConnectionType(e.target.value)}
             />
@@ -286,7 +286,7 @@ const Settings = () => {
               {connectionType === 'LAN / Network' || connectionType === 'Wi-Fi' ? (
                 <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#0f172a', fontWeight: 'bold' }}>
-                    {connectionType === 'Wi-Fi' ? <Wifi size={18}/> : <Network size={18}/>} 
+                    {connectionType === 'Wi-Fi' ? <Wifi size={18} /> : <Network size={18} />}
                     Network Configuration
                   </div>
                   <Input label="Printer IP Address" placeholder="192.168.1.100" />
@@ -294,21 +294,21 @@ const Settings = () => {
                 </div>
               ) : connectionType === 'USB' ? (
                 <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Usb size={18} style={{ color: '#64748b' }}/>
+                  <Usb size={18} style={{ color: '#64748b' }} />
                   <span style={{ fontSize: '0.9rem', color: '#475569' }}>Please ensure the printer is plugged into a USB port. Auto-detection enabled.</span>
                 </div>
               ) : connectionType === 'Bluetooth' ? (
                 <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0f172a', fontWeight: 'bold' }}>
-                      <Bluetooth size={18} style={{ color: '#3b82f6' }}/> 
+                      <Bluetooth size={18} style={{ color: '#3b82f6' }} />
                       Bluetooth Printers
                     </div>
-                    <button 
+                    <button
                       onClick={handleScanBluetooth}
-                      style={{ 
-                        background: '#eff6ff', color: '#2563eb', border: 'none', padding: '0.4rem 0.8rem', 
-                        borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' 
+                      style={{
+                        background: '#eff6ff', color: '#2563eb', border: 'none', padding: '0.4rem 0.8rem',
+                        borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer'
                       }}
                     >
                       {isScanning ? 'Scanning...' : 'Scan Devices'}
@@ -333,7 +333,7 @@ const Settings = () => {
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                               <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#10b981', background: '#d1fae5', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>Connected</span>
-                              <button 
+                              <button
                                 onClick={() => handleUnpair(device)}
                                 style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
                               >
@@ -364,7 +364,7 @@ const Settings = () => {
                                 <p style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8' }}>{device.mac}</p>
                               </div>
                             </div>
-                            <button 
+                            <button
                               onClick={() => handlePair(device)}
                               style={{ background: 'none', border: 'none', color: '#3b82f6', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
                             >
@@ -381,9 +381,9 @@ const Settings = () => {
 
             <Select label="Paper Size" options={['58mm', '80mm', 'A4']} />
             <Input label="Print Copies" type="number" placeholder="1" />
-            
+
             <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #e2e8f0', paddingTop: '1rem', marginTop: '0.5rem' }}></div>
-            
+
             <Toggle label="Auto Print Invoice" defaultChecked />
             <Toggle label="Cash Drawer Trigger" defaultChecked />
             <Toggle label="Kitchen Printer" />
@@ -394,138 +394,404 @@ const Settings = () => {
             <Toggle label="Print Footer" defaultChecked />
           </>
         );
+
       case 'receipt':
         return (
-          <>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 380px",
+              gap: "2rem",
+              width: "100%",
+              alignItems: "start",
+            }}
+          >
+            {/* Left Side */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+              }}
+            >
               <Input label="Store Logo Upload" type="file" onChange={handleLogoUpload} accept="image/*" />
-              <Input label="Store Name" placeholder="Priyam Super Market" value={receiptSettings.storeName} onChange={(e) => updateReceiptSetting('storeName', e.target.value)} />
-              <Input label="Address" placeholder="123 Main Street" value={receiptSettings.address} onChange={(e) => updateReceiptSetting('address', e.target.value)} />
-              <Input label="Phone Number" placeholder="+91 9876543210" value={receiptSettings.phone} onChange={(e) => updateReceiptSetting('phone', e.target.value)} />
-              <Input label="Email" placeholder="contact@priyam.com" value={receiptSettings.email} onChange={(e) => updateReceiptSetting('email', e.target.value)} />
-              <Input label="GST Number" placeholder="22AAAAA0000A1Z5" value={receiptSettings.gst} onChange={(e) => updateReceiptSetting('gst', e.target.value)} />
-              <Input label="FSSAI Number" placeholder="10022000000000" value={receiptSettings.fssai} onChange={(e) => updateReceiptSetting('fssai', e.target.value)} />
-              <Input label="Invoice Prefix" placeholder="INV-" value={receiptSettings.invoicePrefix} onChange={(e) => updateReceiptSetting('invoicePrefix', e.target.value)} />
-              <Select label="Invoice Number Format" options={['YYYY/MM/DD/0001', '00001', 'INV-00001']} value={receiptSettings.invoiceFormat} onChange={(e) => updateReceiptSetting('invoiceFormat', e.target.value)} />
-              <Input label="Currency Symbol" placeholder="₹" value={receiptSettings.currency} onChange={(e) => updateReceiptSetting('currency', e.target.value)} />
-              <Select label="Date Format" options={['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD']} value={receiptSettings.dateFormat} onChange={(e) => updateReceiptSetting('dateFormat', e.target.value)} />
-              <Toggle label="Tax Display" checked={receiptSettings.taxDisplay} onChange={(e) => updateReceiptSetting('taxDisplay', e.target.checked)} />
-              <Toggle label="Discount Display" checked={receiptSettings.discountDisplay} onChange={(e) => updateReceiptSetting('discountDisplay', e.target.checked)} />
-              <Toggle label="QR Code Display" checked={receiptSettings.qrCodeDisplay} onChange={(e) => updateReceiptSetting('qrCodeDisplay', e.target.checked)} />
+
+              <Input
+                label="Store Name"
+                placeholder="Priyam Super Market"
+                value={receiptSettings.storeName}
+                onChange={(e) => updateReceiptSetting("storeName", e.target.value)}
+              />
+
+              <Input
+                label="Address"
+                placeholder="123 Main Street"
+                value={receiptSettings.address}
+                onChange={(e) => updateReceiptSetting("address", e.target.value)}
+              />
+
+              <Input
+                label="Phone Number"
+                placeholder="+91 9876543210"
+                value={receiptSettings.phone}
+                onChange={(e) => updateReceiptSetting("phone", e.target.value)}
+              />
+
+              <Input
+                label="Email"
+                placeholder="contact@priyam.com"
+                value={receiptSettings.email}
+                onChange={(e) => updateReceiptSetting("email", e.target.value)}
+              />
+
+              <Input
+                label="GST Number"
+                placeholder="22AAAAA0000A1Z5"
+                value={receiptSettings.gst}
+                onChange={(e) => updateReceiptSetting("gst", e.target.value)}
+              />
+
+              <Input
+                label="FSSAI Number"
+                placeholder="10022000000000"
+                value={receiptSettings.fssai}
+                onChange={(e) => updateReceiptSetting("fssai", e.target.value)}
+              />
+
+              <Input
+                label="Invoice Prefix"
+                placeholder="INV-"
+                value={receiptSettings.invoicePrefix}
+                onChange={(e) => updateReceiptSetting("invoicePrefix", e.target.value)}
+              />
+
+              <Select
+                label="Invoice Number Format"
+                options={["YYYY/MM/DD/0001", "00001", "INV-00001"]}
+                value={receiptSettings.invoiceFormat}
+                onChange={(e) => updateReceiptSetting("invoiceFormat", e.target.value)}
+              />
+
+              <Input
+                label="Currency Symbol"
+                placeholder="₹"
+                value={receiptSettings.currency}
+                onChange={(e) => updateReceiptSetting("currency", e.target.value)}
+              />
+
+              <Select
+                label="Date Format"
+                options={["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"]}
+                value={receiptSettings.dateFormat}
+                onChange={(e) => updateReceiptSetting("dateFormat", e.target.value)}
+              />
+
+              <Toggle
+                label="Tax Display"
+                checked={receiptSettings.taxDisplay}
+                onChange={(e) => updateReceiptSetting("taxDisplay", e.target.checked)}
+              />
+
+              <Toggle
+                label="Discount Display"
+                checked={receiptSettings.discountDisplay}
+                onChange={(e) => updateReceiptSetting("discountDisplay", e.target.checked)}
+              />
+
+              <Toggle
+                label="QR Code Display"
+                checked={receiptSettings.qrCodeDisplay}
+                onChange={(e) => updateReceiptSetting("qrCodeDisplay", e.target.checked)}
+              />
+
+              <Input
+                label="Footer Message"
+                placeholder="Visit again!"
+                value={receiptSettings.footerMessage}
+                onChange={(e) => updateReceiptSetting("footerMessage", e.target.value)}
+              />
+
+              <Input
+                label="Thank You Message"
+                placeholder="Thank you for shopping with us."
+                value={receiptSettings.thankYouMessage}
+                onChange={(e) => updateReceiptSetting("thankYouMessage", e.target.value)}
+              />
+
+              <Input
+                label="Return Policy"
+                placeholder="No returns after 7 days."
+                value={receiptSettings.returnPolicy}
+                onChange={(e) => updateReceiptSetting("returnPolicy", e.target.value)}
+              />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <Input label="Footer Message" placeholder="Visit again!" value={receiptSettings.footerMessage} onChange={(e) => updateReceiptSetting('footerMessage', e.target.value)} />
-              <Input label="Thank You Message" placeholder="Thank you for shopping with us." value={receiptSettings.thankYouMessage} onChange={(e) => updateReceiptSetting('thankYouMessage', e.target.value)} />
-              <Input label="Return Policy" placeholder="No returns after 7 days." value={receiptSettings.returnPolicy} onChange={(e) => updateReceiptSetting('returnPolicy', e.target.value)} />
-            </div>
+            {/* Right Side Receipt Preview */}
 
-            {/* Receipt Preview Side */}
-            <div className="receipt-preview-container" style={{ padding: '0 1rem' }}>
-              <h4 style={{ marginBottom: '1rem', color: '#1e293b', fontSize: '1rem', fontWeight: 'bold' }}>Receipt Preview</h4>
-              <div className="receipt-preview-card" style={{
-                background: '#fff',
-                padding: '1.5rem',
-                borderRadius: '8px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                border: '1px dashed #cbd5e1',
-                fontFamily: 'monospace',
-                fontSize: '0.85rem',
-                color: '#333',
-                maxWidth: '350px',
-                margin: '0 auto',
-                position: 'sticky',
-                top: '20px'
-              }}>
-                <div style={{ textAlign: 'center', marginBottom: '1rem', borderBottom: '1px dashed #cbd5e1', paddingBottom: '1rem' }}>
+            <div
+              className="receipt-preview-container"
+              style={{
+                position: "sticky",
+                top: "20px",
+                alignSelf: "start",
+                padding: "0 1rem",
+              }}
+            >
+              <h4
+                style={{
+                  marginBottom: "1rem",
+                  color: "#1e293b",
+                  fontSize: "1rem",
+                  fontWeight: "bold",
+                }}
+              >
+                Receipt Preview
+              </h4>
+
+              <div
+                className="receipt-preview-card"
+                style={{
+                  background: "#fff",
+                  padding: "1.5rem",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+                  border: "1px dashed #cbd5e1",
+                  fontFamily: "monospace",
+                  fontSize: "0.85rem",
+                  color: "#333",
+                  maxWidth: "350px",
+                  width: "100%",
+                  margin: 0,
+                }}
+              >
+                <div
+                  style={{
+                    textAlign: "center",
+                    marginBottom: "1rem",
+                    borderBottom: "1px dashed #cbd5e1",
+                    paddingBottom: "1rem",
+                  }}
+                >
                   {receiptSettings.storeLogo && (
-                    <img src={receiptSettings.storeLogo} alt="Store Logo" style={{ maxWidth: '100px', maxHeight: '100px', margin: '0 auto 0.5rem', objectFit: 'contain' }} />
+                    <img
+                      src={receiptSettings.storeLogo}
+                      alt="Store Logo"
+                      style={{
+                        maxWidth: "100px",
+                        maxHeight: "100px",
+                        margin: "0 auto 0.5rem",
+                        objectFit: "contain",
+                      }}
+                    />
                   )}
-                  <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', textTransform: 'uppercase' }}>{receiptSettings.storeName || 'STORE NAME'}</h3>
+
+                  <h3
+                    style={{
+                      margin: "0 0 0.5rem 0",
+                      fontSize: "1.2rem",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {receiptSettings.storeName || "STORE NAME"}
+                  </h3>
+
                   <div>{receiptSettings.address}</div>
                   <div>Phone: {receiptSettings.phone}</div>
+
                   {receiptSettings.email && <div>Email: {receiptSettings.email}</div>}
                   {receiptSettings.gst && <div>GST: {receiptSettings.gst}</div>}
                   {receiptSettings.fssai && <div>FSSAI: {receiptSettings.fssai}</div>}
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: ".5rem",
+                  }}
+                >
                   <span>Invoice: {receiptSettings.invoicePrefix}0001</span>
-                  <span>Date: {new Date().toLocaleDateString()}</span>
+                  <span>{new Date().toLocaleDateString()}</span>
                 </div>
-                
-                <div style={{ borderBottom: '1px dashed #cbd5e1', margin: '0.5rem 0' }}></div>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+
+                <div
+                  style={{
+                    borderBottom: "1px dashed #cbd5e1",
+                    margin: ".5rem 0",
+                  }}
+                />
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontWeight: "bold",
+                    marginBottom: ".5rem",
+                  }}
+                >
                   <span>Item</span>
                   <span>Total</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <span>Apple 1kg</span>
                   <span>{receiptSettings.currency}120.00</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <span>Rice 5kg</span>
                   <span>{receiptSettings.currency}450.00</span>
                 </div>
-                
-                <div style={{ borderBottom: '1px dashed #cbd5e1', margin: '0.5rem 0' }}></div>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+
+                <div
+                  style={{
+                    borderBottom: "1px dashed #cbd5e1",
+                    margin: ".75rem 0",
+                  }}
+                />
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <span>Subtotal</span>
                   <span>{receiptSettings.currency}570.00</span>
                 </div>
+
                 {receiptSettings.taxDisplay && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
                     <span>GST (5%)</span>
                     <span>{receiptSettings.currency}28.50</span>
                   </div>
                 )}
+
                 {receiptSettings.discountDisplay && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
                     <span>Discount</span>
                     <span>-{receiptSettings.currency}10.00</span>
                   </div>
                 )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '1rem' }}>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontWeight: "bold",
+                    fontSize: "1rem",
+                    marginTop: ".5rem",
+                  }}
+                >
                   <span>Total</span>
-                  <span>{receiptSettings.currency}{(570 + (receiptSettings.taxDisplay ? 28.5 : 0) - (receiptSettings.discountDisplay ? 10 : 0)).toFixed(2)}</span>
+                  <span>
+                    {receiptSettings.currency}
+                    {(
+                      570 +
+                      (receiptSettings.taxDisplay ? 28.5 : 0) -
+                      (receiptSettings.discountDisplay ? 10 : 0)
+                    ).toFixed(2)}
+                  </span>
                 </div>
-                
-                <div style={{ borderBottom: '1px dashed #cbd5e1', margin: '1rem 0' }}></div>
-                
+
+                <div
+                  style={{
+                    borderBottom: "1px dashed #cbd5e1",
+                    margin: "1rem 0",
+                  }}
+                />
+
                 {receiptSettings.qrCodeDisplay && (
-                  <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                  <div
+                    style={{
+                      textAlign: "center",
+                      marginBottom: "1rem",
+                    }}
+                  >
                     {paymentSettings.upiId ? (
-                      <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <QRCodeSVG value={`upi://pay?pa=${paymentSettings.upiId}&pn=${receiptSettings.storeName || 'Store'}`} size={80} />
-                      </div>
+                      <QRCodeSVG
+                        value={`upi://pay?pa=${paymentSettings.upiId}&pn=${receiptSettings.storeName || "Store"
+                          }`}
+                        size={80}
+                      />
                     ) : (
-                      <div style={{ background: 'conic-gradient(#333 90deg, transparent 90deg)', backgroundSize: '10px 10px', height: '80px', width: '80px', margin: '0 auto' }}></div>
+                      <div
+                        style={{
+                          width: "80px",
+                          height: "80px",
+                          margin: "0 auto",
+                          background:
+                            "conic-gradient(#333 90deg, transparent 90deg)",
+                          backgroundSize: "10px 10px",
+                        }}
+                      />
                     )}
-                    <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Scan to Pay</div>
+
+                    <div
+                      style={{
+                        fontSize: ".75rem",
+                        marginTop: ".25rem",
+                      }}
+                    >
+                      Scan to Pay
+                    </div>
                   </div>
                 )}
-                
-                <div style={{ textAlign: 'center', marginTop: '1rem', fontStyle: 'italic' }}>
+
+                <div
+                  style={{
+                    textAlign: "center",
+                    fontStyle: "italic",
+                  }}
+                >
                   <div>{receiptSettings.thankYouMessage}</div>
                   <div>{receiptSettings.footerMessage}</div>
+
                   {receiptSettings.returnPolicy && (
-                    <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#666' }}>{receiptSettings.returnPolicy}</div>
+                    <div
+                      style={{
+                        marginTop: ".5rem",
+                        fontSize: ".75rem",
+                        color: "#666",
+                      }}
+                    >
+                      {receiptSettings.returnPolicy}
+                    </div>
                   )}
                 </div>
               </div>
             </div>
-          </>
+          </div>
         );
-      
-        case 'payment':
+
+
+      case 'payment':
         return (
           <>
             <Select label="Primary Gateway" options={['Razorpay', 'Stripe', 'Paytm', 'PhonePe', 'Google Pay']} value={paymentSettings.primaryGateway} onChange={(e) => updatePaymentSetting('primaryGateway', e.target.value)} />
             <Toggle label="Cash Support" checked={paymentSettings.cashSupport} onChange={(e) => updatePaymentSetting('cashSupport', e.target.checked)} />
             <Toggle label="UPI Support" checked={paymentSettings.upiSupport} onChange={(e) => updatePaymentSetting('upiSupport', e.target.checked)} />
-            
+
             {paymentSettings.upiSupport && (
               <Input label="UPI ID" placeholder="example@upi" value={paymentSettings.upiId} onChange={(e) => updatePaymentSetting('upiId', e.target.value)} />
             )}
@@ -675,7 +941,7 @@ const Settings = () => {
           <h1>System Settings</h1>
           <p>Configure your supermarket system, billing, payments, and preferences.</p>
         </div>
-        
+
         {!activeTab && (
           <div className="settings-header-actions">
             <div style={{ position: 'relative' }}>
@@ -689,9 +955,9 @@ const Settings = () => {
       {!activeTab ? (
         <div className="settings-grid">
           {SETTINGS_CATEGORIES.map((cat) => (
-            <div 
-              key={cat.id} 
-              className="glass-card clickable-card" 
+            <div
+              key={cat.id}
+              className="glass-card clickable-card"
               onClick={() => {
                 if (cat.id === 'delivery') { navigate('/admin/delivery-charges'); return; }
                 if (cat.id === 'coupon') { navigate('/admin/coupons'); return; }
@@ -719,11 +985,11 @@ const Settings = () => {
               <h2>{activeCategory.title}</h2>
             </div>
           </div>
-          
+
           <div className="detail-content grid-2-col">
             {renderActiveFields()}
           </div>
-          
+
           <div className="detail-actions">
             <button className="btn-secondary" onClick={() => setActiveTab(null)}>Cancel</button>
             <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
