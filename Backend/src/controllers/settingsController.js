@@ -1,4 +1,5 @@
 const { getPool } = require("../config/db");
+const crypto = require("crypto");
 
 // Get Receipt Settings
 exports.getReceiptSettings = async (req, res) => {
@@ -43,12 +44,12 @@ exports.updateReceiptSettings = async (req, res) => {
     const userId = req.headers['x-user-id'] || null;
     const createdBy = userId;
     const updatedBy = userId;
-    const receiptId = userId;
 
-    const [rows] = await pool.query("SELECT id FROM receipt_settings LIMIT 1");
+    const [rows] = await pool.query("SELECT id, receipt_id FROM receipt_settings LIMIT 1");
     
     if (rows.length > 0) {
       const id = rows[0].id;
+      const receiptId = rows[0].receipt_id || crypto.randomUUID();
       await pool.query(
         `UPDATE receipt_settings SET 
           store_name = ?, address = ?, phone = ?, email = ?, gst = ?, fssai = ?, 
@@ -64,6 +65,7 @@ exports.updateReceiptSettings = async (req, res) => {
         ]
       );
     } else {
+      const receiptId = crypto.randomUUID();
       await pool.query(
         `INSERT INTO receipt_settings (
           store_name, address, phone, email, gst, fssai, invoice_prefix, invoice_format, currency, date_format,
