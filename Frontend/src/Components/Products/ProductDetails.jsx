@@ -213,9 +213,7 @@ const ProductDetails = () => {
   };
 
   const increaseQty = () => {
-    if (!selectedVariant || !selectedSize) return;
-
-    const stock = selectedVariant?.sizesStock?.[selectedSize] || 0;
+    const stock = selectedVariant?.stock || selectedVariant?.stock_quantity || product?.stock_quantity || 0;
 
     setQuantity((prev) => {
       if (prev < stock) return prev + 1;
@@ -484,81 +482,52 @@ const ProductDetails = () => {
 
             <div className="mt-6 rounded-[1.5rem] border border-green-100 bg-gradient-to-r from-green-50 to-white p-5 shadow-sm">
               <div className="flex flex-wrap items-end gap-3">
-                <span className="text-3xl font-bold text-green-700">₹{product.offer_price}</span>
-                {product.mrp && (
-                  <span className="text-lg text-gray-400 line-through">₹{product.mrp}</span>
+                <span className="text-3xl font-bold text-green-700">₹{selectedVariant?.sellingPrice || selectedVariant?.selling_price || product.offer_price}</span>
+                {(selectedVariant?.mrp || product.mrp) && (
+                  <span className="text-lg text-gray-400 line-through">₹{selectedVariant?.mrp || product.mrp}</span>
                 )}
-                {product.offer && (
+                {(selectedVariant?.offer || product.offer) && (
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
-                    Save {Math.floor(product.offer)}%
+                    Save {Math.floor(selectedVariant?.offer || product.offer)}%
                   </span>
                 )}
               </div>
             </div>
 
+            {/* Variant Selection */}
             <div className="mt-6 rounded-[1.5rem] border border-gray-100 bg-white p-5 shadow-sm">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
-                Available Colors
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {product?.variants?.map((variant, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      const normalizedVariant = {
-                        ...variant,
-                        images: normalizeImageList(variant.images),
-                      };
-                      const images = getDisplayImages(product, normalizedVariant);
-                      setSelectedVariant(normalizedVariant);
-                      setSelectedImage(images[0]);
-                      setSelectedSize(normalizedVariant.selectedSizes?.[0] || null);
-                      setQuantity(1);
-                    }}
-                    className={`flex items-center gap-2 rounded-full border px-3 py-2 text-sm transition ${selectedVariant?.color === variant.color ? "border-primary bg-green-50 text-primary-dark" : "border-gray-200 bg-white text-gray-600 hover:border-green-300"}`}
-                  >
-                    <img
-                      src={getDisplayImages(product, { ...variant, images: normalizeImageList(variant.images) })[0]}
-                      alt={variant.colorName}
-                      className="h-10 w-10 rounded-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = fallbackImage;
-                      }}
-                    />
-                    <span>{variant.colorName}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-6 rounded-[1.5rem] border border-gray-100 bg-white p-5 shadow-sm">
-              {!(selectedVariant?.selectedSizes?.length === 1 && selectedVariant?.selectedSizes[0]?.toLowerCase() === "free size") && (
+              {product?.variants?.length > 0 && (
                 <>
                   <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
-                    Select Size
+                    Available Variants
                   </p>
                   <div className="flex flex-wrap gap-3">
-                    {selectedVariant?.selectedSizes?.map((size, index) => (
+                    {product.variants.map((variant, index) => (
                       <button
                         key={index}
                         onClick={() => {
-                          setSelectedSize(size);
+                          const normalizedVariant = {
+                            ...variant,
+                            images: normalizeImageList(variant.images),
+                          };
+                          const images = getDisplayImages(product, normalizedVariant);
+                          setSelectedVariant(normalizedVariant);
+                          if (images.length > 0) setSelectedImage(images[0]);
+                          if (normalizedVariant.selectedSizes?.[0]) setSelectedSize(normalizedVariant.selectedSizes[0]);
                           setQuantity(1);
                         }}
-                        className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${selectedSize === size ? "border-primary bg-primary text-white" : "border-gray-200 text-gray-700 hover:border-primary"}`}
+                        className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${selectedVariant?.quantity === variant.quantity && selectedVariant?.unit === variant.unit ? "border-primary bg-primary text-white" : "border-gray-200 text-gray-700 hover:border-primary"}`}
                       >
-                        {size}
+                        {variant.quantity} {variant.unit}
                       </button>
                     ))}
                   </div>
                 </>
               )}
 
-              {selectedSize && (
-                <p className="mt-3 text-sm text-gray-600">
-                  Stock Available: <span className="font-semibold text-gray-800">{selectedVariant?.sizesStock?.[selectedSize]}</span>
-                </p>
-              )}
+              {/* <p className="mt-3 text-sm text-gray-600">
+                Stock Available: <span className="font-semibold text-gray-800">{selectedVariant?.stock || selectedVariant?.stock_quantity || product?.stock_quantity || 0}</span>
+              </p> */}
 
               <div className="mt-5">
                 <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">Quantity</p>

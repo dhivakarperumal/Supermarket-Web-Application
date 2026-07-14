@@ -1,4 +1,4 @@
-﻿import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { StoreContext } from "../../PrivateRouter/StoreContext";
 import { AuthContext } from "../../PrivateRouter/AuthContext";
@@ -12,6 +12,7 @@ const Checkout = () => {
   const { cart, clearCart } = useContext(StoreContext);
   const { user } = useContext(AuthContext);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  const [deliveryMethod, setDeliveryMethod] = useState("delivery");
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -129,14 +130,14 @@ const Checkout = () => {
         // Check if user has any previous orders
         const userOrders = await api.get(`/orders/user/${user?.user_id}`);
         const isNewCustomer = !userOrders.data || userOrders.data.length === 0;
-        
+
         if (isNewCustomer) {
           // Fetch coupons
           const couponsRes = await api.get("/coupons");
           const newCustomerCoupons = couponsRes.data?.coupons?.filter(
             (c) => c.coupon_scope === "new_customers_only" && c.status === "active"
           );
-          
+
           if (newCustomerCoupons && newCustomerCoupons.length > 0) {
             const coupon = newCustomerCoupons[0];
             setAppliedCoupon(coupon);
@@ -149,11 +150,84 @@ const Checkout = () => {
         console.error("Error checking new customer status:", error);
       }
     };
-    
+
     if (user?.user_id) {
       checkAndApplyNewCustomerCoupon();
     }
   }, [user?.user_id]);
+
+  const checkoutItems = buyNowProduct
+    ? [
+      {
+        id: buyNowProduct.id,
+        name: buyNowProduct.name,
+        image: buyNowVariant?.images?.[0] || buyNowProduct?.thumbnail_image || "/placeholder.png",
+        price: buyNowProduct.offer_price || buyNowProduct.price,
+        quantity: buyNowQuantity,
+        size: buyNowSize,
+        colorName: buyNowVariant?.color,
+      },
+    ]
+    : cart;
+
+  // Validate applied coupon when cart changes
+  useEffect(() => {
+    if (!appliedCoupon || checkoutItems.length === 0) return;
+
+    const validateAppliedCoupon = () => {
+      // For specific products coupons
+      if (appliedCoupon.coupon_scope === "specific_products") {
+        try {
+          let applicableProductIds = [];
+          if (typeof appliedCoupon.applicable_product_ids === "string") {
+            applicableProductIds = JSON.parse(appliedCoupon.applicable_product_ids);
+          } else if (Array.isArray(appliedCoupon.applicable_product_ids)) {
+            applicableProductIds = appliedCoupon.applicable_product_ids;
+          }
+
+          const hasApplicableProduct = checkoutItems.some(item => {
+            const itemProductId = item.product_id || item.id;
+            return applicableProductIds.includes(parseInt(itemProductId));
+          });
+
+          if (!hasApplicableProduct) {
+            setCouponError("Applied coupon is no longer valid for your cart");
+            setAppliedCoupon(null);
+            setCouponCode("");
+          }
+        } catch (err) {
+          console.error("Error validating coupon on cart change:", err);
+        }
+      }
+
+      // For specific categories coupons
+      if (appliedCoupon.coupon_scope === "specific_categories") {
+        try {
+          let applicableCategoryIds = [];
+          if (typeof appliedCoupon.applicable_category_ids === "string") {
+            applicableCategoryIds = JSON.parse(appliedCoupon.applicable_category_ids);
+          } else if (Array.isArray(appliedCoupon.applicable_category_ids)) {
+            applicableCategoryIds = appliedCoupon.applicable_category_ids;
+          }
+
+          const hasApplicableCategory = checkoutItems.some(item => {
+            const itemCategoryId = item.category_id || item.categoryId;
+            return itemCategoryId && applicableCategoryIds.includes(parseInt(itemCategoryId));
+          });
+
+          if (!hasApplicableCategory) {
+            setCouponError("Applied coupon is no longer valid for your cart");
+            setAppliedCoupon(null);
+            setCouponCode("");
+          }
+        } catch (err) {
+          console.error("Error validating coupon on cart change:", err);
+        }
+      }
+    };
+
+    validateAppliedCoupon();
+  }, [checkoutItems, appliedCoupon]);
 
   const applyCoupon = async () => {
     if (!couponCode.trim()) {
@@ -163,15 +237,15 @@ const Checkout = () => {
 
     setCouponLoading(true);
     setCouponError("");
-    
+
     try {
       const res = await api.get("/coupons");
       const coupons = res.data?.coupons || [];
-      
+
       const coupon = coupons.find(
         (c) => c.code.toLowerCase() === couponCode.toLowerCase() && c.status === "active"
       );
-      
+
       if (!coupon) {
         setCouponError("Invalid or inactive coupon code");
         setAppliedCoupon(null);
@@ -210,6 +284,68 @@ const Checkout = () => {
         }
       }
 
+      // Check if specific products coupon
+      if (coupon.coupon_scope === "specific_products") {
+        try {
+          let applicableProductIds = [];
+
+          // Parse applicable_product_ids - handle both JSON string and array formats
+          if (typeof coupon.applicable_product_ids === "string") {
+            applicableProductIds = JSON.parse(coupon.applicable_product_ids);
+          } else if (Array.isArray(coupon.applicable_product_ids)) {
+            applicableProductIds = coupon.applicable_product_ids;
+          }
+
+          if (applicableProductIds.length > 0) {
+            // Check if any cart item matches the applicable products
+            const hasApplicableProduct = checkoutItems.some(item => {
+              const itemProductId = item.product_id || item.id;
+              return applicableProductIds.includes(parseInt(itemProductId));
+            });
+
+            if (!hasApplicableProduct) {
+              setCouponError(`This coupon is only applicable for specific products. Your cart doesn't contain eligible products.`);
+              setAppliedCoupon(null);
+              setCouponLoading(false);
+              return;
+            }
+          }
+        } catch (err) {
+          console.error("Error parsing product IDs:", err);
+        }
+      }
+
+      // Check if specific categories coupon
+      if (coupon.coupon_scope === "specific_categories") {
+        try {
+          let applicableCategoryIds = [];
+
+          // Parse applicable_category_ids - handle both JSON string and array formats
+          if (typeof coupon.applicable_category_ids === "string") {
+            applicableCategoryIds = JSON.parse(coupon.applicable_category_ids);
+          } else if (Array.isArray(coupon.applicable_category_ids)) {
+            applicableCategoryIds = coupon.applicable_category_ids;
+          }
+
+          if (applicableCategoryIds.length > 0) {
+            // Check if any cart item matches the applicable categories
+            const hasApplicableCategory = checkoutItems.some(item => {
+              const itemCategoryId = item.category_id || item.categoryId;
+              return itemCategoryId && applicableCategoryIds.includes(parseInt(itemCategoryId));
+            });
+
+            if (!hasApplicableCategory) {
+              setCouponError(`This coupon is only applicable for specific categories. Your cart doesn't contain eligible products.`);
+              setAppliedCoupon(null);
+              setCouponLoading(false);
+              return;
+            }
+          }
+        } catch (err) {
+          console.error("Error parsing category IDs:", err);
+        }
+      }
+
       setAppliedCoupon(coupon);
       toast.success("Coupon applied successfully!");
       setCouponError("");
@@ -237,6 +373,7 @@ const Checkout = () => {
     const perKmCharge = parseFloat(deliveryCharges.per_km_delivery_charge) || 0;
     const maxDistance = parseFloat(deliveryCharges.maximum_delivery_distance) || 100;
     const freeDeliveryThreshold = parseFloat(deliveryCharges.free_delivery_minimum_order_amount) || 0;
+    const freeDeliveryKm = parseFloat(deliveryCharges.free_delivery_km) || 0;
 
     // Check if distance exceeds maximum delivery distance
     if (distanceKm > maxDistance) {
@@ -250,6 +387,11 @@ const Checkout = () => {
     // Apply free delivery if order is above threshold
     if (orderSubtotal >= freeDeliveryThreshold) {
       return { charge: 0, message: `Free delivery on orders ₹${freeDeliveryThreshold} and above` };
+    }
+
+    // Apply free delivery if within free delivery distance
+    if (freeDeliveryKm > 0 && distanceKm <= freeDeliveryKm) {
+      return { charge: 0, message: `Free delivery for locations within ${freeDeliveryKm} km` };
     }
 
     // Calculate delivery charge
@@ -385,19 +527,7 @@ const Checkout = () => {
     "Delhi",
   ];
 
-  const checkoutItems = buyNowProduct
-    ? [
-      {
-        id: buyNowProduct.id,
-        name: buyNowProduct.name,
-        image: buyNowVariant?.images?.[0] || buyNowProduct?.thumbnail_image || "/placeholder.png",
-        price: buyNowProduct.offer_price || buyNowProduct.price,
-        quantity: buyNowQuantity,
-        size: buyNowSize,
-        colorName: buyNowVariant?.color,
-      },
-    ]
-    : cart;
+
 
   const [form, setForm] = useState({
     user_id: user?.user_id || "",
@@ -415,8 +545,8 @@ const Checkout = () => {
 
   const subtotal = checkoutItems.reduce((total, item) => total + parseFloat(item.price || 0) * item.quantity, 0);
   const deliveryInfo = calculateDeliveryCharge(distanceInfo.distanceKm, subtotal);
-  const shipping = deliveryInfo.charge;
-  
+  const shipping = deliveryMethod === "pickup" ? 0 : deliveryInfo.charge;
+
   // Calculate coupon discount
   let discountAmount = 0;
   if (appliedCoupon) {
@@ -427,7 +557,7 @@ const Checkout = () => {
     }
     discountAmount = Math.round(discountAmount * 100) / 100;
   }
-  
+
   const total = Math.round((subtotal - discountAmount + shipping) * 100) / 100;
 
   const handleChange = (e) => {
@@ -470,7 +600,8 @@ const Checkout = () => {
         items: orderItems,
         total_amount: total,
         delivery_charge: shipping,
-        distance_km: distanceInfo.distanceKm,
+        delivery_method: deliveryMethod,
+        distance_km: deliveryMethod === "pickup" ? 0 : distanceInfo.distanceKm,
         coupon_code: appliedCoupon?.code || null,
         coupon_discount: discountAmount || 0,
         subtotal_before_discount: subtotal,
@@ -515,32 +646,35 @@ const Checkout = () => {
       toast.error("Please enter phone number");
       return;
     }
-    if (!form.street_address.trim()) {
-      toast.error("Please enter street address");
-      return;
+    if (deliveryMethod === "delivery") {
+      if (!form.street_address.trim()) {
+        toast.error("Please enter street address");
+        return;
+      }
+      if (!form.city.trim()) {
+        toast.error("Please enter city");
+        return;
+      }
+      if (!form.district.trim()) {
+        toast.error("Please enter district");
+        return;
+      }
+      if (!form.state.trim()) {
+        toast.error("Please select state");
+        return;
+      }
+      if (!form.zip_code.trim()) {
+        toast.error("Please enter zip code");
+        return;
+      }
+      if (deliveryInfo.isError) {
+        toast.error(deliveryInfo.message || "Delivery not available for this location");
+        return;
+      }
     }
-    if (!form.city.trim()) {
-      toast.error("Please enter city");
-      return;
-    }
-    if (!form.district.trim()) {
-      toast.error("Please enter district");
-      return;
-    }
-    if (!form.state.trim()) {
-      toast.error("Please select state");
-      return;
-    }
-    if (!form.zip_code.trim()) {
-      toast.error("Please enter zip code");
-      return;
-    }
+
     if (!checkoutItems.length) {
       alert("No product to checkout");
-      return;
-    }
-    if (deliveryInfo.isError) {
-      toast.error(deliveryInfo.message || "Delivery not available for this location");
       return;
     }
 
@@ -560,7 +694,7 @@ const Checkout = () => {
         key: "rzp_test_SGj8n5SyKSE10b",
         amount: total * 100,
         currency: "INR",
-        name: "Saree World",
+        name: "Priyam Supermarket",
         description: "Order Payment",
         handler: async function (response) {
           console.log("Payment Success:", response);
@@ -591,76 +725,86 @@ const Checkout = () => {
       <div className="min-h-screen bg-[#f7f8f3] py-8 sm:py-10">
         <PageContainer>
           <div className="mx-auto ">
-            {/* <div className="mb-8 rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-700">Secure checkout</p>
-                  <h1 className="mt-2 text-3xl font-bold text-slate-900">Checkout</h1>
-                  <p className="mt-2 text-sm text-slate-500">Complete your order in a few simple steps with your preferred payment method.</p>
-                </div>
-                <div className="rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-[#0e6827]">{checkoutItems.length} item{checkoutItems.length === 1 ? "" : "s"}</div>
-              </div>
-            </div> */}
-
             <div className="grid gap-8 lg:grid-cols-[1.6fr_0.9fr]">
               <div className="space-y-6">
+
+                {/* Delivery Method Toggle */}
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
                   <div className="mb-4 flex items-center gap-2">
-                    <FiMapPin className="text-[#0e6827]" />
-                    <h2 className="text-lg font-semibold text-slate-800">Delivery Distance</h2>
+                    <FiPackage className="text-[#0e6827]" />
+                    <h2 className="text-lg font-semibold text-slate-800">Order Type</h2>
                   </div>
-                  <p className="text-sm text-slate-500">Click the button below to fetch your current location and estimate the distance to our shop.</p>
-
-
-                  <div className="mb-4 rounded-lg bg-blue-50 p-3 text-sm">
-                    <p className="text-slate-700">
-                      <span className="font-semibold">Max Delivery Distance:</span> {deliveryCharges?.maximum_delivery_distance || "N/A"} km
-                    </p>
+                  <div className="flex gap-4">
+                    <label className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border p-4 font-semibold transition ${deliveryMethod === "delivery" ? "border-[#0e6827] bg-green-50 text-[#0e6827]" : "border-gray-200 text-slate-500 hover:bg-gray-50"}`}>
+                      <input type="radio" name="deliveryMethod" value="delivery" checked={deliveryMethod === "delivery"} onChange={() => setDeliveryMethod("delivery")} className="hidden" />
+                      Home Delivery
+                    </label>
+                    <label className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border p-4 font-semibold transition ${deliveryMethod === "pickup" ? "border-[#0e6827] bg-green-50 text-[#0e6827]" : "border-gray-200 text-slate-500 hover:bg-gray-50"}`}>
+                      <input type="radio" name="deliveryMethod" value="pickup" checked={deliveryMethod === "pickup"} onChange={() => setDeliveryMethod("pickup")} className="hidden" />
+                      Store Pickup
+                    </label>
                   </div>
+                </div>
 
-                  <div className="mt-4 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">
-                    {!distanceInfo.distanceKm && !distanceInfo.error && !distanceInfo.loading ? (
-                      <div className="flex flex-col gap-3">
-                        <p className="text-sm text-slate-600">No location fetched yet.</p>
-                        <button type="button" onClick={detectDistanceToShop} className="w-fit rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
-                          Fetch location
-                        </button>
-                      </div>
-                    ) : distanceInfo.loading ? (
-                      <p className="text-sm text-slate-600">Fetching your current location...</p>
-                    ) : distanceInfo.distanceKm !== null ? (
-                      <>
-                        <p className="text-sm text-slate-600">Shop address</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-800">{SHOP_ADDRESS}</p>
-                        <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
-                          <div>
-                            <p className="text-sm text-slate-500">Estimated distance</p>
-                            <p className="text-2xl font-bold text-[#0e6827]">{distanceInfo.distanceKm} km</p>
-                            {deliveryCharges && distanceInfo.distanceKm !== null && (
-                              <p className="mt-2 text-xs text-slate-600">
-                                {deliveryInfo.isError ? (
-                                  <span className="text-red-600">{deliveryInfo.message}</span>
-                                ) : (
-                                  <span className="text-green-600">{deliveryInfo.message}</span>
-                                )}
-                              </p>
-                            )}
-                          </div>
-                          <button type="button" onClick={detectDistanceToShop} className="rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
+                {deliveryMethod === "delivery" && (
+                  <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+                    <div className="mb-4 flex items-center gap-2">
+                      <FiMapPin className="text-[#0e6827]" />
+                      <h2 className="text-lg font-semibold text-slate-800">Delivery Distance</h2>
+                    </div>
+                    <p className="text-sm text-slate-500">Click the button below to fetch your current location and estimate the distance to our shop.</p>
+
+
+                    <div className="mb-4 rounded-lg bg-blue-50 p-3 text-sm">
+                      <p className="text-slate-700">
+                        <span className="font-semibold">Max Delivery Distance:</span> {deliveryCharges?.maximum_delivery_distance || "N/A"} km
+                      </p>
+                    </div>
+
+                    <div className="mt-4 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">
+                      {!distanceInfo.distanceKm && !distanceInfo.error && !distanceInfo.loading ? (
+                        <div className="flex flex-col gap-3">
+                          <p className="text-sm text-slate-600">No location fetched yet.</p>
+                          <button type="button" onClick={detectDistanceToShop} className="w-fit rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
                             Fetch location
                           </button>
                         </div>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-sm text-slate-600">{distanceInfo.error || "We could not calculate the distance right now."}</p>
-                        <button type="button" onClick={detectDistanceToShop} className="mt-3 rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
-                          Fetch location
-                        </button>
-                      </>
-                    )}
+                      ) : distanceInfo.loading ? (
+                        <p className="text-sm text-slate-600">Fetching your current location...</p>
+                      ) : distanceInfo.distanceKm !== null ? (
+                        <>
+                          <p className="text-sm text-slate-600">Shop address</p>
+                          <p className="mt-1 text-sm font-semibold text-slate-800">{SHOP_ADDRESS}</p>
+                          <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
+                            <div>
+                              <p className="text-sm text-slate-500">Estimated distance</p>
+                              <p className="text-2xl font-bold text-[#0e6827]">{distanceInfo.distanceKm} km</p>
+                              {deliveryCharges && distanceInfo.distanceKm !== null && (
+                                <p className="mt-2 text-xs text-slate-600">
+                                  {deliveryInfo.isError ? (
+                                    <span className="text-red-600">{deliveryInfo.message}</span>
+                                  ) : (
+                                    <span className="text-green-600">{deliveryInfo.message}</span>
+                                  )}
+                                </p>
+                              )}
+                            </div>
+                            <button type="button" onClick={detectDistanceToShop} className="rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
+                              Fetch location
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm text-slate-600">{distanceInfo.error || "We could not calculate the distance right now."}</p>
+                          <button type="button" onClick={detectDistanceToShop} className="mt-3 rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
+                            Fetch location
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* {addresses.length > 0 && (
                   <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
@@ -705,59 +849,89 @@ const Checkout = () => {
                     <input name="customer_phone" placeholder="Phone Number" value={form.customer_phone} onChange={handleChange} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
                   </div>
                 </div>
+                {deliveryMethod === "delivery" && (
+                  <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
+                    <div className="mb-4 flex items-center gap-2">
+                      <FiMapPin className="text-[#0e6827]" />
+                      <h2 className="text-lg font-semibold text-slate-800">Shipping Address</h2>
+                    </div>
+                    <textarea name="street_address" placeholder="Street Address" value={form.street_address} onChange={handleChange} rows={3} className="mb-4 w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <input name="city" placeholder="City" value={form.city} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                      <input name="district" placeholder="District" value={form.district} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                      <select name="state" value={form.state} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100">
+                        <option value="">Select State</option>
+                        {indianStates.map((state, i) => (
+                          <option key={i} value={state}>{state}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                      <input name="zip_code" placeholder="Zip Code" value={form.zip_code} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
+                      <input name="country" value="India" readOnly className="cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 px-4 py-3.5 text-sm text-slate-500 outline-none" />
+                    </div>
+                  </div>
+                )}
 
-                <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-                  <div className="mb-4 flex items-center gap-2">
-                    <FiMapPin className="text-[#0e6827]" />
-                    <h2 className="text-lg font-semibold text-slate-800">Shipping Address</h2>
-                  </div>
-                  <textarea name="street_address" placeholder="Street Address" value={form.street_address} onChange={handleChange} rows={3} className="mb-4 w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <input name="city" placeholder="City" value={form.city} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                    <input name="district" placeholder="District" value={form.district} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                    <select name="state" value={form.state} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100">
-                      <option value="">Select State</option>
-                      {indianStates.map((state, i) => (
-                        <option key={i} value={state}>{state}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="mt-4 grid gap-4 md:grid-cols-2">
-                    <input name="zip_code" placeholder="Zip Code" value={form.zip_code} onChange={handleChange} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none transition focus:border-[#0e6827] focus:bg-white focus:ring-2 focus:ring-green-100" />
-                    <input name="country" value="India" readOnly className="cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 px-4 py-3.5 text-sm text-slate-500 outline-none" />
-                  </div>
-                </div>
+              </div>
 
+              <aside className="lg:sticky lg:top-24 space-y-6">
+                {/* Products */}
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
-                  <div className="mb-4 flex items-center gap-2">
-                    <FiPackage className="text-[#0e6827]" />
-                    <h2 className="text-lg font-semibold text-slate-800">Your Items</h2>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-slate-800">
+                      Products ({checkoutItems.length})
+                    </h2>
                   </div>
-                  <div className="space-y-4">
+
+                  <div className="max-h-[350px] space-y-3 overflow-y-auto pr-2">
                     {checkoutItems.map((item) => (
-                      <div key={item.id} className="flex items-center gap-4 rounded-[1.25rem] border border-gray-100 bg-gray-50 p-3">
-                        <img src={item.image || "/placeholder.png"} alt={item.name} className="h-20 w-16 rounded-xl object-cover" onError={(e) => { e.target.src = "/placeholder.png"; }} />
-                        <div className="flex-1">
-                          <p className="font-semibold text-slate-800">{item.name}</p>
-                          <div className="mt-1 space-y-1 text-sm text-slate-500">
-                            <p>Qty: {item.quantity}</p>
-                            {item.colorName && (
-                              <p className="flex items-center gap-2">
-                                <span className="h-3 w-3 rounded-full border border-gray-400" style={{ backgroundColor: item.colorHex || item.color || "#ccc" }} />
-                                <span className="font-semibold text-slate-700">{item.colorName}</span>
-                              </p>
-                            )}
-                            {item.size && <p>Size: {item.size}</p>}
-                          </div>
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-3 rounded-xl border border-gray-100 p-3 hover:bg-gray-50"
+                      >
+                        <img
+                          src={item.image || "/placeholder.png"}
+                          alt={item.name}
+                          className="h-16 w-16 rounded-lg object-cover"
+                          onError={(e) => (e.target.src = "/placeholder.png")}
+                        />
+
+                        <div className="flex-1 min-w-0">
+                          <h3 className="truncate text-sm font-semibold text-slate-800">
+                            {item.name}
+                          </h3>
+
+                          <p className="mt-1 text-xs text-slate-500">
+                            Qty: {item.quantity}
+                            {item.size && ` • ${item.size}`}
+                          </p>
+
+                          {item.colorName && (
+                            <div className="mt-1 flex items-center gap-2">
+                              <span
+                                className="h-3 w-3 rounded-full border"
+                                style={{
+                                  backgroundColor:
+                                    item.colorHex || item.color || "#ccc",
+                                }}
+                              />
+                              <span className="text-xs text-slate-500">
+                                {item.colorName}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                        <span className="font-semibold text-slate-800">₹{item.price * item.quantity}</span>
+
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-[#0e6827]">
+                            ₹{(item.price * item.quantity).toFixed(2)}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
-
-              <aside className="lg:sticky lg:top-24">
                 <div className="rounded-[1.75rem] border border-green-100 bg-white p-6 shadow-[0_20px_50px_rgba(14,104,39,0.08)]">
 
                   <div className="mt-6 space-y-3 text-sm text-slate-600">
@@ -768,7 +942,7 @@ const Checkout = () => {
                         {shipping === 0 ? "Free" : `₹${shipping.toFixed(2)}`}
                       </span>
                     </div>
-                    {deliveryInfo.message && (
+                    {deliveryMethod === "delivery" && deliveryInfo.message && (
                       <div className={`text-xs ${deliveryInfo.isError ? "text-red-600" : "text-green-600"}`}>
                         {deliveryInfo.message}
                       </div>

@@ -1,4 +1,5 @@
 const { getPool } = require("../config/db");
+const crypto = require("crypto");
 
 const initCouponsTable = async () => {
     const pool = getPool();
@@ -7,6 +8,7 @@ const initCouponsTable = async () => {
         await connection.query(`
             CREATE TABLE IF NOT EXISTS coupons (
                 id INT AUTO_INCREMENT PRIMARY KEY,
+                coupon_id CHAR(36) UNIQUE,
                 code VARCHAR(50) NOT NULL UNIQUE,
                 name VARCHAR(100) NOT NULL,
                 description TEXT,
@@ -24,10 +26,22 @@ const initCouponsTable = async () => {
                 applicable_product_ids JSON,
                 applicable_category_ids JSON,
                 applicable_subcategory_ids JSON,
+                created_by CHAR(36) DEFAULT NULL,
+                updated_by CHAR(36) DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )
         `);
+
+        // Add columns if they don't exist (safe migration)
+        const alterColumns = [
+            "ALTER TABLE coupons ADD COLUMN IF NOT EXISTS coupon_id CHAR(36) UNIQUE",
+            "ALTER TABLE coupons ADD COLUMN IF NOT EXISTS created_by CHAR(36) DEFAULT NULL",
+            "ALTER TABLE coupons ADD COLUMN IF NOT EXISTS updated_by CHAR(36) DEFAULT NULL"
+        ];
+        for (const sql of alterColumns) {
+            try { await connection.query(sql); } catch (e) { /* ignore if exists */ }
+        }
     } catch (e) {
         console.error("Error creating coupons table:", e);
     } finally {
@@ -98,21 +112,26 @@ const createCoupon = async (req, res) => {
         const limitCustomer = usage_limit_per_customer ? parseInt(usage_limit_per_customer) : 1;
         const minOrder = min_order_value ? parseFloat(min_order_value) : 0;
 
+        const coupon_id = crypto.randomUUID();
+        const created_by = req.headers['x-user-id'] || null;
+        const updated_by = req.headers['x-user-id'] || null;
+
         await pool.query(
             `INSERT INTO coupons (
-                code, name, description, discount_type, discount_value, min_order_value,
+                coupon_id, code, name, description, discount_type, discount_value, min_order_value,
                 start_date, expiry_date, usage_limit_global, usage_limit_per_customer,
                 status, coupon_scope, applicable_home_chef_ids, applicable_product_ids,
-                applicable_category_ids, applicable_subcategory_ids
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                applicable_category_ids, applicable_subcategory_ids, created_by, updated_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                code, name, description || '', discount_type, discount_value, minOrder,
+                coupon_id, code, name, description || '', discount_type, discount_value, minOrder,
                 start_date, expiry_date, limitGlobal, limitCustomer,
                 status, coupon_scope,
                 JSON.stringify(applicable_home_chef_ids || []),
                 JSON.stringify(applicable_product_ids || []),
                 JSON.stringify(applicable_category_ids || []),
-                JSON.stringify(applicable_subcategory_ids || [])
+                JSON.stringify(applicable_subcategory_ids || []),
+                created_by, updated_by
             ]
         );
 
@@ -139,12 +158,14 @@ const updateCoupon = async (req, res) => {
         const limitCustomer = usage_limit_per_customer ? parseInt(usage_limit_per_customer) : 1;
         const minOrder = min_order_value ? parseFloat(min_order_value) : 0;
 
+        const updated_by = req.headers['x-user-id'] || null;
+
         await pool.query(
             `UPDATE coupons SET 
                 code = ?, name = ?, description = ?, discount_type = ?, discount_value = ?, min_order_value = ?,
                 start_date = ?, expiry_date = ?, usage_limit_global = ?, usage_limit_per_customer = ?,
                 status = ?, coupon_scope = ?, applicable_home_chef_ids = ?, applicable_product_ids = ?,
-                applicable_category_ids = ?, applicable_subcategory_ids = ?
+                applicable_category_ids = ?, applicable_subcategory_ids = ?, updated_by = ?
             WHERE id = ?`,
             [
                 code, name, description || '', discount_type, discount_value, minOrder,
@@ -154,6 +175,7 @@ const updateCoupon = async (req, res) => {
                 JSON.stringify(applicable_product_ids || []),
                 JSON.stringify(applicable_category_ids || []),
                 JSON.stringify(applicable_subcategory_ids || []),
+                updated_by,
                 id
             ]
         );

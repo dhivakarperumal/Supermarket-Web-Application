@@ -56,7 +56,8 @@ const Category = () => {
         name: "",
         description: "",
         subcategory: "",
-        image: ""
+        image: "",
+        show_in_navbar: true
     });
 
     // ---- Navbar Visibility Popup ----
@@ -135,7 +136,8 @@ const Category = () => {
     };
 
     const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+        setFormData({ ...formData, [e.target.name]: value });
     };
 
     // Image Upload with Compression
@@ -202,6 +204,7 @@ const Category = () => {
             description: formData.description,
             subcategory: subcategories,
             images: formData.image ? [formData.image] : [],
+            show_in_navbar: formData.show_in_navbar
         };
 
         try {
@@ -242,7 +245,7 @@ const Category = () => {
     };
 
     const resetModalForm = () => {
-        setFormData({ catId: "", name: "", description: "", subcategory: "", image: "" });
+        setFormData({ catId: "", name: "", description: "", subcategory: "", image: "", show_in_navbar: true });
         setSubcategories([]);
         setIsEditing(false);
     };
@@ -268,7 +271,8 @@ const Category = () => {
             name: category.name,
             description: category.description,
             subcategory: "",
-            image: Array.isArray(category.images) ? category.images[0] || "" : category.images || ""
+            image: Array.isArray(category.images) ? category.images[0] || "" : category.images || "",
+            show_in_navbar: category.show_in_navbar !== false
         });
         setSubcategories(category.subcategory || []);
         setIsEditing(true);
@@ -610,6 +614,24 @@ const Category = () => {
                                             rows="4"
                                             className="w-full bg-gray-50 border border-gray-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
                                         ></textarea>
+                                    </div>
+                                    
+                                    {/* Toggle: Show in Navbar */}
+                                    <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl p-4">
+                                        <div>
+                                            <h4 className="text-sm font-bold text-slate-800">Show in Navbar</h4>
+                                            <p className="text-xs text-gray-500">Toggle to display this category in the main navigation menu.</p>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                name="show_in_navbar"
+                                                className="sr-only peer"
+                                                checked={formData.show_in_navbar}
+                                                onChange={handleInputChange}
+                                            />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                        </label>
                                     </div>
                                 </div>
 

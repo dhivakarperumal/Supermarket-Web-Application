@@ -2,6 +2,7 @@ import React, { useContext, useState, useRef, useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../PrivateRouter/AuthContext";
 import { StoreContext } from "../../PrivateRouter/StoreContext";
+
 import {
   Menu,
   X,
@@ -10,6 +11,7 @@ import {
   ShoppingCart,
   Package,
   Search,
+  ChevronUp,
   ChevronDown,
   Minus,
   Plus,
@@ -18,12 +20,39 @@ import {
 import logo from "/logo.png";
 import PageContainer from "./PageContainer";
 import api from "../../api";
+import { toast } from "react-hot-toast";
 import { FiHome, FiShoppingBag, FiGrid, FiFileText, FiPhone, FiChevronDown, FiChevronRight, FiTag } from "react-icons/fi";
 
 const Navbar = () => {
 
   const { user, logout } = useContext(AuthContext);
-  const { cart, wishlist, removeFromCart, removeFromWishlist, updateCartQuantity } = useContext(StoreContext);
+  const { cart, wishlist, removeFromCart, removeFromWishlist, updateCartQuantity, budgetMode, budgetAmount, updateBudget } = useContext(StoreContext);
+  const [showBudgetSettings, setShowBudgetSettings] = useState(false);
+
+  const [localBudgetMode, setLocalBudgetMode] = useState(budgetMode);
+  const [localBudgetAmount, setLocalBudgetAmount] = useState(budgetAmount);
+
+  useEffect(() => {
+    setLocalBudgetMode(budgetMode);
+    setLocalBudgetAmount(budgetAmount);
+  }, [budgetMode, budgetAmount]);
+
+  const handleBudgetModeChange = (mode) => {
+    setLocalBudgetMode(mode);
+    if (!mode) {
+      updateBudget(false, localBudgetAmount);
+    } else {
+      updateBudget(true, localBudgetAmount);
+    }
+  };
+
+  const handleBudgetAmountSave = () => {
+    if (localBudgetAmount <= 0) {
+      toast.error("Please enter a valid budget amount");
+      return;
+    }
+    updateBudget(true, localBudgetAmount);
+  };
   const [mobilePages, setMobilePages] = useState(false);
   const navigate = useNavigate();
 
@@ -32,6 +61,7 @@ const Navbar = () => {
   const [logoutConfirm, setLogoutConfirm] = useState(false);
   const [sidebarPanel, setSidebarPanel] = useState(null); // 'cart' | 'wishlist' | null
   const [categories, setCategories] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
   const [categoryMenu, setCategoryMenu] = useState(false);
   const [pagesMenu, setPagesMenu] = useState(false);
   const [mobileCategory, setMobileCategory] = useState(false);
@@ -77,6 +107,7 @@ const Navbar = () => {
     const fetchCategories = async () => {
       try {
         const res = await api.get("/categories");
+        setAllCategories(res.data);
         // Filter: only show categories where show_in_navbar is true (or not set, default visible)
         const visible = res.data.filter(c => c.show_in_navbar !== false);
         setCategories(visible);
@@ -94,6 +125,10 @@ const Navbar = () => {
     const qty = item.quantity || 1;
     return acc + price * qty;
   }, 0);
+
+  const isOverBudget = budgetMode && cartTotal > budgetAmount;
+  const isAtBudget = budgetMode && cartTotal === budgetAmount;
+  const isUnderBudget = budgetMode && cartTotal < budgetAmount;
 
   return (
     <div className="sticky top-0 z-40 bg-white pt-1 border-b border-gray-100">
@@ -297,35 +332,121 @@ const Navbar = () => {
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 flex flex-col min-h-0 m-5">
 
               {sidebarPanel === "cart" ? (
 
+
                 <>
+                  {/* Budget Settings - Always Show */}
+                  <div
+                    className="bg-white rounded-2xl shadow-md border border-green-100 overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+
+                    {/* Header */}
+                    <button
+                      type="button"
+                      onClick={() => setShowBudgetSettings(!showBudgetSettings)}
+                      className="w-full flex items-center justify-between p-4"
+                    >
+                      <h3 className="text-sm font-bold text-slate-900">
+                        Budget Settings
+                      </h3>
+
+                      {showBudgetSettings ? (
+                        <ChevronUp size={20} className="text-[#0e6827]" />
+                      ) : (
+                        <ChevronDown size={20} className="text-[#0e6827]" />
+                      )}
+                    </button>
+
+                    {/* Content */}
+                    {showBudgetSettings && (
+                      <div className="px-4 pb-4 border-t border-green-100">
+
+                        {/* Same Line */}
+                        <div className="mt-4 flex items-center gap-6">
+
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="navBudgetMode"
+                              checked={!localBudgetMode}
+                              onChange={() => handleBudgetModeChange(false)}
+                              className="text-green-600"
+                            />
+                            <span className="text-sm font-medium">
+                              Without Budget
+                            </span>
+                          </label>
+
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="navBudgetMode"
+                              checked={localBudgetMode}
+                              onChange={() => handleBudgetModeChange(true)}
+                              className="text-green-600"
+                            />
+                            <span className="text-sm font-medium">
+                              With Budget
+                            </span>
+                          </label>
+
+                        </div>
+
+                        {localBudgetMode && (
+                          <div className="mt-4 flex gap-2">
+
+                            <div className="relative flex-1">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                                ₹
+                              </span>
+
+                              <input
+                                type="number"
+                                value={localBudgetAmount}
+                                onChange={(e) =>
+                                  setLocalBudgetAmount(Number(e.target.value))
+                                }
+                                placeholder="Enter Budget"
+                                className="w-full rounded-lg border border-gray-200 py-2 pl-7 pr-3 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none"
+                              />
+                            </div>
+
+                            <button
+                              onClick={handleBudgetAmountSave}
+                              className="px-4 rounded-lg bg-[#0e6827] text-white font-semibold hover:bg-[#168637]"
+                            >
+                              Save
+                            </button>
+
+                          </div>
+                        )}
+
+                      </div>
+                    )}
+
+                  </div>
+
+                  {/* Empty Cart */}
                   {cart.length === 0 ? (
-
-                    <div className="flex flex-col items-center justify-center text-center bg-white rounded-3xl shadow-lg p-10 mt-6">
-
+                    <div className="flex flex-col items-center justify-center text-center bg-white rounded-3xl shadow-lg p-10">
                       <div className="w-24 h-24 rounded-full bg-green-50 flex items-center justify-center mb-6">
-
                         <ShoppingCart
                           size={42}
                           className="text-[#0e6827]"
                         />
-
                       </div>
 
                       <h3 className="text-lg font-bold text-[#0e6827]">
-
                         Your Cart is Empty
-
                       </h3>
 
                       <p className="text-sm text-gray-500 mt-2 leading-6">
-
                         Looks like you haven't added anything yet.
                         Start shopping and fill your cart with fresh groceries.
-
                       </p>
 
                       <button
@@ -337,12 +458,19 @@ const Navbar = () => {
                       >
                         Continue Shopping
                       </button>
-
                     </div>
+
 
                   ) : (
                     <>
-                      <div className="flex-1 overflow-y-auto p-5 space-y-5">
+                      <div
+                        className="flex-1 overflow-y-auto p-5 space-y-5"
+                        onClick={() => {
+                          if (showBudgetSettings) {
+                            setShowBudgetSettings(false);
+                          }
+                        }}
+                      >
 
                         {/* Cart Items Start Here */}
 
@@ -494,8 +622,6 @@ const Navbar = () => {
                           );
                         })}
 
-
-
                       </div>
 
                       {/* Fixed Bottom */}
@@ -515,16 +641,41 @@ const Navbar = () => {
 
                           </div>
 
+                          {budgetMode && (
+                            <div className="mt-4 bg-white/10 rounded-xl p-3 border border-white/20">
+                              <div className="flex justify-between text-xs mb-2">
+                                <span className="font-medium text-green-100">Budget Usage</span>
+                                <span className="font-bold text-white">₹{cartTotal} / ₹{budgetAmount}</span>
+                              </div>
+                              <div className="h-1.5 w-full bg-black/20 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-300 ${isOverBudget ? 'bg-red-400' : isAtBudget ? 'bg-amber-400' : 'bg-white'}`}
+                                  style={{ width: `${Math.min((cartTotal / (budgetAmount || 1)) * 100, 100)}%` }}
+                                />
+                              </div>
+                              <div className="mt-2 text-[10px] font-medium leading-tight">
+                                {isOverBudget ? (
+                                  <span className="text-red-300">You have exceeded your budget by ₹{cartTotal - budgetAmount}. Please remove items.</span>
+                                ) : isAtBudget ? (
+                                  <span className="text-amber-300">You have reached your budget limit.</span>
+                                ) : (
+                                  <span className="text-green-200">You can still buy items worth ₹{budgetAmount - cartTotal}.</span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
                           <button
                             type="button"
                             onClick={() => {
                               setSidebarPanel(null);
                               navigate("/checkout");
                             }}
-                            className="mt-4 w-full rounded-xl bg-[#ffc107] py-3 text-sm font-bold text-black hover:bg-yellow-400 transition"
+                            disabled={isOverBudget}
+                            className={`mt-4 w-full rounded-xl py-3 text-sm font-bold transition ${isOverBudget ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-[#ffc107] text-black hover:bg-yellow-400'}`}
                           >
                             Proceed to Checkout →
-                          </button> 
+                          </button>
 
                         </div>
 
@@ -706,7 +857,7 @@ const Navbar = () => {
 
                   {categoryMenu && (
                     <div className="absolute top-full left-0 w-64 bg-white border border-gray-200 shadow-xl overflow-hidden z-50">
-                      {categories.length > 0 ? categories.map((cat) => (
+                      {allCategories.length > 0 ? allCategories.map((cat) => (
                         <NavLink
                           key={cat.id}
                           to={`/category/${cat.slug || cat.name}`}
@@ -798,8 +949,8 @@ const Navbar = () => {
 
               {/* Hot Deals */}
               <div className="flex justify-end">
-                <Link to="/shop" className="bg-[#e53935] text-white flex items-center gap-1.5 px-4 py-1.5 rounded text-[13px] font-bold hover:bg-red-700 transition shadow-sm h-8">
-                  Hot Deals <span className="text-sm">🔥</span>
+                <Link to="/combo" className="bg-[#e53935] text-white flex items-center gap-1.5 px-4 py-1.5 rounded text-[13px] font-bold hover:bg-red-700 transition shadow-sm h-8">
+                  Combo <span className="text-sm">🔥</span>
                 </Link>
               </div>
 
@@ -810,19 +961,73 @@ const Navbar = () => {
 
       {/* Logout Modal */}
       {logoutConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-xl shadow-xl w-[320px] p-6 text-center">
-            <h2 className="text-lg font-bold text-gray-800 mb-2">Confirm Logout</h2>
-            <p className="text-sm text-gray-500 mb-6">Are you sure you want to logout?</p>
-            <div className="flex justify-center gap-3">
-              <button onClick={() => setLogoutConfirm(false)} className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-50 transition">
-                Cancel
-              </button>
-              <button onClick={confirmLogout} className="px-5 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition">
-                Logout
-              </button>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+
+          <div className="relative w-[92%] max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl animate-[zoomIn_.25s_ease]">
+
+            {/* Top Yellow Line */}
+            <div className="h-1.5 bg-[#ffc107]" />
+
+            {/* Header */}
+            <div className="bg-[#0e6827] px-6 py-5 text-white">
+
+              <div className="flex items-center gap-4">
+
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10">
+                  <User size={28} />
+                </div>
+
+                <div>
+                  <h2 className="text-xl font-bold">
+                    Confirm Logout
+                  </h2>
+
+                  <p className="mt-1 text-sm text-green-100">
+                    You are about to sign out of your account.
+                  </p>
+                </div>
+
+              </div>
+
             </div>
+
+            {/* Body */}
+            <div className="px-6 py-7 text-center">
+
+              <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-50">
+                <User size={36} className="text-red-500" />
+              </div>
+
+              <h3 className="text-xl font-bold text-gray-800">
+                Are you sure?
+              </h3>
+
+              <p className="mt-3 text-sm leading-6 text-gray-500">
+                You'll need to sign in again to access your account and continue shopping.
+              </p>
+
+              <div className="mt-8 flex gap-4">
+
+                <button
+                  onClick={() => setLogoutConfirm(false)}
+                  className="flex-1 rounded-xl border border-gray-200 bg-white py-3 font-semibold text-gray-700 transition hover:border-[#0e6827] hover:bg-green-50 hover:text-[#0e6827]"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={confirmLogout}
+                  className="flex-1 rounded-xl bg-[#ffc107] py-3 font-bold text-black shadow-lg transition hover:scale-105 hover:bg-yellow-400"
+                >
+                  Logout
+                </button>
+
+              </div>
+
+            </div>
+
           </div>
+
         </div>
       )}
 
@@ -909,7 +1114,7 @@ const Navbar = () => {
                     All Categories
                   </div>
                   <div className="p-2">
-                    {categories.map((cat) => (
+                    {allCategories.map((cat) => (
                       <NavLink
                         key={cat.id}
                         to={`/category/${cat.slug || cat.name}`}

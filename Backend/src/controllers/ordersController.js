@@ -1,4 +1,5 @@
 const { getPool } = require("../config/db");
+const crypto = require("crypto");
 
 const initOrdersTable = async () => {
     const pool = getPool();
@@ -8,6 +9,7 @@ const initOrdersTable = async () => {
             CREATE TABLE IF NOT EXISTS orders (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 order_id VARCHAR(50) NOT NULL UNIQUE,
+                unique_id CHAR(36) UNIQUE,
                 user_id VARCHAR(100) DEFAULT NULL,
                 customer_name VARCHAR(255) NOT NULL,
                 customer_phone VARCHAR(50) NOT NULL,
@@ -19,6 +21,8 @@ const initOrdersTable = async () => {
                 shipping_address JSON,
                 total_amount DECIMAL(10, 2) NOT NULL,
                 status VARCHAR(50) DEFAULT 'Paid',
+                created_by CHAR(36) DEFAULT NULL,
+                updated_by CHAR(36) DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )
@@ -47,7 +51,10 @@ const initOrdersTable = async () => {
             "ALTER TABLE orders ADD COLUMN IF NOT EXISTS distance_km DECIMAL(8, 2) DEFAULT NULL",
             "ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_code VARCHAR(100) DEFAULT NULL",
             "ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_discount DECIMAL(10, 2) DEFAULT 0.00",
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS subtotal_before_discount DECIMAL(10, 2) DEFAULT NULL"
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS subtotal_before_discount DECIMAL(10, 2) DEFAULT NULL",
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS unique_id CHAR(36) UNIQUE",
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS created_by CHAR(36) DEFAULT NULL",
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS updated_by CHAR(36) DEFAULT NULL"
         ];
         for (const sql of extraAlters) {
             try { await connection.query(sql); } catch (e) { /* ignore if exists */ }
@@ -116,12 +123,17 @@ const createOrder = async (req, res) => {
             shippingData = JSON.stringify({ street: street_address, city, district, state, zip: zip_code, country: country || 'India' });
         }
 
+        const unique_id = crypto.randomUUID();
+        const created_by = req.headers['x-user-id'] || null;
+        const updated_by = req.headers['x-user-id'] || null;
+
         await connection.beginTransaction();
 
         await connection.query(`
-            INSERT INTO orders (order_id, user_id, customer_name, customer_phone, customer_email, order_type, payment_method, payment_status, payment_id, shipping_address, total_amount, status, delivery_charge, distance_km, coupon_code, coupon_discount, subtotal_before_discount)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO orders (unique_id, order_id, user_id, customer_name, customer_phone, customer_email, order_type, payment_method, payment_status, payment_id, shipping_address, total_amount, status, delivery_charge, distance_km, coupon_code, coupon_discount, subtotal_before_discount, created_by, updated_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
+            unique_id,
             order_id,
             user_id || null,
             customer_name,
@@ -138,7 +150,9 @@ const createOrder = async (req, res) => {
             distance_km || null,
             coupon_code || null,
             coupon_discount || 0,
-            subtotal_before_discount || null
+            subtotal_before_discount || null,
+            created_by,
+            updated_by
         ]);
 
         if (items && items.length > 0) {
@@ -314,6 +328,11 @@ const updateOrderStatus = async (req, res) => {
             }
         }
         if (sets.length === 0) return res.status(400).json({ message: "No valid fields to update" });
+        
+        const updated_by = req.headers['x-user-id'] || null;
+        sets.push("updated_by = ?");
+        vals.push(updated_by);
+        
         vals.push(id);
         const sql = `UPDATE orders SET ${sets.join(", ")}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
         const [result] = await pool.query(sql, vals);

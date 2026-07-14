@@ -10,10 +10,91 @@ const createDeliveryChargesTable = async (connection) => {
       free_delivery_minimum_order_amount DECIMAL(10,2) DEFAULT 0.00,
       per_km_delivery_charge DECIMAL(10,2) DEFAULT 0.00,
       maximum_delivery_distance DECIMAL(10,2) DEFAULT 0.00,
+      free_delivery_km DECIMAL(10,2) DEFAULT 0.00,
       delivery_area_scope VARCHAR(50) DEFAULT 'City',
       enable_express_delivery TINYINT(1) DEFAULT 0,
       express_delivery_charge DECIMAL(10,2) DEFAULT 0.00,
       estimated_delivery_time VARCHAR(100) DEFAULT '',
+      created_by VARCHAR(36) DEFAULT NULL,
+      updated_by VARCHAR(36) DEFAULT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )
+  `);
+
+  try {
+    await connection.query(`
+      ALTER TABLE delivery_charges
+      ADD COLUMN IF NOT EXISTS free_delivery_km DECIMAL(10,2) DEFAULT 0.00
+    `);
+  } catch (err) {
+    console.warn('delivery_charges free_delivery_km migration skipped:', err?.message || err);
+  }
+};
+
+const createReceiptSettingsTable = async (connection) => {
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS receipt_settings (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      store_name VARCHAR(255) DEFAULT NULL,
+      address TEXT DEFAULT NULL,
+      phone VARCHAR(50) DEFAULT NULL,
+      email VARCHAR(255) DEFAULT NULL,
+      gst VARCHAR(50) DEFAULT NULL,
+      fssai VARCHAR(50) DEFAULT NULL,
+      invoice_prefix VARCHAR(50) DEFAULT NULL,
+      invoice_format VARCHAR(50) DEFAULT NULL,
+      currency VARCHAR(10) DEFAULT NULL,
+      date_format VARCHAR(20) DEFAULT NULL,
+      tax_display TINYINT(1) DEFAULT 1,
+      discount_display TINYINT(1) DEFAULT 1,
+      barcode_display TINYINT(1) DEFAULT 1,
+      qr_code_display TINYINT(1) DEFAULT 1,
+      footer_message TEXT DEFAULT NULL,
+      thank_you_message TEXT DEFAULT NULL,
+      return_policy TEXT DEFAULT NULL,
+      store_logo LONGTEXT DEFAULT NULL,
+      receipt_id VARCHAR(36) DEFAULT NULL,
+      created_by VARCHAR(36) DEFAULT NULL,
+      updated_by VARCHAR(36) DEFAULT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )
+  `);
+
+  try {
+    await connection.query(`
+      ALTER TABLE receipt_settings
+      ADD COLUMN IF NOT EXISTS receipt_id VARCHAR(36) DEFAULT NULL,
+      MODIFY COLUMN store_logo LONGTEXT DEFAULT NULL
+    `);
+  } catch (err) {
+    console.warn('receipt_settings alter skipped:', err?.message || err);
+  }
+};
+
+const createPaymentIntegrationTable = async (connection) => {
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS payment_integration (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      payment_id VARCHAR(36) UNIQUE NOT NULL,
+      primary_gateway VARCHAR(100) DEFAULT NULL,
+      cash_support TINYINT(1) DEFAULT 1,
+      upi_support TINYINT(1) DEFAULT 1,
+      upi_id VARCHAR(255) DEFAULT NULL,
+      credit_debit_card TINYINT(1) DEFAULT 1,
+      merchant_id VARCHAR(255) DEFAULT NULL,
+      api_key VARCHAR(255) DEFAULT NULL,
+      secret_key VARCHAR(255) DEFAULT NULL,
+      webhook_url VARCHAR(255) DEFAULT NULL,
+      callback_url VARCHAR(255) DEFAULT NULL,
+      mode VARCHAR(50) DEFAULT 'Live',
+      auto_payment_verification TINYINT(1) DEFAULT 1,
+      refund_support TINYINT(1) DEFAULT 1,
+      partial_payment TINYINT(1) DEFAULT 0,
+      wallet_payment TINYINT(1) DEFAULT 1,
+      cod TINYINT(1) DEFAULT 1,
+      emi_support TINYINT(1) DEFAULT 0,
       created_by VARCHAR(36) DEFAULT NULL,
       updated_by VARCHAR(36) DEFAULT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -70,6 +151,8 @@ const createUsersTable = async () => {
         role ENUM('admin', 'user', 'manager', 'dealer', 'store_manager', 'assistant_manager', 'cashier', 'sales_executive', 'inventory_manager', 'stock_keeper', 'billing_staff', 'customer_service', 'delivery_staff') NOT NULL DEFAULT 'user',
         created_by CHAR(36) NOT NULL,
         updated_by CHAR(36) NOT NULL,
+        budget_mode TINYINT(1) DEFAULT 0,
+        budget_amount DECIMAL(10,2) DEFAULT 0.00,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
@@ -143,10 +226,14 @@ const createUsersTable = async () => {
     await connection.query(`
       ALTER TABLE users
       ADD COLUMN IF NOT EXISTS name VARCHAR(255) DEFAULT NULL,
-      ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) DEFAULT NULL
+      ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) DEFAULT NULL,
+      ADD COLUMN IF NOT EXISTS budget_mode TINYINT(1) DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS budget_amount DECIMAL(10,2) DEFAULT 0.00
     `);
 
     await createDeliveryChargesTable(connection);
+    await createReceiptSettingsTable(connection);
+    await createPaymentIntegrationTable(connection);
     // Fix older rows where created_by was stored as a token/string instead of a UUID
     try {
       await connection.query(`
@@ -173,4 +260,6 @@ const createUsersTable = async () => {
 module.exports = {
   createUsersTable,
   createDeliveryChargesTable,
+  createReceiptSettingsTable,
+  createPaymentIntegrationTable,
 };

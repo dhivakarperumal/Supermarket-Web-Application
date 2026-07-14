@@ -9,8 +9,10 @@ import {
   ChevronDown,
 } from "lucide-react";
 import PageContainer from "./PageContainer";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
+  const navigate = useNavigate();
   return (
     <div className="hidden md:block bg-[#0b511d] text-white text-[13px] border-b border-green-800">
       <PageContainer>
@@ -36,7 +38,7 @@ const Header = () => {
               <span>Customer Support</span>
             </button>
 
-            <button className="flex items-center gap-2 hover:text-yellow-300 transition">
+            <button onClick={() => navigate('/ordersmain')} className="flex items-center gap-2 hover:text-yellow-300 transition">
               <PackageCheck size={16} />
               <span>Track Order</span>
             </button>

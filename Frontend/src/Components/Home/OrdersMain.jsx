@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Package, Truck, CheckCircle, Clock } from "lucide-react";
+import { Package, Truck, CheckCircle, Clock, XCircle } from "lucide-react";
 import { AuthContext } from "../../PrivateRouter/AuthContext";
 import api from "../../api";
 import { Printer } from "lucide-react";
 import PageContainer from "../CommenComponents/PageContainer";
+import { toast } from "react-hot-toast";
 
 const StatusBadge = ({ status }) => {
 
@@ -213,6 +214,24 @@ ${itemsHtml}
   const [showPopup, setShowPopup] = useState(false);
   const [loadingOrder, setLoadingOrder] = useState(false);
   const [address, setAddress] = useState(null);
+  const [trackOrderId, setTrackOrderId] = useState("");
+
+  const handleTrackOrder = () => {
+    if (!trackOrderId.trim()) {
+      toast.error("Please enter an Order ID");
+      return;
+    }
+    
+    const foundOrder = orders.find(
+      (o) => o.id.toString() === trackOrderId.trim() || o.order_id === trackOrderId.trim()
+    );
+
+    if (foundOrder) {
+      openOrderDetails(foundOrder);
+    } else {
+      toast.error("Order not found or invalid Order ID");
+    }
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -241,9 +260,6 @@ ${itemsHtml}
       const orderRes = await api.get(`/orders/${order.id}`);
       setSelectedOrder(orderRes.data);
 
-      const addressRes = await api.get(`/addresses/${order.id}`);
-      setAddress(addressRes.data);
-
       setShowPopup(true);
     } catch (error) {
       console.error("Failed to load order details", error);
@@ -256,7 +272,25 @@ ${itemsHtml}
     <div className="min-h-screen bg-[#FDFBF7] py-10">
       <PageContainer>
         <div className=" space-y-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
+            
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Enter Order ID"
+                className="w-full md:w-56 px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                value={trackOrderId}
+                onChange={(e) => setTrackOrderId(e.target.value)}
+              />
+              <button
+                onClick={handleTrackOrder}
+                className="bg-primary text-white px-5 py-2 rounded-xl font-semibold hover:opacity-90 transition whitespace-nowrap cursor-pointer"
+              >
+                Track Order
+              </button>
+            </div>
+          </div>
 
           {orders.length === 0 ? (
             <p className="text-gray-500">No orders found</p>
@@ -386,6 +420,91 @@ ${itemsHtml}
 
             <div className="p-8 overflow-y-auto space-y-8">
 
+              {/* ORDER TRACKING TIMELINE */}
+              <div>
+                <h3 className="text-lg font-bold text-primary-dark mb-4">
+                  Order Tracking
+                </h3>
+                <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                  <div className="relative">
+                    {/* Timeline Line */}
+                    <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gray-200"></div>
+
+                    {/* Steps */}
+                    <div className="space-y-6">
+                      {selectedOrder.status?.toLowerCase() === "cancelled" ? (
+                        <div className="relative flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full flex items-center justify-center z-10 bg-red-100 text-red-600">
+                            <XCircle size={20} />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-red-600">Cancelled</h4>
+                            <p className="text-xs text-red-500">Order was cancelled</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {/* Step 1: Order Placed */}
+                          <div className="relative flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 bg-green-100 text-[#0e6827]`}>
+                              <Package size={20} />
+                            </div>
+                            <div>
+                              <h4 className={`font-bold text-gray-800`}>Order Placed</h4>
+                              <p className="text-xs text-gray-500">We have received your order</p>
+                            </div>
+                          </div>
+
+                          {/* Step 2: Packing */}
+                          <div className="relative flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${["packing", "shipping", "out for delivery", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                              <Package size={20} />
+                            </div>
+                            <div>
+                              <h4 className={`font-bold ${["packing", "shipping", "out for delivery", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "text-gray-800" : "text-gray-400"}`}>Packing</h4>
+                              <p className="text-xs text-gray-500">Your order is being packed</p>
+                            </div>
+                          </div>
+
+                          {/* Step 3: Shipping */}
+                          <div className="relative flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${["shipping", "out for delivery", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                              <Truck size={20} />
+                            </div>
+                            <div>
+                              <h4 className={`font-bold ${["shipping", "out for delivery", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "text-gray-800" : "text-gray-400"}`}>Shipping</h4>
+                              <p className="text-xs text-gray-500">Your order is on the way</p>
+                            </div>
+                          </div>
+
+                          {/* Step 4: Out for Delivery */}
+                          <div className="relative flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${["out for delivery", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                              <Truck size={20} />
+                            </div>
+                            <div>
+                              <h4 className={`font-bold ${["out for delivery", "delivered"].includes(selectedOrder.status?.toLowerCase()) ? "text-gray-800" : "text-gray-400"}`}>Out for Delivery</h4>
+                              <p className="text-xs text-gray-500">Your order is out for delivery</p>
+                            </div>
+                          </div>
+
+                          {/* Step 5: Delivered */}
+                          <div className="relative flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 ${selectedOrder.status?.toLowerCase() === "delivered" ? "bg-green-100 text-[#0e6827]" : "bg-gray-100 text-gray-400"}`}>
+                              <CheckCircle size={20} />
+                            </div>
+                            <div>
+                              <h4 className={`font-bold ${selectedOrder.status?.toLowerCase() === "delivered" ? "text-gray-800" : "text-gray-400"}`}>Delivered</h4>
+                              <p className="text-xs text-gray-500">Order has been delivered</p>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* ORDER SUMMARY CARD */}
               <div className="print-area bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
 
@@ -431,6 +550,26 @@ ${itemsHtml}
                     </span>
                   </div>
 
+                  {selectedOrder.tracking_number && (
+                    <div className="flex justify-between border-b border-primary/10 pb-2">
+                      <span className="text-gray-500">Tracking ID</span>
+                      <span className="font-semibold text-primary-dark">
+                        {selectedOrder.tracking_number}
+                      </span>
+                    </div>
+                  )}
+
+                  {selectedOrder.courier_name && (
+                    <div className="flex justify-between border-b border-primary/10 pb-2">
+                      <span className="text-gray-500">Courier</span>
+                      <span className="font-semibold text-primary-dark">
+                        {selectedOrder.courier_name}
+                      </span>
+                    </div>
+                  )}
+
+
+
                   <div className="flex justify-between border-b border-primary/10 pb-2">
                     <span className="text-gray-500">Phone</span>
                     <span className="font-semibold">
@@ -444,6 +583,8 @@ ${itemsHtml}
                       ₹{selectedOrder.total_amount}
                     </span>
                   </div>
+
+
 
                 </div>
 
@@ -527,31 +668,78 @@ ${itemsHtml}
                     </h3>
 
                     <div className="border border-gray-100 rounded-2xl p-6 bg-gradient-to-br from-primary/5 to-transparent shadow-sm">
-                      {address ? (
-                        <div className="text-sm text-gray-700 space-y-1">
-                          <p className="font-semibold">
-                            {address.customer_name}
-                          </p>
+                      {selectedOrder ? (() => {
+                        let addr = selectedOrder.shipping_address;
+                        if (typeof addr === 'string') {
+                          try { addr = JSON.parse(addr); } catch (e) { }
+                        }
+                        const cName = addr?.customer_name || selectedOrder.customer_name;
+                        const sAddr = addr?.street_address || selectedOrder.street_address;
+                        const city = addr?.city || selectedOrder.city;
+                        const dist = addr?.district || selectedOrder.district;
+                        const state = addr?.state || selectedOrder.state;
+                        const zip = addr?.zip_code || selectedOrder.zip_code;
+                        const country = addr?.country || selectedOrder.country;
+                        const phone = addr?.customer_phone || selectedOrder.customer_phone;
+                        const email = addr?.customer_email || selectedOrder.customer_email;
 
-                          <p>{address.street_address}</p>
-
-                          <p>
-                            {address.city}, {address.district}
-                          </p>
-
-                          <p>
-                            {address.state} - {address.zip_code}
-                          </p>
-
-                          <p>{address.country}</p>
-
-                          <p>Phone: {address.customer_phone}</p>
-
-                          <p>Email: {address.customer_email}</p>
-                        </div>
-                      ) : (
+                        return (
+                          <div className="text-sm text-gray-700 space-y-1">
+                            <p className="font-semibold">{cName || 'N/A'}</p>
+                            <p>{sAddr}</p>
+                            <p>{city}, {dist}</p>
+                            <p>{state} {zip ? `- ${zip}` : ''}</p>
+                            <p>{country}</p>
+                            <p>Phone: {phone}</p>
+                            <p>Email: {email}</p>
+                          </div>
+                        );
+                      })() : (
                         <p className="text-gray-500">Address not available</p>
                       )}
+                    </div>
+                  </div>
+
+
+
+                  {/* EXPANDED ORDER SUMMARY */}
+                  <div>
+                    <h3 className="text-lg font-bold text-primary-dark mb-4">
+                      Expanded Order Summary
+                    </h3>
+                    <div className="bg-[#f8faec] border border-green-100 rounded-2xl p-6 shadow-sm">
+                      <div className="space-y-3 text-sm text-gray-700">
+
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">Subtotal (Before Discount)</span>
+                          <span className="font-bold">₹{selectedOrder.subtotal_before_discount || selectedOrder.total_amount}</span>
+                        </div>
+
+                        {selectedOrder.coupon_code && (
+                          <div className="flex justify-between items-center text-green-700">
+                            <span className="font-medium">Coupon Discount ({selectedOrder.coupon_code})</span>
+                            <span className="font-bold">-₹{selectedOrder.coupon_discount || 0}</span>
+                          </div>
+                        )}
+
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">Delivery Method</span>
+                          <span className="font-bold capitalize">{selectedOrder.delivery_method || 'delivery'}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center text-gray-600">
+                          <span className="font-medium">Delivery Charges</span>
+                          <span className="font-bold">
+                            {selectedOrder.delivery_charge > 0 ? `₹${selectedOrder.delivery_charge}` : "Free"}
+                          </span>
+                        </div>
+
+                      </div>
+
+                      <div className="mt-4 pt-4 border-t border-green-200 flex justify-between items-center">
+                        <span className="text-lg font-bold text-primary-dark">Total Paid</span>
+                        <span className="text-xl font-bold text-[#0e6827]">₹{selectedOrder.total_amount}</span>
+                      </div>
                     </div>
                   </div>
 

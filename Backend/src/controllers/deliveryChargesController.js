@@ -28,6 +28,7 @@ const ensureDeliveryChargesTable = async () => {
         free_delivery_minimum_order_amount DECIMAL(10,2) DEFAULT 0.00,
         per_km_delivery_charge DECIMAL(10,2) DEFAULT 0.00,
         maximum_delivery_distance DECIMAL(10,2) DEFAULT 0.00,
+        free_delivery_km DECIMAL(10,2) DEFAULT 0.00,
         delivery_area_scope VARCHAR(50) DEFAULT 'City',
         enable_express_delivery TINYINT(1) DEFAULT 0,
         express_delivery_charge DECIMAL(10,2) DEFAULT 0.00,
@@ -38,6 +39,13 @@ const ensureDeliveryChargesTable = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
     `);
+    
+    try {
+      await connection.query(`
+        ALTER TABLE delivery_charges
+        ADD COLUMN IF NOT EXISTS free_delivery_km DECIMAL(10,2) DEFAULT 0.00
+      `);
+    } catch (err) {}
   } finally {
     connection.release();
   }
@@ -57,6 +65,7 @@ exports.getDeliveryCharges = async (req, res) => {
       free_delivery_minimum_order_amount: 0,
       per_km_delivery_charge: 0,
       maximum_delivery_distance: 0,
+      free_delivery_km: 0,
       delivery_area_scope: "City",
       enable_express_delivery: 0,
       express_delivery_charge: 0,
@@ -88,6 +97,7 @@ exports.createOrUpdateDeliveryCharges = async (req, res) => {
       payload.free_delivery_minimum_order_amount ?? payload.freeDeliveryMinimumOrderAmount ?? 0;
     const perKmDeliveryCharge = payload.per_km_delivery_charge ?? payload.perKmDeliveryCharge ?? 0;
     const maximumDeliveryDistance = payload.maximum_delivery_distance ?? payload.maximumDeliveryDistance ?? 0;
+    const freeDeliveryKm = payload.free_delivery_km ?? payload.freeDeliveryKm ?? 0;
     const deliveryAreaScope = payload.delivery_area_scope ?? payload.deliveryAreaScope ?? "City";
     const enableExpressDelivery = payload.enable_express_delivery ?? payload.enableExpressDelivery ? 1 : 0;
     const expressDeliveryCharge = payload.express_delivery_charge ?? payload.expressDeliveryCharge ?? 0;
@@ -126,6 +136,7 @@ exports.createOrUpdateDeliveryCharges = async (req, res) => {
             free_delivery_minimum_order_amount = ?,
             per_km_delivery_charge = ?,
             maximum_delivery_distance = ?,
+            free_delivery_km = ?,
             delivery_area_scope = ?,
             enable_express_delivery = ?,
             express_delivery_charge = ?,
@@ -138,6 +149,7 @@ exports.createOrUpdateDeliveryCharges = async (req, res) => {
             freeDeliveryMinimumOrderAmount,
             perKmDeliveryCharge,
             maximumDeliveryDistance,
+            freeDeliveryKm,
             deliveryAreaScope,
             enableExpressDelivery,
             expressDeliveryCharge,
@@ -162,18 +174,20 @@ exports.createOrUpdateDeliveryCharges = async (req, res) => {
           free_delivery_minimum_order_amount,
           per_km_delivery_charge,
           maximum_delivery_distance,
+          free_delivery_km,
           delivery_area_scope,
           enable_express_delivery,
           express_delivery_charge,
           estimated_delivery_time,
           created_by,
           updated_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
         [
           baseDeliveryCharge,
           freeDeliveryMinimumOrderAmount,
           perKmDeliveryCharge,
           maximumDeliveryDistance,
+          freeDeliveryKm,
           deliveryAreaScope,
           enableExpressDelivery,
           expressDeliveryCharge,

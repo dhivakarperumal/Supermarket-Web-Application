@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast, Toaster } from "react-hot-toast";
+import imageCompression from "browser-image-compression";
+import api from "../../api";
 import "./Settings.css";
 import { 
   Printer, 
@@ -22,20 +25,20 @@ import {
   Ticket
 } from "lucide-react";
 
-const Toggle = ({ label, defaultChecked = false }) => (
+const Toggle = ({ label, defaultChecked = false, checked, onChange }) => (
   <div className="toggle-switch">
     <span className="toggle-label">{label}</span>
     <label className="switch">
-      <input type="checkbox" defaultChecked={defaultChecked} />
+      <input type="checkbox" defaultChecked={defaultChecked} checked={checked} onChange={onChange} />
       <span className="slider"></span>
     </label>
   </div>
 );
 
-const Input = ({ label, type = "text", placeholder }) => (
+const Input = ({ label, type = "text", placeholder, value, onChange, accept }) => (
   <div className="form-group">
     <label className="form-label">{label}</label>
-    <input type={type} className="form-input" placeholder={placeholder} />
+    <input type={type} className="form-input" placeholder={placeholder} value={value} onChange={onChange} accept={accept} />
   </div>
 );
 
@@ -79,7 +82,174 @@ const Settings = () => {
     { id: 'dev2', name: 'TVS RP3150', mac: 'A1:B2:C3:D4:E5:F6' }
   ]);
 
-  const handleSave = () => {
+  const [receiptSettings, setReceiptSettings] = useState({
+    storeName: '',
+    address: '',
+    phone: '',
+    email: '',
+    gst: '',
+    fssai: '',
+    invoicePrefix: '',
+    invoiceFormat: '',
+    currency: '',
+    dateFormat: 'DD/MM/YYYY',
+    taxDisplay: true,
+    discountDisplay: true,
+    barcodeDisplay: true,
+    qrCodeDisplay: true,
+    footerMessage: 'Visit again!',
+    thankYouMessage: 'Thank you for shopping with us.',
+    returnPolicy: 'No returns after 7 days.',
+    storeLogo: ''
+  });
+
+  const [paymentSettings, setPaymentSettings] = useState({
+    primaryGateway: 'Razorpay',
+    cashSupport: true,
+    upiSupport: true,
+    upiId: '',
+    creditDebitCard: true,
+    merchantId: '',
+    apiKey: '',
+    secretKey: '',
+    webhookUrl: '',
+    callbackUrl: '',
+    mode: 'Live',
+    autoPaymentVerification: true,
+    refundSupport: true,
+    partialPayment: false,
+    walletPayment: true,
+    cod: true,
+    emiSupport: false
+  });
+
+  const updatePaymentSetting = (key, value) => {
+    setPaymentSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  useEffect(() => {
+    fetchReceiptSettings();
+    fetchPaymentSettings();
+  }, []);
+
+  const fetchPaymentSettings = async () => {
+    try {
+      const response = await api.get("/settings/payment");
+      if (response.data?.success && response.data?.data) {
+        if (Object.keys(response.data.data).length > 0) {
+          const dbData = response.data.data;
+          setPaymentSettings({
+            primaryGateway: dbData.primary_gateway || 'Razorpay',
+            cashSupport: dbData.cash_support === 1,
+            upiSupport: dbData.upi_support === 1,
+            upiId: dbData.upi_id || '',
+            creditDebitCard: dbData.credit_debit_card === 1,
+            merchantId: dbData.merchant_id || '',
+            apiKey: dbData.api_key || '',
+            secretKey: dbData.secret_key || '',
+            webhookUrl: dbData.webhook_url || '',
+            callbackUrl: dbData.callback_url || '',
+            mode: dbData.mode || 'Live',
+            autoPaymentVerification: dbData.auto_payment_verification === 1,
+            refundSupport: dbData.refund_support === 1,
+            partialPayment: dbData.partial_payment === 1,
+            walletPayment: dbData.wallet_payment === 1,
+            cod: dbData.cod === 1,
+            emiSupport: dbData.emi_support === 1
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching payment settings:", error);
+      toast.error("Failed to load payment settings");
+    }
+  };
+
+  const fetchReceiptSettings = async () => {
+    try {
+      const response = await api.get("/settings/receipt");
+      if (response.data?.success && response.data?.data) {
+        if (Object.keys(response.data.data).length > 0) {
+          const dbData = response.data.data;
+          setReceiptSettings({
+            storeName: dbData.store_name || '',
+            address: dbData.address || '',
+            phone: dbData.phone || '',
+            email: dbData.email || '',
+            gst: dbData.gst || '',
+            fssai: dbData.fssai || '',
+            invoicePrefix: dbData.invoice_prefix || '',
+            invoiceFormat: dbData.invoice_format || '',
+            currency: dbData.currency || '',
+            dateFormat: dbData.date_format || 'DD/MM/YYYY',
+            taxDisplay: dbData.tax_display === 1,
+            discountDisplay: dbData.discount_display === 1,
+            barcodeDisplay: dbData.barcode_display === 1,
+            qrCodeDisplay: dbData.qr_code_display === 1,
+            footerMessage: dbData.footer_message || '',
+            thankYouMessage: dbData.thank_you_message || '',
+            returnPolicy: dbData.return_policy || '',
+            storeLogo: dbData.store_logo || ''
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching receipt settings:", error);
+      toast.error("Failed to load receipt settings");
+    }
+  };
+
+  const updateReceiptSetting = (key, value) => {
+    setReceiptSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleLogoUpload = async (e) => {
+    try {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const options = {
+        maxSizeMB: 0.1,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+      };
+      const compressed = await imageCompression(file, options);
+      const imageUrl = await imageCompression.getDataUrlFromFile(compressed);
+      setReceiptSettings((prev) => ({ ...prev, storeLogo: imageUrl }));
+      toast.success("Logo uploaded successfully. Don't forget to save settings.");
+    } catch (error) {
+      console.error("Logo upload error:", error);
+      toast.error("Logo upload failed.");
+    }
+  };
+
+  const handleSave = async () => {
+    if (activeTab === 'receipt') {
+      try {
+        const response = await api.post("/settings/receipt", receiptSettings);
+        if (response.data?.success) {
+          toast.success("Receipt settings saved successfully!");
+        } else {
+          toast.error("Failed to save receipt settings.");
+        }
+      } catch (error) {
+        console.error("Error saving receipt settings:", error);
+        toast.error("Failed to save receipt settings.");
+      }
+    } else if (activeTab === 'payment') {
+      try {
+        const response = await api.post("/settings/payment", paymentSettings);
+        if (response.data?.success) {
+          toast.success("Payment settings saved successfully!");
+        } else {
+          toast.error("Failed to save payment settings.");
+        }
+      } catch (error) {
+        console.error("Error saving payment settings:", error);
+        toast.error("Failed to save payment settings.");
+      }
+    } else {
+      toast.success("Settings saved successfully!");
+    }
     setActiveTab(null);
   };
 
@@ -228,45 +398,151 @@ const Settings = () => {
       case 'receipt':
         return (
           <>
-            <Input label="Store Logo Upload" type="file" />
-            <Input label="Store Name" placeholder="Priyam Super Market" />
-            <Input label="Address" placeholder="123 Main Street" />
-            <Input label="Phone Number" placeholder="+91 9876543210" />
-            <Input label="Email" placeholder="contact@priyam.com" />
-            <Input label="GST Number" placeholder="22AAAAA0000A1Z5" />
-            <Input label="FSSAI Number" placeholder="10022000000000" />
-            <Input label="Invoice Prefix" placeholder="INV-" />
-            <Select label="Invoice Number Format" options={['YYYY/MM/DD/0001', '00001', 'INV-00001']} />
-            <Input label="Currency Symbol" placeholder="₹" />
-            <Select label="Date Format" options={['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD']} />
-            <Toggle label="Tax Display" defaultChecked />
-            <Toggle label="Discount Display" defaultChecked />
-            <Toggle label="Barcode Display" defaultChecked />
-            <Toggle label="QR Code Display" defaultChecked />
-            <Input label="Footer Message" placeholder="Visit again!" />
-            <Input label="Thank You Message" placeholder="Thank you for shopping with us." />
-            <Input label="Return Policy" placeholder="No returns after 7 days." />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <Input label="Store Logo Upload" type="file" onChange={handleLogoUpload} accept="image/*" />
+              <Input label="Store Name" placeholder="Priyam Super Market" value={receiptSettings.storeName} onChange={(e) => updateReceiptSetting('storeName', e.target.value)} />
+              <Input label="Address" placeholder="123 Main Street" value={receiptSettings.address} onChange={(e) => updateReceiptSetting('address', e.target.value)} />
+              <Input label="Phone Number" placeholder="+91 9876543210" value={receiptSettings.phone} onChange={(e) => updateReceiptSetting('phone', e.target.value)} />
+              <Input label="Email" placeholder="contact@priyam.com" value={receiptSettings.email} onChange={(e) => updateReceiptSetting('email', e.target.value)} />
+              <Input label="GST Number" placeholder="22AAAAA0000A1Z5" value={receiptSettings.gst} onChange={(e) => updateReceiptSetting('gst', e.target.value)} />
+              <Input label="FSSAI Number" placeholder="10022000000000" value={receiptSettings.fssai} onChange={(e) => updateReceiptSetting('fssai', e.target.value)} />
+              <Input label="Invoice Prefix" placeholder="INV-" value={receiptSettings.invoicePrefix} onChange={(e) => updateReceiptSetting('invoicePrefix', e.target.value)} />
+              <Select label="Invoice Number Format" options={['YYYY/MM/DD/0001', '00001', 'INV-00001']} value={receiptSettings.invoiceFormat} onChange={(e) => updateReceiptSetting('invoiceFormat', e.target.value)} />
+              <Input label="Currency Symbol" placeholder="₹" value={receiptSettings.currency} onChange={(e) => updateReceiptSetting('currency', e.target.value)} />
+              <Select label="Date Format" options={['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD']} value={receiptSettings.dateFormat} onChange={(e) => updateReceiptSetting('dateFormat', e.target.value)} />
+              <Toggle label="Tax Display" checked={receiptSettings.taxDisplay} onChange={(e) => updateReceiptSetting('taxDisplay', e.target.checked)} />
+              <Toggle label="Discount Display" checked={receiptSettings.discountDisplay} onChange={(e) => updateReceiptSetting('discountDisplay', e.target.checked)} />
+              <Toggle label="Barcode Display" checked={receiptSettings.barcodeDisplay} onChange={(e) => updateReceiptSetting('barcodeDisplay', e.target.checked)} />
+              <Toggle label="QR Code Display" checked={receiptSettings.qrCodeDisplay} onChange={(e) => updateReceiptSetting('qrCodeDisplay', e.target.checked)} />
+              <Input label="Footer Message" placeholder="Visit again!" value={receiptSettings.footerMessage} onChange={(e) => updateReceiptSetting('footerMessage', e.target.value)} />
+              <Input label="Thank You Message" placeholder="Thank you for shopping with us." value={receiptSettings.thankYouMessage} onChange={(e) => updateReceiptSetting('thankYouMessage', e.target.value)} />
+              <Input label="Return Policy" placeholder="No returns after 7 days." value={receiptSettings.returnPolicy} onChange={(e) => updateReceiptSetting('returnPolicy', e.target.value)} />
+            </div>
+
+            {/* Receipt Preview Side */}
+            <div className="receipt-preview-container" style={{ padding: '0 1rem' }}>
+              <h4 style={{ marginBottom: '1rem', color: '#1e293b', fontSize: '1rem', fontWeight: 'bold' }}>Receipt Preview</h4>
+              <div className="receipt-preview-card" style={{
+                background: '#fff',
+                padding: '1.5rem',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                border: '1px dashed #cbd5e1',
+                fontFamily: 'monospace',
+                fontSize: '0.85rem',
+                color: '#333',
+                maxWidth: '350px',
+                margin: '0 auto',
+                position: 'sticky',
+                top: '20px'
+              }}>
+                <div style={{ textAlign: 'center', marginBottom: '1rem', borderBottom: '1px dashed #cbd5e1', paddingBottom: '1rem' }}>
+                  {receiptSettings.storeLogo && (
+                    <img src={receiptSettings.storeLogo} alt="Store Logo" style={{ maxWidth: '100px', maxHeight: '100px', margin: '0 auto 0.5rem', objectFit: 'contain' }} />
+                  )}
+                  <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', textTransform: 'uppercase' }}>{receiptSettings.storeName || 'STORE NAME'}</h3>
+                  <div>{receiptSettings.address}</div>
+                  <div>Phone: {receiptSettings.phone}</div>
+                  {receiptSettings.email && <div>Email: {receiptSettings.email}</div>}
+                  {receiptSettings.gst && <div>GST: {receiptSettings.gst}</div>}
+                  {receiptSettings.fssai && <div>FSSAI: {receiptSettings.fssai}</div>}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span>Invoice: {receiptSettings.invoicePrefix}0001</span>
+                  <span>Date: {new Date().toLocaleDateString()}</span>
+                </div>
+                
+                <div style={{ borderBottom: '1px dashed #cbd5e1', margin: '0.5rem 0' }}></div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  <span>Item</span>
+                  <span>Total</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <span>Apple 1kg</span>
+                  <span>{receiptSettings.currency}120.00</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <span>Rice 5kg</span>
+                  <span>{receiptSettings.currency}450.00</span>
+                </div>
+                
+                <div style={{ borderBottom: '1px dashed #cbd5e1', margin: '0.5rem 0' }}></div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <span>Subtotal</span>
+                  <span>{receiptSettings.currency}570.00</span>
+                </div>
+                {receiptSettings.taxDisplay && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                    <span>GST (5%)</span>
+                    <span>{receiptSettings.currency}28.50</span>
+                  </div>
+                )}
+                {receiptSettings.discountDisplay && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                    <span>Discount</span>
+                    <span>-{receiptSettings.currency}10.00</span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '1rem' }}>
+                  <span>Total</span>
+                  <span>{receiptSettings.currency}{(570 + (receiptSettings.taxDisplay ? 28.5 : 0) - (receiptSettings.discountDisplay ? 10 : 0)).toFixed(2)}</span>
+                </div>
+                
+                <div style={{ borderBottom: '1px dashed #cbd5e1', margin: '1rem 0' }}></div>
+                
+                {receiptSettings.barcodeDisplay && (
+                  <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                    <div style={{ background: 'repeating-linear-gradient(90deg, #333, #333 2px, transparent 2px, transparent 4px)', height: '40px', width: '80%', margin: '0 auto', marginBottom: '0.25rem' }}></div>
+                    <div style={{ fontSize: '0.75rem' }}>123456789012</div>
+                  </div>
+                )}
+                
+                {receiptSettings.qrCodeDisplay && (
+                  <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                    <div style={{ background: 'conic-gradient(#333 90deg, transparent 90deg)', backgroundSize: '10px 10px', height: '80px', width: '80px', margin: '0 auto' }}></div>
+                    <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Scan to Pay</div>
+                  </div>
+                )}
+                
+                <div style={{ textAlign: 'center', marginTop: '1rem', fontStyle: 'italic' }}>
+                  <div>{receiptSettings.thankYouMessage}</div>
+                  <div>{receiptSettings.footerMessage}</div>
+                  {receiptSettings.returnPolicy && (
+                    <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#666' }}>{receiptSettings.returnPolicy}</div>
+                  )}
+                </div>
+              </div>
+            </div>
           </>
         );
-      case 'payment':
+      
+        case 'payment':
         return (
           <>
-            <Select label="Primary Gateway" options={['Razorpay', 'Stripe', 'Paytm', 'PhonePe', 'Google Pay']} />
-            <Toggle label="Cash Support" defaultChecked />
-            <Toggle label="UPI Support" defaultChecked />
-            <Toggle label="Credit/Debit Card" defaultChecked />
-            <Input label="Merchant ID" placeholder="MERCHANT_123" />
-            <Input label="API Key" type="password" placeholder="••••••••" />
-            <Input label="Secret Key" type="password" placeholder="••••••••" />
-            <Input label="Webhook URL" placeholder="https://api.yourdomain.com/webhook" />
-            <Input label="Callback URL" placeholder="https://yourdomain.com/callback" />
-            <Select label="Mode" options={['Live', 'Sandbox']} />
-            <Toggle label="Auto Payment Verification" defaultChecked />
-            <Toggle label="Refund Support" defaultChecked />
-            <Toggle label="Partial Payment" />
-            <Toggle label="Wallet Payment" defaultChecked />
-            <Toggle label="COD" defaultChecked />
-            <Toggle label="EMI Support" />
+            <Select label="Primary Gateway" options={['Razorpay', 'Stripe', 'Paytm', 'PhonePe', 'Google Pay']} value={paymentSettings.primaryGateway} onChange={(e) => updatePaymentSetting('primaryGateway', e.target.value)} />
+            <Toggle label="Cash Support" checked={paymentSettings.cashSupport} onChange={(e) => updatePaymentSetting('cashSupport', e.target.checked)} />
+            <Toggle label="UPI Support" checked={paymentSettings.upiSupport} onChange={(e) => updatePaymentSetting('upiSupport', e.target.checked)} />
+            
+            {paymentSettings.upiSupport && (
+              <Input label="UPI ID" placeholder="example@upi" value={paymentSettings.upiId} onChange={(e) => updatePaymentSetting('upiId', e.target.value)} />
+            )}
+
+            <Toggle label="Credit/Debit Card" checked={paymentSettings.creditDebitCard} onChange={(e) => updatePaymentSetting('creditDebitCard', e.target.checked)} />
+            <Input label="Merchant ID" placeholder="MERCHANT_123" value={paymentSettings.merchantId} onChange={(e) => updatePaymentSetting('merchantId', e.target.value)} />
+            <Input label="API Key" type="password" placeholder="••••••••" value={paymentSettings.apiKey} onChange={(e) => updatePaymentSetting('apiKey', e.target.value)} />
+            <Input label="Secret Key" type="password" placeholder="••••••••" value={paymentSettings.secretKey} onChange={(e) => updatePaymentSetting('secretKey', e.target.value)} />
+            <Input label="Webhook URL" placeholder="https://api.yourdomain.com/webhook" value={paymentSettings.webhookUrl} onChange={(e) => updatePaymentSetting('webhookUrl', e.target.value)} />
+            <Input label="Callback URL" placeholder="https://yourdomain.com/callback" value={paymentSettings.callbackUrl} onChange={(e) => updatePaymentSetting('callbackUrl', e.target.value)} />
+            <Select label="Mode" options={['Live', 'Sandbox']} value={paymentSettings.mode} onChange={(e) => updatePaymentSetting('mode', e.target.value)} />
+            <Toggle label="Auto Payment Verification" checked={paymentSettings.autoPaymentVerification} onChange={(e) => updatePaymentSetting('autoPaymentVerification', e.target.checked)} />
+            <Toggle label="Refund Support" checked={paymentSettings.refundSupport} onChange={(e) => updatePaymentSetting('refundSupport', e.target.checked)} />
+            <Toggle label="Partial Payment" checked={paymentSettings.partialPayment} onChange={(e) => updatePaymentSetting('partialPayment', e.target.checked)} />
+            <Toggle label="Wallet Payment" checked={paymentSettings.walletPayment} onChange={(e) => updatePaymentSetting('walletPayment', e.target.checked)} />
+            <Toggle label="COD" checked={paymentSettings.cod} onChange={(e) => updatePaymentSetting('cod', e.target.checked)} />
+            <Toggle label="EMI Support" checked={paymentSettings.emiSupport} onChange={(e) => updatePaymentSetting('emiSupport', e.target.checked)} />
           </>
         );
       case 'store':
@@ -393,6 +669,7 @@ const Settings = () => {
 
   return (
     <div className="settings-page">
+      <Toaster position="top-right" />
       <div className="settings-header">
         <div className="settings-title-area">
           <h1>System Settings</h1>

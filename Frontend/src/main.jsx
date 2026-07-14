@@ -10,6 +10,7 @@ import PrivateRoute from "./PrivateRouter/PrivateRouter.jsx";
 import { AdminProvider } from "./PrivateRouter/AdminContext.jsx";
 import { Toaster } from "react-hot-toast";
 import Loader from "./Components/CommenComponents/Loader.jsx";
+import Combo from "./Components/Pages/Combo.jsx";
 
 // Lazy Load Main Components
 const Home = React.lazy(() => import("./Components/Home/Home.jsx"));
@@ -89,6 +90,7 @@ const router = createBrowserRouter([
       { path: "/", element: <Home /> },
       { path: "/about", element: <About /> },
       { path: "/shop", element: <Shop /> },
+      { path: "/combo", element: <Combo /> },
       { path: "/contactus", element: <ContactUs /> },
       { path: "/products/:id", element: <ProductDetails /> },
       { path: "/category/:categoryName", element: <CategoryPage /> },

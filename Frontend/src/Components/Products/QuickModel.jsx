@@ -88,14 +88,16 @@ const QuickViewModal = ({ product, onClose }) => {
     product?.image_url,
   ];
 
-  const allImages = Array.from(
-    new Set(
-      imageCandidates
-        .flatMap((item) => normalizeImageList(item))
-        .map(resolveImage)
-        .filter(Boolean)
-    )
-  );
+  const allImages = React.useMemo(() => {
+    return Array.from(
+      new Set(
+        imageCandidates
+          .flatMap((item) => normalizeImageList(item))
+          .map(resolveImage)
+          .filter(Boolean)
+      )
+    );
+  }, [selectedVariant, product]);
 
   // Update image whenever the selected variant changes
   useEffect(() => {
@@ -120,7 +122,7 @@ const QuickViewModal = ({ product, onClose }) => {
 
   if (!product) return null;
 
-  const stock = selectedVariant?.sizesStock?.[selectedSize];
+  const stock = selectedVariant?.stock || selectedVariant?.stock_quantity || product.stock_quantity || 0;
 
   const handleBuyNow = () => {
     navigate("/checkout", {
@@ -166,14 +168,14 @@ const QuickViewModal = ({ product, onClose }) => {
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 z-50 w-11 h-11 rounded-full bg-white shadow-lg hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center cursor-pointer"
+          className="absolute top-4 right-4 lg:top-5 lg:right-5 z-[100] w-11 h-11 rounded-full bg-white border border-gray-200 shadow-xl hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center cursor-pointer"
         >
           <FiX size={22} />
         </button>
 
         {/* Header */}
         <div className="bg-gradient-to-r from-[#0e6827] via-[#168637] to-[#0b511d] px-8 py-5 text-white">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between pr-16 lg:pr-20">
             <div>
               <p className="text-green-200 text-sm uppercase tracking-widest">
                 Premium Grocery
@@ -185,7 +187,7 @@ const QuickViewModal = ({ product, onClose }) => {
             </div>
 
             {product.offer && (
-              <div className="bg-[#ffc107] text-black font-bold px-5 py-2 rounded-full shadow-lg">
+              <div className="mr-2 lg:mr-4 bg-[#ffc107] text-black font-bold text-xs sm:text-sm px-3 sm:px-5 py-2 rounded-full shadow-lg whitespace-nowrap">
                 {Math.floor(product.offer)}% OFF
               </div>
             )}
@@ -292,27 +294,27 @@ const QuickViewModal = ({ product, onClose }) => {
               <div className="flex items-center gap-3">
 
                 <span className="text-4xl font-bold text-green-700">
-                  ₹{product.offer_price}
+                  ₹{selectedVariant?.sellingPrice || selectedVariant?.selling_price || product.offer_price}
                 </span>
 
-                {product.mrp && (
+                {(selectedVariant?.mrp || product.mrp) && (
                   <span className="text-lg text-gray-400 line-through">
-                    ₹{product.mrp}
+                    ₹{selectedVariant?.mrp || product.mrp}
                   </span>
                 )}
 
               </div>
 
-              {product.offer && (
+              {(selectedVariant?.offer || product.offer) && (
                 <div className="mt-2 text-sm font-semibold text-red-500">
-                  Save {Math.floor(product.offer)}%
+                  Save {Math.floor(selectedVariant?.offer || product.offer)}%
                 </div>
               )}
 
             </div>
 
-            {/* Variant Colors */}
-            {product.variants?.length > 1 && (
+            {/* Variant Quantities */}
+            {product.variants?.length > 0 && (
               <div>
 
                 <h3 className="font-bold text-gray-800 mb-3">
@@ -327,19 +329,16 @@ const QuickViewModal = ({ product, onClose }) => {
                       key={index}
                       onClick={() => {
                         setSelectedVariant(variant);
-                        setSelectedImage(resolveImage(variant.images?.[0]));
-                        setSelectedSize(variant.selectedSizes?.[0]);
+                        if (variant.images?.[0]) setSelectedImage(resolveImage(variant.images?.[0]));
+                        if (variant.selectedSizes?.[0]) setSelectedSize(variant.selectedSizes?.[0]);
                         setImgIndex(0);
                       }}
-                      className={`rounded-xl border-2 overflow-hidden transition ${selectedVariant?.color === variant.color
-                        ? "border-green-700"
-                        : "border-gray-200 hover:border-green-400"
+                      className={`px-4 py-2 rounded-xl border-2 transition font-semibold ${selectedVariant?.quantity === variant.quantity && selectedVariant?.unit === variant.unit
+                        ? "border-green-700 bg-green-50 text-green-800"
+                        : "border-gray-200 hover:border-green-400 text-gray-700"
                         }`}
                     >
-                      <img
-                        src={resolveImage(variant.images?.[0])}
-                        className="w-16 h-16 object-cover"
-                      />
+                      {variant.quantity} {variant.unit}
                     </button>
 
                   ))}

@@ -228,9 +228,47 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const updateBudget = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const { budget_mode, budget_amount } = req.body;
+
+    const connection = await createConnection();
+
+    const [existing] = await connection.query("SELECT id FROM users WHERE user_id = ?", [user_id]);
+    if (existing.length === 0) {
+      await connection.end();
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    await connection.query(
+      "UPDATE users SET budget_mode = ?, budget_amount = ? WHERE user_id = ?",
+      [budget_mode ? 1 : 0, budget_amount || 0, user_id]
+    );
+    await connection.end();
+
+    return res.status(200).json({
+      success: true,
+      message: "Budget updated successfully",
+      budget_mode: budget_mode ? true : false,
+      budget_amount: parseFloat(budget_amount) || 0,
+    });
+  } catch (error) {
+    console.error("Update budget error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while updating budget",
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   getUsers,
   updateUser,
   deleteUser,
+  updateBudget,
 };

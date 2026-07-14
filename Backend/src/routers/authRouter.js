@@ -4,6 +4,7 @@ const {
   getUsers,
   updateUser,
   deleteUser,
+  updateBudget,
 } = require("../controllers/authController");
 const { loginUser, googleLogin } = require("../controllers/loginController");
 
@@ -15,5 +16,6 @@ router.post("/google-login", googleLogin);
 router.get("/users", getUsers);
 router.put("/users/:id", updateUser);
 router.delete("/users/:id", deleteUser);
+router.put("/users/budget/:user_id", updateBudget);
 
 module.exports = router;
