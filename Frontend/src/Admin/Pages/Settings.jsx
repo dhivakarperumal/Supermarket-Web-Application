@@ -60,9 +60,9 @@ const SETTINGS_CATEGORIES = [
   { id: 'payment', title: 'Payment Integration', desc: 'Gateways, UPI, and Card setups.', icon: <CreditCard size={24} /> },
   { id: 'store', title: 'Store Settings', desc: 'Core business and location info.', icon: <Store size={24} /> },
   { id: 'tax', title: 'Tax & GST', desc: 'Configure GST, SGST, IGST and HSN.', icon: <Percent size={24} /> },
-  // { id: 'localization', title: 'Localization', desc: 'Region, Language & formatting.', icon: <Globe size={24} /> },
-  // { id: 'barcode', title: 'Barcode & Scanner', desc: 'Barcode formats and scanner inputs.', icon: <Barcode size={24} /> },
-  // { id: 'pos', title: 'POS Settings', desc: 'Point of Sale defaults & behavior.', icon: <MonitorSmartphone size={24} /> },
+  { id: 'localization', title: 'Localization', desc: 'Region, Language & formatting.', icon: <Globe size={24} /> },
+  
+  
   { id: 'delivery', title: 'Delivery Charges', desc: 'Manage shipping & delivery fees.', icon: <Truck size={24} /> },
   { id: 'coupon', title: 'Coupon Settings', desc: 'Configure discount & promo codes.', icon: <Ticket size={24} /> }
 ];
@@ -245,18 +245,6 @@ const Settings = () => {
       } catch (error) {
         console.error("Error saving payment settings:", error);
         toast.error("Failed to save payment settings.");
-      }
-    } else if (activeTab === 'tax') {
-      try {
-        const response = await api.post("/settings/tax", taxSettings);
-        if (response.data?.success) {
-          toast.success("Tax settings saved successfully!");
-        } else {
-          toast.error("Failed to save tax settings.");
-        }
-      } catch (error) {
-        console.error("Error saving tax settings:", error);
-        toast.error("Failed to save tax settings.");
       }
     } else {
       toast.success("Settings saved successfully!");
@@ -832,9 +820,9 @@ const Settings = () => {
       case 'tax':
         return (
           <>
-            <Toggle label="Enable GST" checked={taxSettings.enableGst} onChange={(e) => updateTaxSetting('enableGst', e.target.checked)} />
-            <Select label="Default GST Percentage" options={['0%', '5%', '12%', '18%', '28%']} value={taxSettings.defaultGstPercentage} onChange={(e) => updateTaxSetting('defaultGstPercentage', e.target.value)} />
-            <Select label="Tax Mode" options={['Tax Exclusive', 'Tax Inclusive']} value={taxSettings.taxMode} onChange={(e) => updateTaxSetting('taxMode', e.target.value)} />
+            <Toggle label="Enable GST" defaultChecked />
+            <Select label="Default GST Percentage" options={['0%', '5%', '12%', '18%', '28%']} />
+            <Select label="Tax Mode" options={['Tax Exclusive', 'Tax Inclusive']} />
           </>
         );
       case 'localization':
