@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import "./Coupons.css";
-import { Truck, Save, RotateCcw } from "lucide-react";
+import { Truck, Save, RotateCcw, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import api from "../../api";
 
 const DeliveryCharges = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     base_delivery_charge: 50,
     free_delivery_minimum_order_amount: 500,
@@ -92,11 +94,23 @@ const DeliveryCharges = () => {
 
   return (
     <div className="coupons-page">
-      <div className="page-header">
-        <div className="page-title">
-          <h1>Delivery Charges Settings</h1>
-          <p>Configure standard and express delivery options, fees, and operational radiuses.</p>
-        </div>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <button 
+          onClick={() => navigate(-1)} 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem', 
+            background: 'none', 
+            border: 'none', 
+            color: '#64748b', 
+            cursor: 'pointer', 
+            fontSize: '1rem',
+            fontWeight: '500'
+          }}
+        >
+          <ArrowLeft size={18} /> Back
+        </button>
       </div>
 
       <form
