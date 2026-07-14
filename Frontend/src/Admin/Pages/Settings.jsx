@@ -103,9 +103,67 @@ const Settings = () => {
     storeLogo: ''
   });
 
+  const [paymentSettings, setPaymentSettings] = useState({
+    primaryGateway: 'Razorpay',
+    cashSupport: true,
+    upiSupport: true,
+    upiId: '',
+    creditDebitCard: true,
+    merchantId: '',
+    apiKey: '',
+    secretKey: '',
+    webhookUrl: '',
+    callbackUrl: '',
+    mode: 'Live',
+    autoPaymentVerification: true,
+    refundSupport: true,
+    partialPayment: false,
+    walletPayment: true,
+    cod: true,
+    emiSupport: false
+  });
+
+  const updatePaymentSetting = (key, value) => {
+    setPaymentSettings(prev => ({ ...prev, [key]: value }));
+  };
+
   useEffect(() => {
     fetchReceiptSettings();
+    fetchPaymentSettings();
   }, []);
+
+  const fetchPaymentSettings = async () => {
+    try {
+      const response = await api.get("/settings/payment");
+      if (response.data?.success && response.data?.data) {
+        if (Object.keys(response.data.data).length > 0) {
+          const dbData = response.data.data;
+          setPaymentSettings({
+            primaryGateway: dbData.primary_gateway || 'Razorpay',
+            cashSupport: dbData.cash_support === 1,
+            upiSupport: dbData.upi_support === 1,
+            upiId: dbData.upi_id || '',
+            creditDebitCard: dbData.credit_debit_card === 1,
+            merchantId: dbData.merchant_id || '',
+            apiKey: dbData.api_key || '',
+            secretKey: dbData.secret_key || '',
+            webhookUrl: dbData.webhook_url || '',
+            callbackUrl: dbData.callback_url || '',
+            mode: dbData.mode || 'Live',
+            autoPaymentVerification: dbData.auto_payment_verification === 1,
+            refundSupport: dbData.refund_support === 1,
+            partialPayment: dbData.partial_payment === 1,
+            walletPayment: dbData.wallet_payment === 1,
+            cod: dbData.cod === 1,
+            emiSupport: dbData.emi_support === 1
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching payment settings:", error);
+      toast.error("Failed to load payment settings");
+    }
+  };
 
   const fetchReceiptSettings = async () => {
     try {
@@ -176,6 +234,18 @@ const Settings = () => {
       } catch (error) {
         console.error("Error saving receipt settings:", error);
         toast.error("Failed to save receipt settings.");
+      }
+    } else if (activeTab === 'payment') {
+      try {
+        const response = await api.post("/settings/payment", paymentSettings);
+        if (response.data?.success) {
+          toast.success("Payment settings saved successfully!");
+        } else {
+          toast.error("Failed to save payment settings.");
+        }
+      } catch (error) {
+        console.error("Error saving payment settings:", error);
+        toast.error("Failed to save payment settings.");
       }
     } else {
       toast.success("Settings saved successfully!");
@@ -452,22 +522,27 @@ const Settings = () => {
         case 'payment':
         return (
           <>
-            <Select label="Primary Gateway" options={['Razorpay', 'Stripe', 'Paytm', 'PhonePe', 'Google Pay']} />
-            <Toggle label="Cash Support" defaultChecked />
-            <Toggle label="UPI Support" defaultChecked />
-            <Toggle label="Credit/Debit Card" defaultChecked />
-            <Input label="Merchant ID" placeholder="MERCHANT_123" />
-            <Input label="API Key" type="password" placeholder="••••••••" />
-            <Input label="Secret Key" type="password" placeholder="••••••••" />
-            <Input label="Webhook URL" placeholder="https://api.yourdomain.com/webhook" />
-            <Input label="Callback URL" placeholder="https://yourdomain.com/callback" />
-            <Select label="Mode" options={['Live', 'Sandbox']} />
-            <Toggle label="Auto Payment Verification" defaultChecked />
-            <Toggle label="Refund Support" defaultChecked />
-            <Toggle label="Partial Payment" />
-            <Toggle label="Wallet Payment" defaultChecked />
-            <Toggle label="COD" defaultChecked />
-            <Toggle label="EMI Support" />
+            <Select label="Primary Gateway" options={['Razorpay', 'Stripe', 'Paytm', 'PhonePe', 'Google Pay']} value={paymentSettings.primaryGateway} onChange={(e) => updatePaymentSetting('primaryGateway', e.target.value)} />
+            <Toggle label="Cash Support" checked={paymentSettings.cashSupport} onChange={(e) => updatePaymentSetting('cashSupport', e.target.checked)} />
+            <Toggle label="UPI Support" checked={paymentSettings.upiSupport} onChange={(e) => updatePaymentSetting('upiSupport', e.target.checked)} />
+            
+            {paymentSettings.upiSupport && (
+              <Input label="UPI ID" placeholder="example@upi" value={paymentSettings.upiId} onChange={(e) => updatePaymentSetting('upiId', e.target.value)} />
+            )}
+
+            <Toggle label="Credit/Debit Card" checked={paymentSettings.creditDebitCard} onChange={(e) => updatePaymentSetting('creditDebitCard', e.target.checked)} />
+            <Input label="Merchant ID" placeholder="MERCHANT_123" value={paymentSettings.merchantId} onChange={(e) => updatePaymentSetting('merchantId', e.target.value)} />
+            <Input label="API Key" type="password" placeholder="••••••••" value={paymentSettings.apiKey} onChange={(e) => updatePaymentSetting('apiKey', e.target.value)} />
+            <Input label="Secret Key" type="password" placeholder="••••••••" value={paymentSettings.secretKey} onChange={(e) => updatePaymentSetting('secretKey', e.target.value)} />
+            <Input label="Webhook URL" placeholder="https://api.yourdomain.com/webhook" value={paymentSettings.webhookUrl} onChange={(e) => updatePaymentSetting('webhookUrl', e.target.value)} />
+            <Input label="Callback URL" placeholder="https://yourdomain.com/callback" value={paymentSettings.callbackUrl} onChange={(e) => updatePaymentSetting('callbackUrl', e.target.value)} />
+            <Select label="Mode" options={['Live', 'Sandbox']} value={paymentSettings.mode} onChange={(e) => updatePaymentSetting('mode', e.target.value)} />
+            <Toggle label="Auto Payment Verification" checked={paymentSettings.autoPaymentVerification} onChange={(e) => updatePaymentSetting('autoPaymentVerification', e.target.checked)} />
+            <Toggle label="Refund Support" checked={paymentSettings.refundSupport} onChange={(e) => updatePaymentSetting('refundSupport', e.target.checked)} />
+            <Toggle label="Partial Payment" checked={paymentSettings.partialPayment} onChange={(e) => updatePaymentSetting('partialPayment', e.target.checked)} />
+            <Toggle label="Wallet Payment" checked={paymentSettings.walletPayment} onChange={(e) => updatePaymentSetting('walletPayment', e.target.checked)} />
+            <Toggle label="COD" checked={paymentSettings.cod} onChange={(e) => updatePaymentSetting('cod', e.target.checked)} />
+            <Toggle label="EMI Support" checked={paymentSettings.emiSupport} onChange={(e) => updatePaymentSetting('emiSupport', e.target.checked)} />
           </>
         );
       case 'store':

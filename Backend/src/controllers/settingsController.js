@@ -86,3 +86,90 @@ exports.updateReceiptSettings = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+// Get Payment Settings
+exports.getPaymentSettings = async (req, res) => {
+  try {
+    const pool = getPool();
+    const [rows] = await pool.query("SELECT * FROM payment_integration LIMIT 1");
+    if (rows.length === 0) {
+      return res.status(200).json({ success: true, data: {} });
+    }
+    return res.status(200).json({ success: true, data: rows[0] });
+  } catch (error) {
+    console.error("Error fetching payment settings:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// Update Payment Settings
+exports.updatePaymentSettings = async (req, res) => {
+  try {
+    const pool = getPool();
+    const {
+      primaryGateway,
+      cashSupport,
+      upiSupport,
+      upiId,
+      creditDebitCard,
+      merchantId,
+      apiKey,
+      secretKey,
+      webhookUrl,
+      callbackUrl,
+      mode,
+      autoPaymentVerification,
+      refundSupport,
+      partialPayment,
+      walletPayment,
+      cod,
+      emiSupport
+    } = req.body;
+
+    const userId = req.headers['x-user-id'] || null;
+    const createdBy = userId;
+    const updatedBy = userId;
+
+    const [rows] = await pool.query("SELECT id, payment_id FROM payment_integration LIMIT 1");
+    
+    if (rows.length > 0) {
+      const id = rows[0].id;
+      const paymentId = rows[0].payment_id || crypto.randomUUID();
+      await pool.query(
+        `UPDATE payment_integration SET 
+          primary_gateway = ?, cash_support = ?, upi_support = ?, upi_id = ?, credit_debit_card = ?, 
+          merchant_id = ?, api_key = ?, secret_key = ?, webhook_url = ?, callback_url = ?, 
+          mode = ?, auto_payment_verification = ?, refund_support = ?, partial_payment = ?, 
+          wallet_payment = ?, cod = ?, emi_support = ?, payment_id = ?, updated_by = ?
+         WHERE id = ?`,
+        [
+          primaryGateway, cashSupport, upiSupport, upiId, creditDebitCard, 
+          merchantId, apiKey, secretKey, webhookUrl, callbackUrl, 
+          mode, autoPaymentVerification, refundSupport, partialPayment, 
+          walletPayment, cod, emiSupport, paymentId, updatedBy, id
+        ]
+      );
+    } else {
+      const paymentId = crypto.randomUUID();
+      await pool.query(
+        `INSERT INTO payment_integration (
+          primary_gateway, cash_support, upi_support, upi_id, credit_debit_card,
+          merchant_id, api_key, secret_key, webhook_url, callback_url,
+          mode, auto_payment_verification, refund_support, partial_payment,
+          wallet_payment, cod, emi_support, payment_id, created_by, updated_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          primaryGateway, cashSupport, upiSupport, upiId, creditDebitCard, 
+          merchantId, apiKey, secretKey, webhookUrl, callbackUrl, 
+          mode, autoPaymentVerification, refundSupport, partialPayment, 
+          walletPayment, cod, emiSupport, paymentId, createdBy, updatedBy
+        ]
+      );
+    }
+    
+    res.status(200).json({ success: true, message: "Payment settings saved successfully." });
+  } catch (error) {
+    console.error("Error updating payment settings:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
