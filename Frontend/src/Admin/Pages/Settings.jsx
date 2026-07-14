@@ -107,8 +107,14 @@ const Settings = () => {
   });
 
   const [paymentSettings, setPaymentSettings] = useState({
+    cashSupport: true,
+    onlinePaymentSupport: true,
     upiSupport: true,
     upiId: "",
+    cardSupport: true,
+    paymentType: "both",
+    razorpayEnabled: true,
+    razorpayKey: "",
   });
 
   const [taxSettings, setTaxSettings] = useState({
@@ -229,8 +235,14 @@ const Settings = () => {
         if (Object.keys(response.data.data).length > 0) {
           const dbData = response.data.data;
           setPaymentSettings({
-            upiSupport: dbData.upi_support === 1,
+            cashSupport: dbData.cash_support !== 0 && dbData.cash_support !== "0",
+            onlinePaymentSupport: dbData.online_payment_support !== 0 && dbData.online_payment_support !== "0",
+            upiSupport: dbData.upi_support !== 0 && dbData.upi_support !== "0",
             upiId: dbData.upi_id || "",
+            cardSupport: dbData.credit_debit_card !== 0 && dbData.credit_debit_card !== "0",
+            paymentType: dbData.payment_type || "both",
+            razorpayEnabled: dbData.razorpay_enabled !== 0 && dbData.razorpay_enabled !== "0",
+            razorpayKey: dbData.razorpay_key || "",
           });
         }
       }
@@ -925,10 +937,34 @@ const Settings = () => {
       case 'payment':
         return (
           <>
-            <Toggle label="UPI Support" checked={paymentSettings.upiSupport} onChange={(e) => updatePaymentSetting('upiSupport', e.target.checked)} />
+            <Toggle label="Cash Support" checked={paymentSettings.cashSupport} onChange={(e) => updatePaymentSetting('cashSupport', e.target.checked)} />
+            <Toggle label="Online Payment Support" checked={paymentSettings.onlinePaymentSupport} onChange={(e) => updatePaymentSetting('onlinePaymentSupport', e.target.checked)} />
 
-            {paymentSettings.upiSupport && (
-              <Input label="UPI ID" placeholder="example@upi" value={paymentSettings.upiId} onChange={(e) => updatePaymentSetting('upiId', e.target.value)} />
+            {paymentSettings.onlinePaymentSupport && (
+              <>
+                <Select
+                  label="Online Payment Type"
+                  options={["upi", "card", "both"]}
+                  value={paymentSettings.paymentType}
+                  onChange={(e) => updatePaymentSetting('paymentType', e.target.value)}
+                />
+
+                <Toggle label="Enable Razorpay" checked={paymentSettings.razorpayEnabled} onChange={(e) => updatePaymentSetting('razorpayEnabled', e.target.checked)} />
+
+                {paymentSettings.razorpayEnabled && (
+                  <Input label="Razorpay Key" placeholder="rzp_live_xxxxx" value={paymentSettings.razorpayKey} onChange={(e) => updatePaymentSetting('razorpayKey', e.target.value)} />
+                )}
+
+                {paymentSettings.paymentType !== "card" && (
+                  <>
+                    <Toggle label="UPI Support" checked={paymentSettings.upiSupport} onChange={(e) => updatePaymentSetting('upiSupport', e.target.checked)} />
+
+                    {paymentSettings.upiSupport && (
+                      <Input label="UPI ID" placeholder="example@upi" value={paymentSettings.upiId} onChange={(e) => updatePaymentSetting('upiId', e.target.value)} />
+                    )}
+                  </>
+                )}
+              </>
             )}
           </>
         );
