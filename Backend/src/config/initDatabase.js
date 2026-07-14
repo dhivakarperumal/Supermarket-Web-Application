@@ -45,10 +45,9 @@ const createReceiptSettingsTable = async (connection) => {
       invoice_prefix VARCHAR(50) DEFAULT NULL,
       invoice_format VARCHAR(50) DEFAULT NULL,
       currency VARCHAR(10) DEFAULT NULL,
-      date_format VARCHAR(20) DEFAULT NULL,
+      date_format VARCHAR(50) DEFAULT 'DD/MM/YYYY',
       tax_display TINYINT(1) DEFAULT 1,
       discount_display TINYINT(1) DEFAULT 1,
-      barcode_display TINYINT(1) DEFAULT 1,
       qr_code_display TINYINT(1) DEFAULT 1,
       footer_message TEXT DEFAULT NULL,
       thank_you_message TEXT DEFAULT NULL,
@@ -67,6 +66,12 @@ const createReceiptSettingsTable = async (connection) => {
       ALTER TABLE receipt_settings
       ADD COLUMN IF NOT EXISTS receipt_id VARCHAR(36) DEFAULT NULL,
       MODIFY COLUMN store_logo LONGTEXT DEFAULT NULL
+    `);
+    
+    // Attempt to drop barcode_display if it exists
+    await connection.query(`
+      ALTER TABLE receipt_settings
+      DROP COLUMN barcode_display
     `);
   } catch (err) {
     console.warn('receipt_settings alter skipped:', err?.message || err);

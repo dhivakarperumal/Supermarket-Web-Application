@@ -215,9 +215,8 @@
 }
 
 .grid-2-col {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
+  display: block;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
