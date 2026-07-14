@@ -64,8 +64,8 @@ const SETTINGS_CATEGORIES = [
   { id: 'store', title: 'Store Settings', desc: 'Core business and location info.', icon: <Store size={24} /> },
   { id: 'tax', title: 'Tax & GST', desc: 'Configure GST, SGST, IGST and HSN.', icon: <Percent size={24} /> },
   { id: 'localization', title: 'Localization', desc: 'Region, Language & formatting.', icon: <Globe size={24} /> },
-  
-  
+
+
   { id: 'delivery', title: 'Delivery Charges', desc: 'Manage shipping & delivery fees.', icon: <Truck size={24} /> },
   { id: 'coupon', title: 'Coupon Settings', desc: 'Configure discount & promo codes.', icon: <Ticket size={24} /> }
 ];
@@ -321,25 +321,25 @@ const Settings = () => {
         if (Object.keys(response.data.data).length > 0) {
           const d = response.data.data;
           setStoreSettings({
-            storeName:    d.store_name    || '',
-            storeLogo:    d.store_logo    || null,
-            email:        d.email         || '',
-            phone:        d.phone         || '',
-            address:      d.address       || '',
-            city:         d.city          || '',
-            state:        d.state         || '',
-            country:      d.country       || '',
-            zipCode:      d.zip_code      || '',
-            gstin:        d.gstin         || '',
-            fssai:        d.fssai         || '',
+            storeName: d.store_name || '',
+            storeLogo: d.store_logo || null,
+            email: d.email || '',
+            phone: d.phone || '',
+            address: d.address || '',
+            city: d.city || '',
+            state: d.state || '',
+            country: d.country || '',
+            zipCode: d.zip_code || '',
+            gstin: d.gstin || '',
+            fssai: d.fssai || '',
             businessType: d.business_type || 'Supermarket',
-            timezone:     d.timezone      || 'Asia/Kolkata (IST)',
-            language:     d.language      || 'English',
-            currency:     d.currency      || 'INR (₹)',
-            openingTime:  d.opening_time  || '09:00',
-            closingTime:  d.closing_time  || '21:00',
-            latitude:     d.latitude      || '',
-            longitude:    d.longitude     || '',
+            timezone: d.timezone || 'Asia/Kolkata (IST)',
+            language: d.language || 'English',
+            currency: d.currency || 'INR (₹)',
+            openingTime: d.opening_time || '09:00',
+            closingTime: d.closing_time || '21:00',
+            latitude: d.latitude || '',
+            longitude: d.longitude || '',
           });
         }
       }
@@ -687,9 +687,10 @@ const Settings = () => {
               className="receipt-preview-container"
               style={{ position: "sticky", top: "20px", alignSelf: "start", padding: "0 1rem" }}
             >
-              <h4 className="receipt-preview-title">Receipt Preview</h4>
+
 
               <div className="receipt-preview-card">
+                <h4 className="receipt-preview-title">Receipt Preview</h4>
                 <div className="receipt-top">
                   {receiptSettings.storeLogo && (
                     <img src={receiptSettings.storeLogo} alt="Store Logo" />
@@ -798,7 +799,7 @@ const Settings = () => {
             <Toggle label="Cash Support" checked={paymentSettings.cashSupport} onChange={(e) => updatePaymentSetting('cashSupport', e.target.checked)} />
             <Toggle label="Online Payment Support" checked={paymentSettings.onlinePaymentSupport} onChange={(e) => updatePaymentSetting('onlinePaymentSupport', e.target.checked)} />
 
-               {paymentSettings.onlinePaymentSupport && (
+            {paymentSettings.onlinePaymentSupport && (
               <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #e5e7eb", borderRadius: "0.75rem", background: "#f9fafb" }}>
                 <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600 }}>Online Payment Gateway</h3>
                 <p style={{ margin: "0 0 0.75rem", color: "#6b7280", fontSize: "0.9rem" }}>Razorpay is used for online checkout payments.</p>
@@ -843,7 +844,7 @@ const Settings = () => {
               </div>
             </div>
 
-           
+
           </>
         );
       case 'store':
@@ -1187,7 +1188,7 @@ const Settings = () => {
             </div>
           </div>
 
-          <div className="detail-content grid-2-col">
+          <div className={`detail-content ${activeTab === "receipt" ? "" : "grid-2-col"}`}>
             {renderActiveFields()}
           </div>
 
