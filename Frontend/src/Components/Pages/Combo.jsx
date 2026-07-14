@@ -4,6 +4,9 @@ import { Link } from "react-router-dom";
 import api from "../../api";
 import { StoreContext } from "../../PrivateRouter/StoreContext";
 import PageHeader from "../CommenComponents/PageHeader";
+import { useNavigate } from "react-router-dom";
+import QuickViewModal from "../Products/QuickModel";
+import AnimatedButton from "../AnimatedButton";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
@@ -80,6 +83,9 @@ const Combo = () => {
   const [allCombos, setAllCombos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
+  const navigate = useNavigate();
+  const [quickView, setQuickView] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     const fetchCombos = async () => {
@@ -88,8 +94,8 @@ const Combo = () => {
         const data = Array.isArray(res.data)
           ? res.data
           : Array.isArray(res.data?.products)
-          ? res.data.products
-          : [];
+            ? res.data.products
+            : [];
         setAllCombos(data.filter(isCombo));
       } catch (error) {
         console.error("Error fetching combos:", error);
@@ -104,17 +110,17 @@ const Combo = () => {
     activeCategory === "All"
       ? allCombos
       : allCombos.filter(
-          (c) =>
-            c.category?.toLowerCase().includes(activeCategory.toLowerCase()) ||
-            c.name?.toLowerCase().includes(activeCategory.toLowerCase())
-        );
+        (c) =>
+          c.category?.toLowerCase().includes(activeCategory.toLowerCase()) ||
+          c.name?.toLowerCase().includes(activeCategory.toLowerCase())
+      );
 
 
 
   return (
     <div className="bg-[#f8faf8] min-h-screen">
 
-    <PageHeader title="Combo Products" />  
+      <PageHeader title="Combo Products" />
 
       {/* Combo Cards */}
       <section className="max-w-8xl mx-auto mt-10 px-10 pb-16">
@@ -175,7 +181,10 @@ const Combo = () => {
                   className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 group flex flex-col"
                 >
                   {/* Image */}
-                  <div className="relative flex-shrink-0">
+                  <div
+                    className="relative flex-shrink-0 cursor-pointer"
+                    onClick={() => navigate(`/products/${combo.id}`)}
+                  >
                     <img
                       src={imgSrc}
                       alt={combo.name}
@@ -197,11 +206,10 @@ const Combo = () => {
                     </span>
                     <button
                       onClick={() => toggleWishlist(combo)}
-                      className={`absolute top-4 right-4 p-2 rounded-full shadow transition ${
-                        inWishlist
-                          ? "bg-red-500 text-white"
-                          : "bg-white text-gray-500 hover:bg-red-500 hover:text-white"
-                      }`}
+                      className={`absolute top-4 right-4 p-2 rounded-full shadow transition ${inWishlist
+                        ? "bg-red-500 text-white"
+                        : "bg-white text-gray-500 hover:bg-red-500 hover:text-white"
+                        }`}
                     >
                       <Heart size={18} fill={inWishlist ? "currentColor" : "none"} />
                     </button>
@@ -211,7 +219,10 @@ const Combo = () => {
                   <div className="p-6 flex flex-col flex-1">
                     {/* Title + Rating */}
                     <div className="flex justify-between items-start gap-2">
-                      <h2 className="text-lg font-bold text-gray-800 line-clamp-2 flex-1">
+                      <h2
+                        onClick={() => navigate(`/products/${combo.id}`)}
+                        className="text-lg font-bold text-gray-800 line-clamp-2 flex-1 cursor-pointer hover:text-[#0e6827]"
+                      >
                         {combo.name}
                       </h2>
                       <div className="flex items-center gap-1 text-yellow-500 font-semibold shrink-0">
@@ -275,19 +286,21 @@ const Combo = () => {
 
                     {/* Actions */}
                     <div className="mt-5 flex gap-3">
+                      <AnimatedButton
+                        text="Quick View"
+                        onClick={() => {
+                          setSelectedProduct(combo);
+                          setQuickView(true);
+                        }}
+                        className="flex-1 py-3 rounded-xl"
+                      />
+
                       <button
                         onClick={() => addToCart(combo)}
-                        className="flex-1 flex items-center justify-center gap-2 bg-[#0e6827] hover:bg-[#168637] text-white py-3 rounded-xl font-bold transition text-sm">
-                        <ShoppingCart size={16} />
+                        className="flex-1 bg-[#0e6827] hover:bg-[#168637] text-white rounded-xl font-bold"
+                      >
                         Add to Cart
                       </button>
-                      <Link
-                        to={`/products/${combo.id}`}
-                        className="flex items-center justify-center gap-1.5 border-2 border-[#0e6827] text-[#0e6827] hover:bg-[#0e6827] hover:text-white px-4 py-3 rounded-xl font-bold transition text-sm"
-                      >
-                        <Eye size={16} />
-                        View
-                      </Link>
                     </div>
                   </div>
                 </div>
@@ -296,6 +309,15 @@ const Combo = () => {
           </div>
         )}
       </section>
+      {quickView && selectedProduct && (
+        <QuickViewModal
+          product={selectedProduct}
+          onClose={() => {
+            setQuickView(false);
+            setSelectedProduct(null);
+          }}
+        />
+      )}
     </div>
   );
 };
