@@ -493,25 +493,9 @@ const Checkout = () => {
 
     setDistanceInfo((prev) => ({ ...prev, loading: true, error: "" }));
 
-    // Check for store settings; if not present, attempt to fetch fresh store settings
-    const ensureStoreSettings = async () => {
-      if (!storeSettings || !storeSettings.latitude || !storeSettings.longitude) {
-        try {
-          const resp = await api.get('/settings/store');
-          if (resp.data?.success && resp.data?.data) {
-            setStoreSettings(resp.data.data);
-            try { localStorage.setItem('store_settings', JSON.stringify(resp.data.data)); } catch(e){/*ignore*/}
-            return resp.data.data;
-          }
-        } catch (err) {
-          console.warn('Failed to fetch store settings', err);
-        }
-      }
-      return storeSettings;
-    };
-
+    // Fetch user's current position and compute distance to shop using admin-configured storeSettings.
     navigator.permissions && navigator.permissions.query
-      ? navigator.permissions.query({ name: 'geolocation' }).then(async (perm) => {
+      ? navigator.permissions.query({ name: 'geolocation' }).then((perm) => {
           if (perm.state === 'denied') {
             setDistanceInfo({ loading: false, error: 'Location permission is denied. Please enable location access in your browser.', distanceKm: null });
             return;
@@ -523,14 +507,14 @@ const Checkout = () => {
                 const userLat = position.coords.latitude;
                 const userLng = position.coords.longitude;
 
-                const s = await ensureStoreSettings();
-                if (!s || !s.latitude || !s.longitude) {
-                  setDistanceInfo({ loading: false, error: 'Store location is not configured.', distanceKm: null });
+                // Use shop coordinates only from storeSettings (do not overwrite or fetch them here)
+                if (!storeSettings || !storeSettings.latitude || !storeSettings.longitude) {
+                  setDistanceInfo({ loading: false, error: 'Store location is not configured by admin.', distanceKm: null });
                   return;
                 }
 
-                const shopLat = parseFloat(s.latitude);
-                const shopLng = parseFloat(s.longitude);
+                const shopLat = parseFloat(storeSettings.latitude);
+                const shopLng = parseFloat(storeSettings.longitude);
                 const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
 
                 // attempt to refresh delivery charges
@@ -539,7 +523,7 @@ const Checkout = () => {
                   if (res.data) setDeliveryCharges(Array.isArray(res.data) ? res.data[0] : res.data);
                 } catch (err) { console.warn('Error fetching delivery charges', err); }
 
-                // Reverse geocode to fill form address fields
+                // Reverse geocode to fill form address fields (user's address only)
                 try {
                   const reverseResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${userLat}&lon=${userLng}&addressdetails=1`);
                   if (reverseResponse.ok) {
@@ -579,13 +563,12 @@ const Checkout = () => {
             try {
               const userLat = position.coords.latitude;
               const userLng = position.coords.longitude;
-              const s = await ensureStoreSettings();
-              if (!s || !s.latitude || !s.longitude) {
-                setDistanceInfo({ loading: false, error: 'Store location is not configured.', distanceKm: null });
+              if (!storeSettings || !storeSettings.latitude || !storeSettings.longitude) {
+                setDistanceInfo({ loading: false, error: 'Store location is not configured by admin.', distanceKm: null });
                 return;
               }
-              const shopLat = parseFloat(s.latitude);
-              const shopLng = parseFloat(s.longitude);
+              const shopLat = parseFloat(storeSettings.latitude);
+              const shopLng = parseFloat(storeSettings.longitude);
               const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
               setDistanceInfo({ loading: false, error: '', distanceKm: Number(distance.toFixed(1)) });
             } catch (err) {
@@ -920,8 +903,8 @@ const Checkout = () => {
                         <p className="text-sm text-slate-600">Fetching your current location...</p>
                       ) : distanceInfo.distanceKm !== null ? (
                         <>
-                          <p className="text-sm text-slate-600">Shop address</p>
-                          <p className="mt-1 text-sm font-semibold text-slate-800">
+                          {/* <p className="text-sm text-slate-600">Shop address</p> */}
+                          {/* <p className="mt-1 text-sm font-semibold text-slate-800">
                             {storeSettings ? (
                               [storeSettings.address, storeSettings.city, storeSettings.state, storeSettings.zip_code]
                                 .filter(Boolean)
@@ -929,7 +912,7 @@ const Checkout = () => {
                             ) : (
                               "Store address not available"
                             )}
-                          </p>
+                          </p> */}
 
                           <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
                             <div>
