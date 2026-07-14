@@ -146,10 +146,26 @@ const Checkout = () => {
 
   const fetchTaxSettings = async () => {
     try {
+      // Try to use locally cached store settings first (saved from admin settings)
+      const cached = localStorage.getItem('store_settings');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          setStoreSettings(parsed);
+        } catch (e) {
+          console.warn('Failed to parse cached store settings', e);
+        }
+      }
+
       const response = await api.get("/settings/store");
       if (response.data?.success && response.data?.data) {
         if (Object.keys(response.data.data).length > 0) {
           setStoreSettings(response.data.data);
+          try {
+            localStorage.setItem('store_settings', JSON.stringify(response.data.data));
+          } catch (e) {
+            console.warn('Unable to persist store settings to localStorage', e);
+          }
         }
       }
     } catch (error) {

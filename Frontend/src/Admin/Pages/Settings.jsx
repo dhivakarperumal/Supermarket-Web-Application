@@ -341,6 +341,11 @@ const Settings = () => {
             latitude: d.latitude || '',
             longitude: d.longitude || '',
           });
+          try {
+            localStorage.setItem('store_settings', JSON.stringify(response.data.data));
+          } catch (e) {
+            console.warn('Unable to persist store settings to localStorage', e);
+          }
         }
       }
     } catch (error) {
@@ -394,6 +399,11 @@ const Settings = () => {
         const response = await api.post("/settings/store", storeSettings);
         if (response.data?.success) {
           toast.success("Store settings saved successfully!");
+          try {
+            localStorage.setItem('store_settings', JSON.stringify(storeSettings));
+          } catch (e) {
+            console.warn('Unable to persist store settings to localStorage', e);
+          }
         } else {
           toast.error("Failed to save store settings.");
         }
