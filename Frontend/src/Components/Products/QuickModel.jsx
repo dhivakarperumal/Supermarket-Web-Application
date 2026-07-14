@@ -59,6 +59,33 @@ const QuickViewModal = ({ product, onClose }) => {
     return [value];
   };
 
+  const getComboItems = (items) => {
+    if (!items) return [];
+    if (Array.isArray(items)) return items.filter(Boolean);
+    if (typeof items === "string") {
+      try {
+        const parsed = JSON.parse(items);
+        return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
+  const isComboProduct = (item) => {
+    if (!item) return false;
+    const category = String(item.category || "").trim().toLowerCase();
+    return (
+      category === "combo" ||
+      category === "combos" ||
+      category === "combo product" ||
+      category === "combo products" ||
+      item.is_combo === true ||
+      getComboItems(item.combo_items).length > 0
+    );
+  };
+
   const { addToCart, toggleWishlist, wishlist } = useContext(StoreContext);
   const navigate = useNavigate();
 
@@ -78,6 +105,8 @@ const QuickViewModal = ({ product, onClose }) => {
   const isInWishlist = wishlist.some(
     (w) => w.product_id === product?.id || w.id === product?.id,
   );
+
+  const comboItems = getComboItems(product?.combo_items);
 
   const imageCandidates = [
     selectedVariant?.images,
@@ -350,13 +379,13 @@ const QuickViewModal = ({ product, onClose }) => {
             )}
 
             {/* Combo Items */}
-            {product.category === "COMBO" && Array.isArray(product.combo_items) && product.combo_items.length > 0 && (
+            {isComboProduct(product) && comboItems.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-3">
                   Combo Includes:
                 </h3>
                 <div className="flex flex-col gap-3">
-                  {product.combo_items.map((item, idx) => (
+                  {comboItems.map((item, idx) => (
                     <div key={idx} className="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
                       {item.image && (
                         <div className="w-12 h-12 bg-white rounded-lg shadow-sm overflow-hidden flex-shrink-0 border border-gray-100 p-1">

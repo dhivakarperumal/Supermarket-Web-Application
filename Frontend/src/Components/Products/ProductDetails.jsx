@@ -122,6 +122,33 @@ const ProductDetails = () => {
     return [value];
   };
 
+  const getComboItems = (items) => {
+    if (!items) return [];
+    if (Array.isArray(items)) return items.filter(Boolean);
+    if (typeof items === 'string') {
+      try {
+        const parsedItems = JSON.parse(items);
+        return Array.isArray(parsedItems) ? parsedItems.filter(Boolean) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
+  const isComboProduct = (item) => {
+    if (!item) return false;
+    const category = String(item.category || '').trim().toLowerCase();
+    return (
+      category === 'combo' ||
+      category === 'combos' ||
+      category === 'combo product' ||
+      category === 'combo products' ||
+      item.is_combo === true ||
+      getComboItems(item.combo_items).length > 0
+    );
+  };
+
   const getDisplayImages = (data, variant) => {
     const candidates = [
       variant?.images,
@@ -324,6 +351,7 @@ const ProductDetails = () => {
   }, [user, id]);
 
   const displayImages = product ? getDisplayImages(product, selectedVariant) : [];
+  const comboItems = getComboItems(product?.combo_items);
   const fallbackImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(product?.name || "Product")}&background=random`;
 
   if (!product)
@@ -546,13 +574,13 @@ const ProductDetails = () => {
               </div>
             </div>
 
-            {product?.category === "COMBO" && Array.isArray(product?.combo_items) && product.combo_items.length > 0 && (
+            {isComboProduct(product) && comboItems.length > 0 && (
               <div className="mt-6 rounded-[1.5rem] border border-gray-100 bg-white p-5 shadow-sm">
                 <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
                   Combo Includes
                 </p>
                 <div className="flex flex-col gap-3">
-                  {product.combo_items.map((item, idx) => (
+                  {comboItems.map((item, idx) => (
                     <div key={idx} className="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
                       {item.image && (
                         <div className="w-12 h-12 bg-white rounded-lg shadow-sm overflow-hidden flex-shrink-0 border border-gray-100 p-1">
