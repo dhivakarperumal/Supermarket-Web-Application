@@ -1,6 +1,6 @@
 // src/components/ScrollNavigator.jsx
 import React, { useEffect, useState } from "react";
-import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
+import { FiChevronUp } from "react-icons/fi";
 
 const ScrollNavigator = () => {
   const [showButtons, setShowButtons] = useState(false);
@@ -29,7 +29,7 @@ const ScrollNavigator = () => {
           className="bg-primary-light text-white p-2 cursor-pointer rounded-full shadow-md  transition"
           aria-label="Scroll to top"
         >
-          <IoIosArrowUp size={24} />
+          <FiChevronUp size={24} />
         </button>
       </div>
     )

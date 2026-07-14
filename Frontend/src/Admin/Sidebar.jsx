@@ -11,7 +11,6 @@ import {
   ChevronDown,
   ChevronRight,
   Tag,
-  PlusCircle,
   List,
   Layers,
   Truck,
@@ -31,6 +30,7 @@ import { useAuth } from "../PrivateRouter/AuthContext";
 
 // Public assets in Vite should be referenced by absolute path
 const basketImage = "/basket.png";
+const logoImage = "/logo.png";
 
 /* ================= NAV ITEMS ================= */
 const navItems = [
@@ -197,8 +197,8 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
       >
         {/* ===== LOGO ===== */}
         <div className={`flex items-center gap-3 border-b border-white/10 ${collapsed ? "px-3 py-5 justify-center" : "px-5 py-5"}`}>
-          <div className="w-12 h-12 flex items-center justify-center shrink-0 overflow-hidden rounded-full bg-black shadow-md border-2 border-white/10">
-            <img src={basketImage} alt="Logo" className="w-full h-full object-contain" />
+          <div className="w-12 h-12 flex items-center justify-center shrink-0 overflow-hidden rounded-full bg-white shadow-md border-2 border-white/10">
+            <img src={logoImage} alt="Logo" className="w-full h-full object-contain" />
           </div>
 
           {!collapsed && (

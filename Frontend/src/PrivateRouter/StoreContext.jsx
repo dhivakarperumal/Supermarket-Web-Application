@@ -155,7 +155,7 @@ export const StoreProvider = ({ children }) => {
 
         try {
             await api.delete(`/wishlist/${user.user_id}/${productId}`);
-            toast.error("Removed from favorites");
+            toast.success("Removed from favorites");
             await fetchWishlist();
         } catch (err) {
             console.error("Remove wishlist error:", err);
@@ -222,7 +222,7 @@ export const StoreProvider = ({ children }) => {
         try {
             if (isAlready) {
                 await api.delete(`/wishlist/${user.user_id}/${productId}`);
-                toast.error("Removed from favorites");
+                toast.success("Removed from favorites");
             } else {
                 const selectedVariant = variant || product.variants?.[0] || null;
                 const groceryVariantInfo = (selectedVariant?.quantity && selectedVariant?.unit) ? `${selectedVariant.quantity} ${selectedVariant.unit}` : null;
