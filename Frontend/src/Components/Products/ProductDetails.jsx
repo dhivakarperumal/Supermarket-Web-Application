@@ -213,7 +213,8 @@ const ProductDetails = () => {
   };
 
   const increaseQty = () => {
-    const stock = selectedVariant?.stock || selectedVariant?.stock_quantity || product?.stock_quantity || 0;
+    let stock = parseInt(selectedVariant?.stock || selectedVariant?.stock_quantity || product?.total_stock || product?.stock_quantity || 10, 10);
+    if (isNaN(stock) || stock <= 0) stock = 10;
 
     setQuantity((prev) => {
       if (prev < stock) return prev + 1;
