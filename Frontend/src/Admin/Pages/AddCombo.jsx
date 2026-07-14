@@ -474,7 +474,7 @@ const AddCombo = () => {
         ...formData,
         category: formData.category || "General",
         combo_items: Array.isArray(formData.combo_items)
-          ? formData.combo_items
+          ? formData.combo_items.filter(item => item.product_id && item.product_id.toString().trim() !== "")
           : [],
         pricing_options: [], // empty for combos
         minimum_stock: Number(formData.minimum_stock || 0),
