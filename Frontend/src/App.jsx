@@ -9,6 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 import ScrollToTop from "./Components/CommenComponents/ScrollToTop";
 import ScrollNavigator from "./Components/CommenComponents/ScrollNavigator";
 import Loader from "./Components/CommenComponents/Loader";
+import FloatingSupport from "./Components/CommenComponents/FloatingSupport";
 
 function App() {
    const [loading, setLoading] = useState(false);
@@ -24,6 +25,7 @@ function App() {
       <ScrollToTop/>
       <ScrollNavigator/>
       <Outlet />
+      <FloatingSupport />
       <Footer />
     </section>
   );
