@@ -472,6 +472,7 @@ const AddCombo = () => {
     try {
       const finalData = {
         ...formData,
+        type: 1,
         category: formData.category || "General",
         combo_items: Array.isArray(formData.combo_items)
           ? formData.combo_items.filter(item => item.product_id && item.product_id.toString().trim() !== "")
