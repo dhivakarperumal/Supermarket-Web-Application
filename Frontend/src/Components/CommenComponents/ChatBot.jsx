@@ -21,21 +21,26 @@ const SUPPORT_KEYWORDS = [
 ];
 
 const GREETING_KEYWORDS = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening", "hii", "helo", "hai"];
-
 const CART_KEYWORDS = ["cart", "my cart", "shopping cart", "add to cart", "view cart"];
 const WISHLIST_KEYWORDS = ["wishlist", "my wishlist", "saved items", "favourites", "favorites"];
 const OFFER_KEYWORDS = ["offer", "offers", "deal", "deals", "discount", "sale", "combo"];
 const CATEGORY_KEYWORDS = ["category", "categories", "browse", "explore"];
+const ACCOUNT_KEYWORDS = ["account", "profile", "my details", "settings"];
+const ADDRESS_KEYWORDS = ["address", "delivery address", "shipping address", "location"];
+const TRACK_KEYWORDS = ["track", "where is my order", "track order"];
 
 function detectIntent(text) {
   const lower = text.toLowerCase().trim();
   if (GREETING_KEYWORDS.some((k) => lower === k || lower.startsWith(k + " "))) return "greeting";
+  if (TRACK_KEYWORDS.some((k) => lower.includes(k))) return "track";
   if (ORDER_KEYWORDS.some((k) => lower.includes(k))) return "order";
   if (SUPPORT_KEYWORDS.some((k) => lower.includes(k))) return "support";
   if (CART_KEYWORDS.some((k) => lower.includes(k))) return "cart";
   if (WISHLIST_KEYWORDS.some((k) => lower.includes(k))) return "wishlist";
   if (OFFER_KEYWORDS.some((k) => lower.includes(k))) return "offers";
   if (CATEGORY_KEYWORDS.some((k) => lower.includes(k))) return "categories";
+  if (ACCOUNT_KEYWORDS.some((k) => lower.includes(k))) return "account";
+  if (ADDRESS_KEYWORDS.some((k) => lower.includes(k))) return "address";
   return "search";
 }
 
@@ -79,13 +84,76 @@ function getProductImage(product) {
 
 // ─── Quick Actions ────────────────────────────────────────────────────────────
 const QUICK_ACTIONS = [
-  { label: "📦 My Orders", intent: "order", message: "Show my orders" },
-  { label: "🔍 Search Products", intent: "search_prompt", message: "Search products" },
-  { label: "🎁 Offers", intent: "offers", message: "Show offers and deals" },
-  { label: "🛒 Cart", intent: "cart", message: "View my cart" },
-  { label: "❤️ Wishlist", intent: "wishlist", message: "View my wishlist" },
-  { label: "🏷️ Categories", intent: "categories", message: "Browse categories" },
-  { label: "🎧 Contact Support", intent: "support", message: "Contact support" },
+  {
+    label: "Last Order", message: "Show my last order",
+    color: "#f43f5e", bg: "#fff1f2",
+    icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+  },
+  {
+    label: "Recent Orders", message: "Show recent orders",
+    color: "#f59e0b", bg: "#fffbeb",
+    icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  },
+  {
+    label: "Today Orders", message: "Show today orders",
+    color: "#3b82f6", bg: "#eff6ff",
+    icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>,
+  },
+  {
+    label: "Delivered Orders", message: "Show delivered orders",
+    color: "#10b981", bg: "#f0fdf4",
+    icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+  },
+  {
+    label: "My Orders", message: "Show my orders",
+    color: "#8b5cf6", bg: "#f5f3ff",
+    icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
+  },
+  {
+    label: "Search Products", message: "Search products",
+    color: "#3b82f6", bg: "#eff6ff",
+    icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  },
+  {
+    label: "Offers", message: "Show offers and deals",
+    color: "#ef4444", bg: "#fef2f2",
+    icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>,
+  },
+  {
+    label: "Track Order", message: "Track my order",
+    color: "#eab308", bg: "#fefce8",
+    icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  },
+  {
+    label: "My Account", message: "Open my account",
+    color: "#6366f1", bg: "#eef2ff",
+    icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  },
+  {
+    label: "Delivery Address", message: "Manage delivery address",
+    color: "#14b8a6", bg: "#f0fdfa",
+    icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  },
+  {
+    label: "Cart", message: "View my cart",
+    color: "#10b981", bg: "#f0fdf4",
+    icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>,
+  },
+  {
+    label: "Wishlist", message: "View my wishlist",
+    color: "#ec4899", bg: "#fdf2f8",
+    icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+  },
+  {
+    label: "Categories", message: "Browse categories",
+    color: "#8b5cf6", bg: "#f5f3ff",
+    icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
+  },
+  {
+    label: "Contact Support", message: "Contact support",
+    color: "#06b6d4", bg: "#ecfeff",
+    icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.78a16 16 0 0 0 6.29 6.29l1.64-1.64a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
+  },
 ];
 
 // ─── Main ChatBot Component ───────────────────────────────────────────────────
@@ -131,7 +199,7 @@ const ChatBot = ({ isOpen, onClose }) => {
   };
 
   // ── Handle Orders ──
-  const fetchOrders = async () => {
+  const fetchOrders = async (filterMode = "all") => {
     if (!isLoggedIn) {
       addMessage({
         from: "bot",
@@ -145,10 +213,29 @@ const ChatBot = ({ isOpen, onClose }) => {
     try {
       const { data } = await api.get("/orders");
       const all = Array.isArray(data) ? data : data?.data || [];
-      const userOrders = all.filter((o) => o.user_id === user.user_id).slice(0, 10);
+      let userOrders = all.filter((o) => o.user_id === user.user_id);
+      
+      if (filterMode === "today") {
+        const today = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
+        userOrders = userOrders.filter(o => o.created_at?.startsWith(today));
+      } else if (filterMode === "delivered") {
+        userOrders = userOrders.filter(o => o.status?.toLowerCase() === "delivered");
+      }
+
+      // Default sorting by newest
+      userOrders = userOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      
+      if (filterMode === "last") {
+        userOrders = userOrders.slice(0, 1);
+      } else if (filterMode === "recent") {
+        userOrders = userOrders.slice(0, 5);
+      } else {
+        userOrders = userOrders.slice(0, 10);
+      }
+
       setOrders(userOrders);
       if (userOrders.length === 0) {
-        addMessage({ from: "bot", type: "text", text: "📭 You have no orders yet. Start shopping!" });
+        addMessage({ from: "bot", type: "text", text: `📭 You have no ${filterMode === "all" ? "" : filterMode} orders yet.` });
       } else {
         addMessage({ from: "bot", type: "orders", orders: userOrders });
       }
@@ -204,8 +291,22 @@ const ChatBot = ({ isOpen, onClose }) => {
         break;
 
       case "order":
-        addMessage({ from: "bot", type: "text", text: "🔍 Let me fetch your orders..." });
-        await fetchOrders();
+        if (text.toLowerCase().includes("last")) {
+          addMessage({ from: "bot", type: "text", text: "🔍 Fetching your last order..." });
+          await fetchOrders("last");
+        } else if (text.toLowerCase().includes("today")) {
+          addMessage({ from: "bot", type: "text", text: "🔍 Fetching today's orders..." });
+          await fetchOrders("today");
+        } else if (text.toLowerCase().includes("deliver")) {
+          addMessage({ from: "bot", type: "text", text: "🔍 Fetching delivered orders..." });
+          await fetchOrders("delivered");
+        } else if (text.toLowerCase().includes("recent")) {
+          addMessage({ from: "bot", type: "text", text: "🔍 Fetching your recent orders..." });
+          await fetchOrders("recent");
+        } else {
+          addMessage({ from: "bot", type: "text", text: "🔍 Let me fetch your orders..." });
+          await fetchOrders("all");
+        }
         break;
 
       case "support":
@@ -226,6 +327,18 @@ const ChatBot = ({ isOpen, onClose }) => {
 
       case "categories":
         addMessage({ from: "bot", type: "text", text: "🏷️ Browse all product categories:", action: { label: "Browse Categories", href: "/shop" } });
+        break;
+
+      case "track":
+        addMessage({ from: "bot", type: "text", text: "📍 To track your order, please go to the Orders page and enter your Order ID at the top.", action: { label: "Track Order", href: "/ordersmain" } });
+        break;
+
+      case "account":
+        addMessage({ from: "bot", type: "text", text: "👤 Opening your account settings...", action: { label: "My Account", href: "/account" } });
+        break;
+
+      case "address":
+        addMessage({ from: "bot", type: "text", text: "📍 You can manage your delivery addresses in your account.", action: { label: "Manage Addresses", href: "/account" } });
         break;
 
       case "search_prompt":
@@ -347,7 +460,11 @@ const ChatBot = ({ isOpen, onClose }) => {
                   key={qa.label}
                   className="quick-action-chip"
                   onClick={() => handleSend(qa.message)}
+                  style={{ "--chip-color": qa.color }}
                 >
+                  <span className="chip-icon" style={{ color: qa.color, background: qa.bg }}>
+                    {qa.icon}
+                  </span>
                   {qa.label}
                 </button>
               ))}
