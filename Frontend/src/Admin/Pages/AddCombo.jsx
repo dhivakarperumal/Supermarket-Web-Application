@@ -679,23 +679,130 @@ const AddCombo = () => {
                     </span>
                   </div>
 
-                  <div className="md:col-span-7 space-y-2">
+                  <div className="md:col-span-4 space-y-2">
                     <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                       Select Product
                     </label>
                     <select
-                      value={opt.product_id}
+                      value={opt.product_id ? `${opt.product_id}_base` : ""}
                       onChange={(e) => {
+                        const selectedVal = e.target.value;
+                        if (!selectedVal) return;
+                        
+                        const pId = selectedVal.split('_')[0];
+                        const selectedProduct = availableProducts.find(p => p.id.toString() === pId);
                         const newItems = [...formData.combo_items];
-                        newItems[idx].product_id = e.target.value;
+                        
+                        if (selectedProduct) {
+                          newItems[idx] = {
+                            ...newItems[idx],
+                            product_id: pId,
+                            variant_index: "base",
+                            name: selectedProduct.name,
+                            mrp: selectedProduct.mrp || 0,
+                            selling_price: selectedProduct.selling_price || 0,
+                            offer_price: selectedProduct.offer_price || 0,
+                            image: selectedProduct.thumbnail_image || (Array.isArray(selectedProduct.product_images) && selectedProduct.product_images[0]) || "",
+                            variant_info: {
+                                weight: selectedProduct.weight_volume || "1",
+                                unit: selectedProduct.unit || "kg"
+                            }
+                          };
+                        } else {
+                          newItems[idx].product_id = pId;
+                        }
+                        
                         setFormData({ ...formData, combo_items: newItems });
                       }}
                       className={selectCls}
                     >
                       <option value="">-- Choose a product --</option>
                       {availableProducts.map(p => (
-                        <option key={p.id} value={p.id}>{p.name} - ₹{p.offer_price || p.selling_price || p.mrp}</option>
+                         <option key={p.id} value={`${p.id}_base`}>
+                            {p.name}
+                         </option>
                       ))}
+                    </select>
+                  </div>
+                  
+                  <div className="md:col-span-3 space-y-2">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                      Weight / Size
+                    </label>
+                    <select
+                      value={opt.product_id ? `${opt.product_id}_${opt.variant_index || 'base'}` : ""}
+                      onChange={(e) => {
+                        const selectedVal = e.target.value;
+                        if (!selectedVal) return;
+                        
+                        const [pId, vIdxStr] = selectedVal.split('_');
+                        const selectedProduct = availableProducts.find(p => p.id.toString() === pId);
+                        const newItems = [...formData.combo_items];
+                        
+                        if (selectedProduct) {
+                          let vWeight = selectedProduct.weight_volume || "1";
+                          let vUnit = selectedProduct.unit || "kg";
+                          let vMrp = selectedProduct.mrp || 0;
+                          let vSellingPrice = selectedProduct.selling_price || 0;
+                          let vOfferPrice = selectedProduct.offer_price || 0;
+
+                          if (vIdxStr !== 'base' && Array.isArray(selectedProduct.pricing_options) && selectedProduct.pricing_options[Number(vIdxStr)]) {
+                             const pOpt = selectedProduct.pricing_options[Number(vIdxStr)];
+                             vWeight = pOpt.weight_volume || vWeight;
+                             vUnit = pOpt.unit || vUnit;
+                             vMrp = pOpt.mrp || vMrp;
+                             vSellingPrice = pOpt.selling_price || pOpt.price || vSellingPrice;
+                             vOfferPrice = pOpt.offer_price || vOfferPrice;
+                          }
+
+                          newItems[idx] = {
+                            ...newItems[idx],
+                            product_id: pId,
+                            variant_index: vIdxStr,
+                            name: selectedProduct.name,
+                            mrp: vMrp,
+                            selling_price: vSellingPrice,
+                            offer_price: vOfferPrice,
+                            variant_info: {
+                                weight: vWeight,
+                                unit: vUnit
+                            }
+                          };
+                        }
+                        
+                        setFormData({ ...formData, combo_items: newItems });
+                      }}
+                      className={selectCls}
+                      disabled={!opt.product_id}
+                    >
+                      <option value="">-- Choose Weight --</option>
+                      {opt.product_id && availableProducts.find(p => p.id.toString() === opt.product_id) && (
+                        (() => {
+                          const p = availableProducts.find(p => p.id.toString() === opt.product_id);
+                          const options = [];
+                          const baseWeightStr = p.weight_volume ? p.weight_volume : "";
+                          const baseUnitStr = p.unit ? p.unit : "";
+                          const baseVariantStr = (baseWeightStr || baseUnitStr) ? `${baseWeightStr} ${baseUnitStr}`.trim() : "Base";
+                          options.push(
+                            <option key={`${p.id}_base`} value={`${p.id}_base`}>
+                              {baseVariantStr} - ₹{p.offer_price || p.selling_price || p.mrp}
+                            </option>
+                          );
+                          if (Array.isArray(p.pricing_options) && p.pricing_options.length > 0) {
+                            p.pricing_options.forEach((po, i) => {
+                              const weightStr = po.weight_volume ? po.weight_volume : "";
+                              const unitStr = po.unit ? po.unit : "";
+                              const variantStr = (weightStr || unitStr) ? `${weightStr} ${unitStr}`.trim() : `Variant ${i+1}`;
+                              options.push(
+                                <option key={`${p.id}_${i}`} value={`${p.id}_${i}`}>
+                                  {variantStr} - ₹{po.offer_price || po.selling_price || po.price || po.mrp}
+                                </option>
+                              );
+                            });
+                          }
+                          return options;
+                        })()
+                      )}
                     </select>
                   </div>
                   

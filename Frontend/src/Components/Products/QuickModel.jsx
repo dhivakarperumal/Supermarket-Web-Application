@@ -348,6 +348,50 @@ const QuickViewModal = ({ product, onClose }) => {
               </div>
             )}
 
+            {/* Combo Items */}
+            {product.category === "COMBO" && Array.isArray(product.combo_items) && product.combo_items.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-3">
+                  Combo Includes:
+                </h3>
+                <div className="flex flex-col gap-3">
+                  {product.combo_items.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                      {item.image && (
+                        <div className="w-12 h-12 bg-white rounded-lg shadow-sm overflow-hidden flex-shrink-0 border border-gray-100 p-1">
+                          <img src={resolveImage(item.image)} alt={item.name} className="w-full h-full object-contain" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-800 text-sm">{item.name}</p>
+                        {item.variant_info && (
+                           <p className="text-xs text-gray-500 font-semibold mt-0.5">{item.variant_info.weight} {item.variant_info.unit}</p>
+                        )}
+                        <div className="flex items-center gap-2 mt-1">
+                          {item.offer_price > 0 || item.selling_price > 0 ? (
+                            <>
+                              <span className="text-sm font-black text-green-600">₹{item.offer_price || item.selling_price}</span>
+                              {item.mrp > 0 && <span className="text-xs text-gray-400 line-through font-semibold">₹{item.mrp}</span>}
+                              {(item.mrp > (item.offer_price || item.selling_price)) && (
+                                <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-black">
+                                  {Math.round(((item.mrp - (item.offer_price || item.selling_price)) / item.mrp) * 100)}% OFF
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-sm font-black text-gray-800">₹{item.mrp}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="bg-indigo-100 text-indigo-700 font-black px-3 py-1 rounded-lg text-sm">
+                        x{item.quantity}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Description */}
             {product.description && (
 
