@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "react-hot-toast";
 import imageCompression from "browser-image-compression";
+import { QRCodeSVG } from "qrcode.react";
 import api from "../../api";
 import "./Settings.css";
 import { 
@@ -502,7 +503,13 @@ const Settings = () => {
                 
                 {receiptSettings.qrCodeDisplay && (
                   <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                    <div style={{ background: 'conic-gradient(#333 90deg, transparent 90deg)', backgroundSize: '10px 10px', height: '80px', width: '80px', margin: '0 auto' }}></div>
+                    {paymentSettings.upiId ? (
+                      <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <QRCodeSVG value={`upi://pay?pa=${paymentSettings.upiId}&pn=${receiptSettings.storeName || 'Store'}`} size={80} />
+                      </div>
+                    ) : (
+                      <div style={{ background: 'conic-gradient(#333 90deg, transparent 90deg)', backgroundSize: '10px 10px', height: '80px', width: '80px', margin: '0 auto' }}></div>
+                    )}
                     <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Scan to Pay</div>
                   </div>
                 )}
