@@ -112,6 +112,9 @@ const Settings = () => {
     paymentType: "both",
     razorpayEnabled: true,
     razorpayKey: "",
+    cardNumber: "",
+    cardExpiry: "",
+    cardCvv: "",
   });
 
   const updatePaymentSetting = (key, value) => {
@@ -138,6 +141,9 @@ const Settings = () => {
             paymentType: dbData.payment_type || "both",
             razorpayEnabled: dbData.razorpay_enabled !== 0 && dbData.razorpay_enabled !== "0",
             razorpayKey: dbData.razorpay_key || "",
+            cardNumber: dbData.card_number || "",
+            cardExpiry: dbData.card_expiry || "",
+            cardCvv: dbData.card_cvv || "",
           });
         }
       }
@@ -796,6 +802,29 @@ const Settings = () => {
                       <Input label="UPI ID" placeholder="example@upi" value={paymentSettings.upiId} onChange={(e) => updatePaymentSetting('upiId', e.target.value)} />
                     )}
                   </>
+                )}
+
+                {paymentSettings.paymentType !== "upi" && (
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <Input
+                      label="Card Number"
+                      placeholder="1234 5678 9012 3456"
+                      value={paymentSettings.cardNumber}
+                      onChange={(e) => updatePaymentSetting('cardNumber', e.target.value)}
+                    />
+                    <Input
+                      label="MM/YY"
+                      placeholder="MM/YY"
+                      value={paymentSettings.cardExpiry}
+                      onChange={(e) => updatePaymentSetting('cardExpiry', e.target.value)}
+                    />
+                    <Input
+                      label="CVV"
+                      placeholder="CVV"
+                      value={paymentSettings.cardCvv}
+                      onChange={(e) => updatePaymentSetting('cardCvv', e.target.value)}
+                    />
+                  </div>
                 )}
               </>
             )}
