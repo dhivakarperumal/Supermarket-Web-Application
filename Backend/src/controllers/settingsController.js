@@ -33,7 +33,6 @@ exports.updateReceiptSettings = async (req, res) => {
       dateFormat,
       taxDisplay,
       discountDisplay,
-      barcodeDisplay,
       qrCodeDisplay,
       footerMessage,
       thankYouMessage,
@@ -54,13 +53,13 @@ exports.updateReceiptSettings = async (req, res) => {
         `UPDATE receipt_settings SET 
           store_name = ?, address = ?, phone = ?, email = ?, gst = ?, fssai = ?, 
           invoice_prefix = ?, invoice_format = ?, currency = ?, date_format = ?, 
-          tax_display = ?, discount_display = ?, barcode_display = ?, qr_code_display = ?, 
+          tax_display = ?, discount_display = ?, qr_code_display = ?, 
           footer_message = ?, thank_you_message = ?, return_policy = ?, store_logo = ?,
           receipt_id = ?, updated_by = ?
          WHERE id = ?`,
         [
           storeName, address, phone, email, gst, fssai, invoicePrefix, invoiceFormat, currency, dateFormat,
-          taxDisplay, discountDisplay, barcodeDisplay, qrCodeDisplay, footerMessage, thankYouMessage, returnPolicy, storeLogo,
+          taxDisplay, discountDisplay, qrCodeDisplay, footerMessage, thankYouMessage, returnPolicy, storeLogo,
           receiptId, updatedBy, id
         ]
       );
@@ -69,12 +68,12 @@ exports.updateReceiptSettings = async (req, res) => {
       await pool.query(
         `INSERT INTO receipt_settings (
           store_name, address, phone, email, gst, fssai, invoice_prefix, invoice_format, currency, date_format,
-          tax_display, discount_display, barcode_display, qr_code_display, footer_message, thank_you_message, return_policy, store_logo,
+          tax_display, discount_display, qr_code_display, footer_message, thank_you_message, return_policy, store_logo,
           receipt_id, created_by, updated_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           storeName, address, phone, email, gst, fssai, invoicePrefix, invoiceFormat, currency, dateFormat,
-          taxDisplay, discountDisplay, barcodeDisplay, qrCodeDisplay, footerMessage, thankYouMessage, returnPolicy, storeLogo,
+          taxDisplay, discountDisplay, qrCodeDisplay, footerMessage, thankYouMessage, returnPolicy, storeLogo,
           receiptId, createdBy, updatedBy
         ]
       );

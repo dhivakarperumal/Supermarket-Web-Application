@@ -96,9 +96,8 @@ const Settings = () => {
     dateFormat: 'DD/MM/YYYY',
     taxDisplay: true,
     discountDisplay: true,
-    barcodeDisplay: true,
     qrCodeDisplay: true,
-    footerMessage: 'Visit again!',
+    footerMessage: 'Thank you for shopping with us!',
     thankYouMessage: 'Thank you for shopping with us.',
     returnPolicy: 'No returns after 7 days.',
     storeLogo: ''
@@ -185,7 +184,6 @@ const Settings = () => {
             dateFormat: dbData.date_format || 'DD/MM/YYYY',
             taxDisplay: dbData.tax_display === 1,
             discountDisplay: dbData.discount_display === 1,
-            barcodeDisplay: dbData.barcode_display === 1,
             qrCodeDisplay: dbData.qr_code_display === 1,
             footerMessage: dbData.footer_message || '',
             thankYouMessage: dbData.thank_you_message || '',
@@ -413,8 +411,10 @@ const Settings = () => {
               <Select label="Date Format" options={['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD']} value={receiptSettings.dateFormat} onChange={(e) => updateReceiptSetting('dateFormat', e.target.value)} />
               <Toggle label="Tax Display" checked={receiptSettings.taxDisplay} onChange={(e) => updateReceiptSetting('taxDisplay', e.target.checked)} />
               <Toggle label="Discount Display" checked={receiptSettings.discountDisplay} onChange={(e) => updateReceiptSetting('discountDisplay', e.target.checked)} />
-              <Toggle label="Barcode Display" checked={receiptSettings.barcodeDisplay} onChange={(e) => updateReceiptSetting('barcodeDisplay', e.target.checked)} />
               <Toggle label="QR Code Display" checked={receiptSettings.qrCodeDisplay} onChange={(e) => updateReceiptSetting('qrCodeDisplay', e.target.checked)} />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <Input label="Footer Message" placeholder="Visit again!" value={receiptSettings.footerMessage} onChange={(e) => updateReceiptSetting('footerMessage', e.target.value)} />
               <Input label="Thank You Message" placeholder="Thank you for shopping with us." value={receiptSettings.thankYouMessage} onChange={(e) => updateReceiptSetting('thankYouMessage', e.target.value)} />
               <Input label="Return Policy" placeholder="No returns after 7 days." value={receiptSettings.returnPolicy} onChange={(e) => updateReceiptSetting('returnPolicy', e.target.value)} />
@@ -493,13 +493,6 @@ const Settings = () => {
                 </div>
                 
                 <div style={{ borderBottom: '1px dashed #cbd5e1', margin: '1rem 0' }}></div>
-                
-                {receiptSettings.barcodeDisplay && (
-                  <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                    <div style={{ background: 'repeating-linear-gradient(90deg, #333, #333 2px, transparent 2px, transparent 4px)', height: '40px', width: '80%', margin: '0 auto', marginBottom: '0.25rem' }}></div>
-                    <div style={{ fontSize: '0.75rem' }}>123456789012</div>
-                  </div>
-                )}
                 
                 {receiptSettings.qrCodeDisplay && (
                   <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
