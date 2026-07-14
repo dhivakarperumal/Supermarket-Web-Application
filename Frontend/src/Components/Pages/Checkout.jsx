@@ -139,8 +139,7 @@ const Checkout = () => {
         if (availableMethods.length === 1) {
           setPaymentMethod(availableMethods[0]);
         }
-        const defaultOnlineType = mappedSettings.paymentType === "card" ? "card" : mappedSettings.paymentType === "both" ? "upi" : "upi";
-        setOnlinePaymentType(defaultOnlineType);
+        setOnlinePaymentType("upi");
       }
     } catch (error) {
       console.error("Error fetching payment settings:", error);
@@ -670,7 +669,7 @@ const Checkout = () => {
         user_id: user?.user_id,
         email: form.customer_email,
         payment_status: paymentMethod === "online" ? "paid" : "pending",
-        payment_method: paymentMethod === "online" ? (onlinePaymentType === "card" ? "Card" : "Online Payment") : "Cash",
+        payment_method: paymentMethod === "online" ? "Online Payment" : "Cash",
         payment_id: paymentId,
         items: orderItems,
         total_amount: total,
@@ -1102,30 +1101,8 @@ const Checkout = () => {
 
                     {paymentMethod === "online" && (
                       <div className="mt-3 rounded-xl border border-green-100 bg-white p-3">
-                        {(paymentSettings?.paymentType === "both" || paymentSettings?.paymentType === "card") && (
-                          <div className="mb-3 flex flex-wrap gap-3 text-sm">
-                            {paymentSettings?.paymentType === "both" && (
-                              <>
-                                <label className="flex items-center gap-2">
-                                  <input type="radio" name="onlinePaymentType" value="upi" checked={onlinePaymentType === "upi"} onChange={() => setOnlinePaymentType("upi")} />
-                                  <span>UPI</span>
-                                </label>
-                                <label className="flex items-center gap-2">
-                                  <input type="radio" name="onlinePaymentType" value="card" checked={onlinePaymentType === "card"} onChange={() => setOnlinePaymentType("card")} />
-                                  <span>Card</span>
-                                </label>
-                              </>
-                            )}
-                            {paymentSettings?.paymentType === "card" && (
-                              <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">Card payment selected</span>
-                            )}
-                          </div>
-                        )}
-
                         <p className="text-sm text-slate-600">
-                          {onlinePaymentType === "card"
-                            ? "You’ll be redirected to Razorpay for secure card payment."
-                            : "You’ll be redirected to Razorpay for secure payment."}
+                          You’ll be redirected to Razorpay for secure UPI payment.
                         </p>
                       </div>
                     )}
