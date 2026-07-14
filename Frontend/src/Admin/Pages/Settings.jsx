@@ -64,8 +64,8 @@ const SETTINGS_CATEGORIES = [
   { id: 'store', title: 'Store Settings', desc: 'Core business and location info.', icon: <Store size={24} /> },
   { id: 'tax', title: 'Tax & GST', desc: 'Configure GST, SGST, IGST and HSN.', icon: <Percent size={24} /> },
   { id: 'localization', title: 'Localization', desc: 'Region, Language & formatting.', icon: <Globe size={24} /> },
-  
-  
+
+
   { id: 'delivery', title: 'Delivery Charges', desc: 'Manage shipping & delivery fees.', icon: <Truck size={24} /> },
   { id: 'coupon', title: 'Coupon Settings', desc: 'Configure discount & promo codes.', icon: <Ticket size={24} /> }
 ];
@@ -321,26 +321,31 @@ const Settings = () => {
         if (Object.keys(response.data.data).length > 0) {
           const d = response.data.data;
           setStoreSettings({
-            storeName:    d.store_name    || '',
-            storeLogo:    d.store_logo    || null,
-            email:        d.email         || '',
-            phone:        d.phone         || '',
-            address:      d.address       || '',
-            city:         d.city          || '',
-            state:        d.state         || '',
-            country:      d.country       || '',
-            zipCode:      d.zip_code      || '',
-            gstin:        d.gstin         || '',
-            fssai:        d.fssai         || '',
+            storeName: d.store_name || '',
+            storeLogo: d.store_logo || null,
+            email: d.email || '',
+            phone: d.phone || '',
+            address: d.address || '',
+            city: d.city || '',
+            state: d.state || '',
+            country: d.country || '',
+            zipCode: d.zip_code || '',
+            gstin: d.gstin || '',
+            fssai: d.fssai || '',
             businessType: d.business_type || 'Supermarket',
-            timezone:     d.timezone      || 'Asia/Kolkata (IST)',
-            language:     d.language      || 'English',
-            currency:     d.currency      || 'INR (₹)',
-            openingTime:  d.opening_time  || '09:00',
-            closingTime:  d.closing_time  || '21:00',
-            latitude:     d.latitude      || '',
-            longitude:    d.longitude     || '',
+            timezone: d.timezone || 'Asia/Kolkata (IST)',
+            language: d.language || 'English',
+            currency: d.currency || 'INR (₹)',
+            openingTime: d.opening_time || '09:00',
+            closingTime: d.closing_time || '21:00',
+            latitude: d.latitude || '',
+            longitude: d.longitude || '',
           });
+          try {
+            localStorage.setItem('store_settings', JSON.stringify(response.data.data));
+          } catch (e) {
+            console.warn('Unable to persist store settings to localStorage', e);
+          }
         }
       }
     } catch (error) {
@@ -394,6 +399,11 @@ const Settings = () => {
         const response = await api.post("/settings/store", storeSettings);
         if (response.data?.success) {
           toast.success("Store settings saved successfully!");
+          try {
+            localStorage.setItem('store_settings', JSON.stringify(storeSettings));
+          } catch (e) {
+            console.warn('Unable to persist store settings to localStorage', e);
+          }
         } else {
           toast.error("Failed to save store settings.");
         }
@@ -685,70 +695,18 @@ const Settings = () => {
 
             <div
               className="receipt-preview-container"
-              style={{
-                position: "sticky",
-                top: "20px",
-                alignSelf: "start",
-                padding: "0 1rem",
-              }}
+              style={{ position: "sticky", top: "20px", alignSelf: "start", padding: "0 1rem" }}
             >
-              <h4
-                style={{
-                  marginBottom: "1rem",
-                  color: "#1e293b",
-                  fontSize: "1rem",
-                  fontWeight: "bold",
-                }}
-              >
-                Receipt Preview
-              </h4>
 
-              <div
-                className="receipt-preview-card"
-                style={{
-                  background: "#fff",
-                  padding: "1.5rem",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-                  border: "1px dashed #cbd5e1",
-                  fontFamily: "monospace",
-                  fontSize: "0.85rem",
-                  color: "#333",
-                  maxWidth: "350px",
-                  width: "100%",
-                  margin: 0,
-                }}
-              >
-                <div
-                  style={{
-                    textAlign: "center",
-                    marginBottom: "1rem",
-                    borderBottom: "1px dashed #cbd5e1",
-                    paddingBottom: "1rem",
-                  }}
-                >
+
+              <div className="receipt-preview-card">
+                <h4 className="receipt-preview-title">Receipt Preview</h4>
+                <div className="receipt-top">
                   {receiptSettings.storeLogo && (
-                    <img
-                      src={receiptSettings.storeLogo}
-                      alt="Store Logo"
-                      style={{
-                        maxWidth: "100px",
-                        maxHeight: "100px",
-                        margin: "0 auto 0.5rem",
-                        objectFit: "contain",
-                      }}
-                    />
+                    <img src={receiptSettings.storeLogo} alt="Store Logo" />
                   )}
 
-                  <h3
-                    style={{
-                      margin: "0 0 0.5rem 0",
-                      fontSize: "1.2rem",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {receiptSettings.storeName || "STORE NAME"}
-                  </h3>
+                  <h3>{receiptSettings.storeName || "STORE NAME"}</h3>
 
                   <div>{receiptSettings.address}</div>
                   <div>Phone: {receiptSettings.phone}</div>
@@ -758,106 +716,50 @@ const Settings = () => {
                   {receiptSettings.fssai && <div>FSSAI: {receiptSettings.fssai}</div>}
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: ".5rem",
-                  }}
-                >
+                <div className="receipt-meta">
                   <span>Invoice: {receiptSettings.invoicePrefix}0001</span>
                   <span>{new Date().toLocaleDateString()}</span>
                 </div>
 
-                <div
-                  style={{
-                    borderBottom: "1px dashed #cbd5e1",
-                    margin: ".5rem 0",
-                  }}
-                />
+                <div className="receipt-divider" />
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontWeight: "bold",
-                    marginBottom: ".5rem",
-                  }}
-                >
-                  <span>Item</span>
-                  <span>Total</span>
+                <div className="receipt-items">
+                  <div className="item" style={{ fontWeight: 700 }}>
+                    <span>Item</span>
+                    <span>Total</span>
+                  </div>
+                  <div className="item">
+                    <span>Apple 1kg</span>
+                    <span>{receiptSettings.currency}120.00</span>
+                  </div>
+                  <div className="item">
+                    <span>Rice 5kg</span>
+                    <span>{receiptSettings.currency}450.00</span>
+                  </div>
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <span>Apple 1kg</span>
-                  <span>{receiptSettings.currency}120.00</span>
-                </div>
+                <div className="receipt-divider" />
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <span>Rice 5kg</span>
-                  <span>{receiptSettings.currency}450.00</span>
-                </div>
-
-                <div
-                  style={{
-                    borderBottom: "1px dashed #cbd5e1",
-                    margin: ".75rem 0",
-                  }}
-                />
-
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
+                <div className="item">
                   <span>Subtotal</span>
                   <span>{receiptSettings.currency}570.00</span>
                 </div>
 
                 {receiptSettings.taxDisplay && (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
-                  >
+                  <div className="item">
                     <span>GST (5%)</span>
                     <span>{receiptSettings.currency}28.50</span>
                   </div>
                 )}
 
                 {receiptSettings.discountDisplay && (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
-                  >
+                  <div className="item">
                     <span>Discount</span>
                     <span>-{receiptSettings.currency}10.00</span>
                   </div>
                 )}
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontWeight: "bold",
-                    fontSize: "1rem",
-                    marginTop: ".5rem",
-                  }}
-                >
+                <div className="total-row">
                   <span>Total</span>
                   <span>
                     {receiptSettings.currency}
@@ -869,67 +771,28 @@ const Settings = () => {
                   </span>
                 </div>
 
-                <div
-                  style={{
-                    borderBottom: "1px dashed #cbd5e1",
-                    margin: "1rem 0",
-                  }}
-                />
+                <div className="receipt-divider" />
 
                 {receiptSettings.qrCodeDisplay && (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      marginBottom: "1rem",
-                    }}
-                  >
+                  <div className="qr">
                     {paymentSettings.upiId ? (
                       <QRCodeSVG
-                        value={`upi://pay?pa=${paymentSettings.upiId}&pn=${receiptSettings.storeName || "Store"
-                          }`}
+                        value={`upi://pay?pa=${paymentSettings.upiId}&pn=${receiptSettings.storeName || "Store"}`}
                         size={80}
                       />
                     ) : (
-                      <div
-                        style={{
-                          width: "80px",
-                          height: "80px",
-                          margin: "0 auto",
-                          background:
-                            "conic-gradient(#333 90deg, transparent 90deg)",
-                          backgroundSize: "10px 10px",
-                        }}
-                      />
+                      <div style={{ width: "80px", height: "80px", margin: "0 auto", background: "conic-gradient(#333 90deg, transparent 90deg)", backgroundSize: "10px 10px" }} />
                     )}
-
-                    <div
-                      style={{
-                        fontSize: ".75rem",
-                        marginTop: ".25rem",
-                      }}
-                    >
-                      Scan to Pay
-                    </div>
+                    <div style={{ fontSize: ".75rem", marginTop: ".25rem" }}>Scan to Pay</div>
                   </div>
                 )}
 
-                <div
-                  style={{
-                    textAlign: "center",
-                    fontStyle: "italic",
-                  }}
-                >
+                <div className="footer">
                   <div>{receiptSettings.thankYouMessage}</div>
                   <div>{receiptSettings.footerMessage}</div>
 
                   {receiptSettings.returnPolicy && (
-                    <div
-                      style={{
-                        marginTop: ".5rem",
-                        fontSize: ".75rem",
-                        color: "#666",
-                      }}
-                    >
+                    <div style={{ marginTop: ".5rem", fontSize: ".75rem", color: "#666" }}>
                       {receiptSettings.returnPolicy}
                     </div>
                   )}
@@ -946,7 +809,7 @@ const Settings = () => {
             <Toggle label="Cash Support" checked={paymentSettings.cashSupport} onChange={(e) => updatePaymentSetting('cashSupport', e.target.checked)} />
             <Toggle label="Online Payment Support" checked={paymentSettings.onlinePaymentSupport} onChange={(e) => updatePaymentSetting('onlinePaymentSupport', e.target.checked)} />
 
-               {paymentSettings.onlinePaymentSupport && (
+            {paymentSettings.onlinePaymentSupport && (
               <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #e5e7eb", borderRadius: "0.75rem", background: "#f9fafb" }}>
                 <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600 }}>Online Payment Gateway</h3>
                 <p style={{ margin: "0 0 0.75rem", color: "#6b7280", fontSize: "0.9rem" }}>Razorpay is used for online checkout payments.</p>
@@ -991,7 +854,7 @@ const Settings = () => {
               </div>
             </div>
 
-           
+
           </>
         );
       case 'store':
@@ -1335,7 +1198,7 @@ const Settings = () => {
             </div>
           </div>
 
-          <div className="detail-content grid-2-col">
+          <div className={`detail-content ${activeTab === "receipt" ? "" : "grid-2-col"}`}>
             {renderActiveFields()}
           </div>
 

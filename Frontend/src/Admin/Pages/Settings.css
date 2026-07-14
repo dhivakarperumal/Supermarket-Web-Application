@@ -371,3 +371,82 @@ input:checked+.slider:before {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* Receipt preview specific styles */
+.receipt-preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.receipt-preview-card {
+  --card-bg: #ffffff;
+  --muted: #64748b;
+  max-width: 360px;
+  width: 100%;
+  background: var(--card-bg);
+  padding: 1.25rem;
+  border-radius: 10px;
+  border: 1px dashed #e6eef6;
+  box-shadow: 0 8px 20px rgba(15,23,42,0.06);
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-size: 14px;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.receipt-preview-card img {
+  display: block;
+  margin: 0 auto 0.5rem;
+  max-width: 96px;
+  height: auto;
+  object-fit: contain;
+}
+
+.receipt-preview-card h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.receipt-preview-card .receipt-top {
+  text-align: center;
+  border-bottom: 1px dashed #e6eef6;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.receipt-preview-card .receipt-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+.receipt-preview-card .receipt-items { margin-bottom: 0.5rem; }
+.receipt-preview-card .receipt-items .item { display: flex; justify-content: space-between; padding: 2px 0; }
+
+.receipt-preview-card .receipt-divider { border-bottom: 1px dashed #e6eef6; margin: 0.6rem 0; }
+
+.receipt-preview-card .total-row { display: flex; justify-content: space-between; font-weight: 700; font-size: 1rem; margin-top: 0.5rem; }
+
+.receipt-preview-card .qr { text-align: center; margin: 0.6rem 0; }
+.receipt-preview-card .qr svg { width: 80px; height: 80px; display: inline-block; }
+
+.receipt-preview-card .footer { text-align: center; font-size: 0.9rem; color: var(--muted); margin-top: 0.5rem; }
+
+@media (max-width: 640px) {
+  .receipt-preview-container { position: static; }
+  .receipt-preview-card { max-width: 100%; }
+}
+
+.receipt-preview-title {
+  margin-bottom: 1rem;
+  color: #1e293b;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.receipt-preview-card .footer { font-style: italic; }

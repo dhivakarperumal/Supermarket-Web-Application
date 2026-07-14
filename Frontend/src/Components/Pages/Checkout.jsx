@@ -34,6 +34,11 @@ const Checkout = () => {
   const [couponLoading, setCouponLoading] = useState(false);
   const [storeSettings, setStoreSettings] = useState(null);
   const buyNowQuantity = location.state?.quantity || 1;
+  const [locationData, setLocationData] = useState({
+    address: "",
+    latitude: "",
+    longitude: "",
+  });
 
   const fetchAddresses = async () => {
     try {
@@ -146,10 +151,26 @@ const Checkout = () => {
 
   const fetchTaxSettings = async () => {
     try {
+      // Try to use locally cached store settings first (saved from admin settings)
+      const cached = localStorage.getItem('store_settings');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          setStoreSettings(parsed);
+        } catch (e) {
+          console.warn('Failed to parse cached store settings', e);
+        }
+      }
+
       const response = await api.get("/settings/store");
       if (response.data?.success && response.data?.data) {
         if (Object.keys(response.data.data).length > 0) {
           setStoreSettings(response.data.data);
+          try {
+            localStorage.setItem('store_settings', JSON.stringify(response.data.data));
+          } catch (e) {
+            console.warn('Unable to persist store settings to localStorage', e);
+          }
         }
       }
     } catch (error) {
@@ -414,7 +435,7 @@ const Checkout = () => {
 
   const calculateDeliveryCharge = (distanceKm, orderSubtotal) => {
     if (!deliveryCharges) return { charge: 0, message: "Delivery charges not available" };
-    
+
     // If delivery charges are disabled globally in admin, waive all fees
     if (deliveryCharges.is_enabled === 0 || deliveryCharges.is_enabled === false) {
       return { charge: 0, message: "Delivery charges are currently waived/disabled" };
@@ -477,81 +498,136 @@ const Checkout = () => {
 
     setDistanceInfo((prev) => ({ ...prev, loading: true, error: "" }));
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const userLat = position.coords.latitude;
-          const userLng = position.coords.longitude;
-          
-          if (!storeSettings?.latitude || !storeSettings?.longitude) {
-            setDistanceInfo({ loading: false, error: "Store location is not configured.", distanceKm: null });
-            return;
-          }
-          
-          const shopLat = parseFloat(storeSettings.latitude);
-          const shopLng = parseFloat(storeSettings.longitude);
-          const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
-
-          // Fetch fresh delivery charges first
-          let freshCharges = deliveryCharges;
-          try {
-            const res = await api.get("/delivery-charges");
-            if (res.data && res.data.length > 0) {
-              freshCharges = res.data[0];
-              setDeliveryCharges(freshCharges);
-              console.log("Updated delivery charges:", freshCharges);
-            }
-          } catch (error) {
-            console.error("Error fetching delivery charges:", error);
-          }
-
-          const reverseResponse = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${userLat}&lon=${userLng}&addressdetails=1`
-          );
-          const reverseData = await reverseResponse.json();
-          const address = reverseData?.address || {};
-
-          setForm((prev) => ({
-            ...prev,
-            street_address:
-              [address.house_number, address.road, address.pedestrian, address.suburb]
-                .filter(Boolean)
-                .join(" ") || prev.street_address || "",
-            city:
-              address.city ||
-              address.town ||
-              address.village ||
-              address.suburb ||
-              prev.city ||
-              "",
-            district:
-              address.district ||
-              address.county ||
-              address.state_district ||
-              prev.district ||
-              "",
-            state: address.state || prev.state || "",
-            country: address.country || prev.country || "India",
-            zip_code: address.postcode || prev.zip_code || "",
-          }));
-
-          console.log("Distance calculated:", distance, "Delivery charges object:", freshCharges);
-          setDistanceInfo({ loading: false, error: "", distanceKm: Number(distance.toFixed(1)) });
-        } catch (error) {
-          console.error(error);
-          setDistanceInfo({ loading: false, error: "We could not calculate the distance right now.", distanceKm: null });
+    // Fetch user's current position and compute distance to shop using admin-configured storeSettings.
+    navigator.permissions && navigator.permissions.query
+      ? navigator.permissions.query({ name: 'geolocation' }).then((perm) => {
+        if (perm.state === 'denied') {
+          setDistanceInfo({ loading: false, error: 'Location permission is denied. Please enable location access in your browser.', distanceKm: null });
+          return;
         }
-      },
-      (error) => {
-        let message = "We could not access your location.";
-        if (error.code === 1) message = "Location permission was denied. Please allow location access to see the distance.";
-        else if (error.code === 2) message = "Your location is currently unavailable.";
-        else if (error.code === 3) message = "Location request timed out.";
 
-        setDistanceInfo({ loading: false, error: message, distanceKm: null });
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-    );
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            try {
+              const userLat = position.coords.latitude;
+              const userLng = position.coords.longitude;
+
+              // Use shop coordinates only from storeSettings (do not overwrite or fetch them here)
+              if (!storeSettings || !storeSettings.latitude || !storeSettings.longitude) {
+                setDistanceInfo({ loading: false, error: 'Store location is not configured by admin.', distanceKm: null });
+                return;
+              }
+
+              const shopLat = parseFloat(storeSettings.latitude);
+              const shopLng = parseFloat(storeSettings.longitude);
+              const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
+
+              // attempt to refresh delivery charges
+              try {
+                const res = await api.get('/delivery-charges');
+                if (res.data) setDeliveryCharges(Array.isArray(res.data) ? res.data[0] : res.data);
+              } catch (err) { console.warn('Error fetching delivery charges', err); }
+
+              // Reverse geocode to fill form address fields (user's address only)
+              try {
+                const reverseResponse = await fetch(
+                  `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${userLat}&lon=${userLng}&addressdetails=1`
+                );
+
+                if (reverseResponse.ok) {
+                  const reverseData = await reverseResponse.json();
+                  const address = reverseData?.address || {};
+
+                  const fullAddress =
+                    reverseData.display_name ||
+                    [
+                      address.house_number,
+                      address.road,
+                      address.suburb,
+                      address.city || address.town || address.village,
+                      address.state,
+                      address.postcode,
+                      address.country,
+                    ]
+                      .filter(Boolean)
+                      .join(", ");
+
+                  setLocationData({
+                    address: fullAddress,
+                    latitude: userLat,
+                    longitude: userLng,
+                  });
+
+                  setForm((prev) => ({
+                    ...prev,
+                    street_address:
+                      [address.house_number, address.road, address.suburb]
+                        .filter(Boolean)
+                        .join(" ") || prev.street_address,
+                    city:
+                      address.city ||
+                      address.town ||
+                      address.village ||
+                      prev.city,
+                    district:
+                      address.district ||
+                      address.county ||
+                      address.state_district ||
+                      prev.district,
+                    state: address.state || prev.state,
+                    country: address.country || "India",
+                    zip_code: address.postcode || prev.zip_code,
+                  }));
+                }
+              } catch (err) { console.warn('Reverse geocode failed', err); }
+
+              setDistanceInfo({ loading: false, error: '', distanceKm: Number(distance.toFixed(1)) });
+            } catch (error) {
+              console.error(error);
+              setDistanceInfo({ loading: false, error: 'We could not calculate the distance right now.', distanceKm: null });
+            }
+          },
+          (error) => {
+            let message = 'We could not access your location.';
+            if (error.code === 1) message = 'Location permission was denied. Please allow location access to see the distance.';
+            else if (error.code === 2) message = 'Your location is currently unavailable.';
+            else if (error.code === 3) message = 'Location request timed out.';
+            setDistanceInfo({ loading: false, error: message, distanceKm: null });
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+        );
+      })
+      : (() => {
+        // Browser doesn't support permissions API; proceed to geolocation and hope for the best
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          try {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            setLocationData({
+              latitude: userLat,
+              longitude: userLng,
+              address: "",
+            });
+            if (!storeSettings || !storeSettings.latitude || !storeSettings.longitude) {
+              setDistanceInfo({ loading: false, error: 'Store location is not configured by admin.', distanceKm: null });
+              return;
+            }
+            const shopLat = parseFloat(storeSettings.latitude);
+            const shopLng = parseFloat(storeSettings.longitude);
+            const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
+            setDistanceInfo({ loading: false, error: '', distanceKm: Number(distance.toFixed(1)) });
+          } catch (err) {
+            console.error(err);
+            setDistanceInfo({ loading: false, error: 'We could not calculate the distance right now.', distanceKm: null });
+          }
+        }, (error) => {
+          let message = 'We could not access your location.';
+          if (error.code === 1) message = 'Location permission was denied. Please allow location access to see the distance.';
+          else if (error.code === 2) message = 'Your location is currently unavailable.';
+          else if (error.code === 3) message = 'Location request timed out.';
+          setDistanceInfo({ loading: false, error: message, distanceKm: null });
+        }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+      })();
   };
 
   const indianStates = [
@@ -626,23 +702,23 @@ const Checkout = () => {
   if (taxSettings && taxSettings.enable_gst === 1) {
     const gstStr = taxSettings.default_gst_percentage || "0%";
     const gstPercent = parseFloat(gstStr.replace("%", "")) || 0;
-    
+
     if (taxSettings.tax_mode === 'Tax Inclusive') {
-       calculatedTax = ((subtotal - discountAmount) * gstPercent) / (100 + gstPercent);
-       taxLabel = `Includes GST (${gstPercent}%)`;
+      calculatedTax = ((subtotal - discountAmount) * gstPercent) / (100 + gstPercent);
+      taxLabel = `Includes GST (${gstPercent}%)`;
     } else {
-       calculatedTax = ((subtotal - discountAmount) * gstPercent) / 100;
-       taxLabel = `GST (${gstPercent}%)`;
+      calculatedTax = ((subtotal - discountAmount) * gstPercent) / 100;
+      taxLabel = `GST (${gstPercent}%)`;
     }
   }
 
   const taxAmountValue = Math.round(calculatedTax * 100) / 100;
-  
+
   let total = 0;
   if (taxSettings?.enable_gst === 1 && taxSettings?.tax_mode === 'Tax Inclusive') {
-      total = Math.round((subtotal - discountAmount + shipping) * 100) / 100;
+    total = Math.round((subtotal - discountAmount + shipping) * 100) / 100;
   } else {
-      total = Math.round((subtotal - discountAmount + taxAmountValue + shipping) * 100) / 100;
+    total = Math.round((subtotal - discountAmount + taxAmountValue + shipping) * 100) / 100;
   }
 
   const handleChange = (e) => {
@@ -853,19 +929,27 @@ const Checkout = () => {
                     </div>
 
                     <div className="mt-4 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">
-                      {!distanceInfo.distanceKm && !distanceInfo.error && !distanceInfo.loading ? (
-                        <div className="flex flex-col gap-3">
-                          <p className="text-sm text-slate-600">No location fetched yet.</p>
-                          <button type="button" onClick={detectDistanceToShop} className="w-fit rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
-                            Fetch location
-                          </button>
+                      {/* Always show shop address if available */}
+                      {storeSettings ? (
+                        <div className="mb-3">
+                          <p className="text-sm text-slate-500">Shop address</p>
+                          <p className="mt-1 text-sm font-semibold text-slate-800">{[storeSettings.address, storeSettings.city, storeSettings.state, storeSettings.zip_code].filter(Boolean).join(", ")}</p>
+                          {storeSettings.latitude && storeSettings.longitude && (
+                            <p className="text-xs text-slate-500">Coordinates: {storeSettings.latitude}, {storeSettings.longitude}</p>
+                          )}
                         </div>
-                      ) : distanceInfo.loading ? (
+                      ) : (
+                        <div className="mb-3">
+                          <p className="text-sm text-slate-500">Shop address not configured</p>
+                        </div>
+                      )}
+
+                      {distanceInfo.loading ? (
                         <p className="text-sm text-slate-600">Fetching your current location...</p>
                       ) : distanceInfo.distanceKm !== null ? (
                         <>
-                          <p className="text-sm text-slate-600">Shop address</p>
-                          <p className="mt-1 text-sm font-semibold text-slate-800">
+                          {/* <p className="text-sm text-slate-600">Shop address</p> */}
+                          {/* <p className="mt-1 text-sm font-semibold text-slate-800">
                             {storeSettings ? (
                               [storeSettings.address, storeSettings.city, storeSettings.state, storeSettings.zip_code]
                                 .filter(Boolean)
@@ -873,7 +957,7 @@ const Checkout = () => {
                             ) : (
                               "Store address not available"
                             )}
-                          </p>
+                          </p> */}
 
                           <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
                             <div>
@@ -893,6 +977,33 @@ const Checkout = () => {
                               Fetch location
                             </button>
                           </div>
+                          {locationData.address && (
+                            <div className="mt-4 rounded-xl bg-white border border-green-200 p-4">
+                              <p className="text-sm font-semibold text-slate-700">
+                                Your Current Location
+                              </p>
+
+                              <p className="mt-2 text-sm text-slate-600 break-words">
+                                {locationData.address}
+                              </p>
+
+                              <div className="mt-3 grid grid-cols-2 gap-4">
+                                <div>
+                                  <p className="text-xs text-slate-500">Latitude</p>
+                                  <p className="font-semibold text-[#0e6827]">
+                                    {locationData.latitude}
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <p className="text-xs text-slate-500">Longitude</p>
+                                  <p className="font-semibold text-[#0e6827]">
+                                    {locationData.longitude}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </>
                       ) : (
                         <>
