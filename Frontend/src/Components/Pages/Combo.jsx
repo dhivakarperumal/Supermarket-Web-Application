@@ -3,6 +3,7 @@ import { ShoppingCart, Heart, Tag, Star, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import api from "../../api";
 import { StoreContext } from "../../PrivateRouter/StoreContext";
+import PageHeader from "../CommenComponents/PageHeader";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
@@ -113,23 +114,7 @@ const Combo = () => {
   return (
     <div className="bg-[#f8faf8] min-h-screen">
 
-      {/* Hero */}
-      <section className="bg-gradient-to-r from-[#0e6827] via-[#168637] to-[#ffc107] text-white">
-        <div className="max-w-7xl mx-auto px-6 py-20">
-          <span className="bg-white/20 px-4 py-1 rounded-full text-sm font-semibold">
-            SAVE MORE
-          </span>
-          <h1 className="text-5xl font-extrabold mt-5">Grocery Combo Offers</h1>
-          <p className="mt-4 text-white/90 max-w-2xl text-lg">
-            Handpicked grocery bundles with exclusive discounts. Buy more and save more every day.
-          </p>
-          <button className="mt-8 bg-[#ffc107] text-black font-bold px-8 py-3 rounded-full hover:scale-105 transition">
-            Shop Combos
-          </button>
-        </div>
-      </section>
-
-      
+    <PageHeader title="Combo Products" />  
 
       {/* Combo Cards */}
       <section className="max-w-8xl mx-auto mt-10 px-10 pb-16">
