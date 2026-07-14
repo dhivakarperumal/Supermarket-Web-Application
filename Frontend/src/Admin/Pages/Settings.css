@@ -441,3 +441,12 @@ input:checked+.slider:before {
   .receipt-preview-container { position: static; }
   .receipt-preview-card { max-width: 100%; }
 }
+
+.receipt-preview-title {
+  margin-bottom: 1rem;
+  color: #1e293b;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.receipt-preview-card .footer { font-style: italic; }
