@@ -43,6 +43,9 @@ const ensurePaymentIntegrationSchema = async (pool) => {
     "ALTER TABLE payment_integration ADD COLUMN IF NOT EXISTS payment_type VARCHAR(50) DEFAULT 'upi'",
     "ALTER TABLE payment_integration ADD COLUMN IF NOT EXISTS razorpay_enabled TINYINT(1) DEFAULT 1",
     "ALTER TABLE payment_integration ADD COLUMN IF NOT EXISTS razorpay_key VARCHAR(255) DEFAULT NULL",
+    "ALTER TABLE payment_integration ADD COLUMN IF NOT EXISTS card_number VARCHAR(255) DEFAULT NULL",
+    "ALTER TABLE payment_integration ADD COLUMN IF NOT EXISTS card_expiry VARCHAR(20) DEFAULT NULL",
+    "ALTER TABLE payment_integration ADD COLUMN IF NOT EXISTS card_cvv VARCHAR(20) DEFAULT NULL",
   ];
 
   for (const statement of alterStatements) {
@@ -55,6 +58,33 @@ const ensurePaymentIntegrationSchema = async (pool) => {
     }
   }
 };
+
+const normalizePaymentSettingsPayload = (payload = {}) => {
+  const normalizedCashSupport = Number(payload.cashSupport ?? true);
+  const normalizedOnlinePaymentSupport = Number(payload.onlinePaymentSupport ?? true);
+  const normalizedUpiSupport = Number(payload.upiSupport ?? true);
+  const normalizedCardSupport = Number(payload.cardSupport ?? true);
+  const normalizedRazorpayEnabled = Number(payload.razorpayEnabled ?? true);
+  const normalizedPaymentType = payload.paymentType || (normalizedCardSupport ? 'both' : 'upi');
+  const normalizedUpiId = payload.upiId || null;
+  const normalizedRazorpayKey = payload.razorpayKey || null;
+
+  return {
+    cashSupport: normalizedCashSupport,
+    onlinePaymentSupport: normalizedOnlinePaymentSupport,
+    upiSupport: normalizedUpiSupport,
+    upiId: normalizedUpiId,
+    cardSupport: normalizedCardSupport,
+    paymentType: normalizedPaymentType,
+    razorpayEnabled: normalizedRazorpayEnabled,
+    razorpayKey: normalizedRazorpayKey,
+    cardNumber: payload.cardNumber || null,
+    cardExpiry: payload.cardExpiry || null,
+    cardCvv: payload.cardCvv || null,
+  };
+};
+
+exports.normalizePaymentSettingsPayload = normalizePaymentSettingsPayload;
 
 // Get Receipt Settings
 exports.getReceiptSettings = async (req, res) => {
@@ -163,29 +193,24 @@ exports.updatePaymentSettings = async (req, res) => {
     const pool = getPool();
     await ensurePaymentIntegrationSchema(pool);
 
+    const normalizedPayload = normalizePaymentSettingsPayload(req.body);
     const {
-      cashSupport,
-      onlinePaymentSupport,
-      upiSupport,
-      upiId,
-      cardSupport,
-      paymentType,
-      razorpayEnabled,
-      razorpayKey,
-    } = req.body;
+      cashSupport: normalizedCashSupport,
+      onlinePaymentSupport: normalizedOnlinePaymentSupport,
+      upiSupport: normalizedUpiSupport,
+      upiId: normalizedUpiId,
+      cardSupport: normalizedCardSupport,
+      paymentType: normalizedPaymentType,
+      razorpayEnabled: normalizedRazorpayEnabled,
+      razorpayKey: normalizedRazorpayKey,
+      cardNumber,
+      cardExpiry,
+      cardCvv,
+    } = normalizedPayload;
 
     const userId = req.headers['x-user-id'] || null;
     const createdBy = userId;
     const updatedBy = userId;
-
-    const normalizedCashSupport = Number(cashSupport ?? true);
-    const normalizedOnlinePaymentSupport = Number(onlinePaymentSupport ?? true);
-    const normalizedUpiSupport = Number(upiSupport ?? true);
-    const normalizedCardSupport = Number(cardSupport ?? true);
-    const normalizedRazorpayEnabled = Number(razorpayEnabled ?? true);
-    const normalizedPaymentType = paymentType || (normalizedCardSupport ? 'both' : 'upi');
-    const normalizedUpiId = upiId || null;
-    const normalizedRazorpayKey = razorpayKey || null;
 
     const [rows] = await pool.query("SELECT id, payment_id FROM payment_integration LIMIT 1");
 
@@ -202,6 +227,9 @@ credit_debit_card=?,
 payment_type=?,
 razorpay_enabled=?,
 razorpay_key=?,
+card_number=?,
+card_expiry=?,
+card_cvv=?,
 payment_id=?,
 updated_by=?
 WHERE id=?`,
@@ -214,6 +242,9 @@ WHERE id=?`,
           normalizedPaymentType,
           normalizedRazorpayEnabled,
           normalizedRazorpayKey,
+          cardNumber,
+          cardExpiry,
+          cardCvv,
           paymentId,
           updatedBy,
           id
@@ -231,11 +262,14 @@ credit_debit_card,
 payment_type,
 razorpay_enabled,
 razorpay_key,
+card_number,
+card_expiry,
+card_cvv,
 payment_id,
 created_by,
 updated_by
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           normalizedCashSupport,
           normalizedOnlinePaymentSupport,
@@ -245,6 +279,9 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           normalizedPaymentType,
           normalizedRazorpayEnabled,
           normalizedRazorpayKey,
+          cardNumber,
+          cardExpiry,
+          cardCvv,
           paymentId,
           createdBy,
           updatedBy

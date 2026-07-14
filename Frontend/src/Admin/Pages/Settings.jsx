@@ -112,6 +112,9 @@ const Settings = () => {
     paymentType: "both",
     razorpayEnabled: true,
     razorpayKey: "",
+    cardNumber: "",
+    cardExpiry: "",
+    cardCvv: "",
   });
 
   const [taxSettings, setTaxSettings] = useState({
@@ -168,6 +171,9 @@ const Settings = () => {
             paymentType: dbData.payment_type || "both",
             razorpayEnabled: dbData.razorpay_enabled !== 0 && dbData.razorpay_enabled !== "0",
             razorpayKey: dbData.razorpay_key || "",
+            cardNumber: dbData.card_number || "",
+            cardExpiry: dbData.card_expiry || "",
+            cardCvv: dbData.card_cvv || "",
           });
         }
       }
@@ -803,32 +809,52 @@ const Settings = () => {
             <Toggle label="Cash Support" checked={paymentSettings.cashSupport} onChange={(e) => updatePaymentSetting('cashSupport', e.target.checked)} />
             <Toggle label="Online Payment Support" checked={paymentSettings.onlinePaymentSupport} onChange={(e) => updatePaymentSetting('onlinePaymentSupport', e.target.checked)} />
 
-            {paymentSettings.onlinePaymentSupport && (
-              <>
-                <Select
-                  label="Online Payment Type"
-                  options={["upi", "card", "both"]}
-                  value={paymentSettings.paymentType}
-                  onChange={(e) => updatePaymentSetting('paymentType', e.target.value)}
-                />
-
+               {paymentSettings.onlinePaymentSupport && (
+              <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #e5e7eb", borderRadius: "0.75rem", background: "#f9fafb" }}>
+                <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600 }}>Online Payment Gateway</h3>
+                <p style={{ margin: "0 0 0.75rem", color: "#6b7280", fontSize: "0.9rem" }}>Razorpay is used for online checkout payments.</p>
                 <Toggle label="Enable Razorpay" checked={paymentSettings.razorpayEnabled} onChange={(e) => updatePaymentSetting('razorpayEnabled', e.target.checked)} />
 
                 {paymentSettings.razorpayEnabled && (
                   <Input label="Razorpay Key" placeholder="rzp_live_xxxxx" value={paymentSettings.razorpayKey} onChange={(e) => updatePaymentSetting('razorpayKey', e.target.value)} />
                 )}
-
-                {paymentSettings.paymentType !== "card" && (
-                  <>
-                    <Toggle label="UPI Support" checked={paymentSettings.upiSupport} onChange={(e) => updatePaymentSetting('upiSupport', e.target.checked)} />
-
-                    {paymentSettings.upiSupport && (
-                      <Input label="UPI ID" placeholder="example@upi" value={paymentSettings.upiId} onChange={(e) => updatePaymentSetting('upiId', e.target.value)} />
-                    )}
-                  </>
-                )}
-              </>
+              </div>
             )}
+
+            <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #e5e7eb", borderRadius: "0.75rem", background: "#ffffff" }}>
+              <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600 }}>UPI Settings</h3>
+              <Toggle label="UPI Support" checked={paymentSettings.upiSupport} onChange={(e) => updatePaymentSetting('upiSupport', e.target.checked)} />
+
+              {paymentSettings.upiSupport && (
+                <Input label="UPI ID" placeholder="example@upi" value={paymentSettings.upiId} onChange={(e) => updatePaymentSetting('upiId', e.target.value)} />
+              )}
+            </div>
+
+            <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #e5e7eb", borderRadius: "0.75rem", background: "#ffffff" }}>
+              <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600 }}>Card Settings</h3>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Input
+                  label="Card Number"
+                  placeholder="1234 5678 9012 3456"
+                  value={paymentSettings.cardNumber}
+                  onChange={(e) => updatePaymentSetting('cardNumber', e.target.value)}
+                />
+                <Input
+                  label="MM/YY"
+                  placeholder="MM/YY"
+                  value={paymentSettings.cardExpiry}
+                  onChange={(e) => updatePaymentSetting('cardExpiry', e.target.value)}
+                />
+                <Input
+                  label="CVV"
+                  placeholder="CVV"
+                  value={paymentSettings.cardCvv}
+                  onChange={(e) => updatePaymentSetting('cardCvv', e.target.value)}
+                />
+              </div>
+            </div>
+
+           
           </>
         );
       case 'store':
