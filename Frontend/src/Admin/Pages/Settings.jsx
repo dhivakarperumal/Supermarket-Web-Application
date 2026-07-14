@@ -812,7 +812,8 @@ const Settings = () => {
             {paymentSettings.onlinePaymentSupport && (
               <>
                 <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #e5e7eb", borderRadius: "0.75rem", background: "#f9fafb" }}>
-                  <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600 }}>Razorpay Configuration</h3>
+                  <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600 }}>Online Payment Gateway</h3>
+                  <p style={{ margin: "0 0 0.75rem", color: "#6b7280", fontSize: "0.9rem" }}>Razorpay is used for online checkout payments.</p>
                   <Toggle label="Enable Razorpay" checked={paymentSettings.razorpayEnabled} onChange={(e) => updatePaymentSetting('razorpayEnabled', e.target.checked)} />
 
                   {paymentSettings.razorpayEnabled && (
@@ -821,7 +822,7 @@ const Settings = () => {
                 </div>
 
                 <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #e5e7eb", borderRadius: "0.75rem", background: "#ffffff" }}>
-                  <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600 }}>UPI Configuration</h3>
+                  <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600 }}>UPI Settings</h3>
                   <Toggle label="UPI Support" checked={paymentSettings.upiSupport} onChange={(e) => updatePaymentSetting('upiSupport', e.target.checked)} />
 
                   {paymentSettings.upiSupport && (
@@ -830,7 +831,7 @@ const Settings = () => {
                 </div>
 
                 <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #e5e7eb", borderRadius: "0.75rem", background: "#ffffff" }}>
-                  <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600 }}>Card Configuration</h3>
+                  <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600 }}>Card Settings</h3>
                   <div className="grid gap-3 sm:grid-cols-3">
                     <Input
                       label="Card Number"
