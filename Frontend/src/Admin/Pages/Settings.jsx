@@ -1237,10 +1237,7 @@ const Settings = () => {
   return (
     <div className="settings-page">
       <Toaster position="top-right" />
-      <div className="settings-header" style={{ display: 'none' }}>
-      </div>
 
-      </div>
 
       {!activeTab ? (
         <div className="settings-grid">
