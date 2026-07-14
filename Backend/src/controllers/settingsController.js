@@ -161,3 +161,83 @@ VALUES (?, ?, ?, ?, ?)`,
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+// Get Tax Settings
+exports.getTaxSettings = async (req, res) => {
+  try {
+    const pool = getPool();
+    const [rows] = await pool.query("SELECT * FROM tax_settings LIMIT 1");
+    if (rows.length === 0) {
+      return res.status(200).json({ success: true, data: {} });
+    }
+    return res.status(200).json({ success: true, data: rows[0] });
+  } catch (error) {
+    console.error("Error fetching tax settings:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// Update Tax Settings
+exports.updateTaxSettings = async (req, res) => {
+  try {
+    const pool = getPool();
+    const {
+      enableGst,
+      defaultGstPercentage,
+      taxMode
+    } = req.body;
+
+    const userId = req.headers['x-user-id'] || null;
+    const createdBy = userId;
+    const updatedBy = userId;
+
+    const [rows] = await pool.query("SELECT id, tax_id FROM tax_settings LIMIT 1");
+
+    if (rows.length > 0) {
+      const id = rows[0].id;
+      const taxId = rows[0].tax_id || crypto.randomUUID();
+      await pool.query(
+        `UPDATE tax_settings SET
+enable_gst=?,
+default_gst_percentage=?,
+tax_mode=?,
+tax_id=?,
+updated_by=?
+WHERE id=?`,
+        [
+          enableGst,
+          defaultGstPercentage,
+          taxMode,
+          taxId,
+          updatedBy,
+          id
+        ]
+      );
+    } else {
+      const taxId = crypto.randomUUID();
+      await pool.query(
+        `INSERT INTO tax_settings(
+enable_gst,
+default_gst_percentage,
+tax_mode,
+tax_id,
+created_by,
+updated_by
+)
+VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          enableGst,
+          defaultGstPercentage,
+          taxMode,
+          taxId,
+          createdBy,
+          updatedBy
+        ]
+      );
+    }
+
+    res.status(200).json({ success: true, message: "Tax settings saved successfully." });
+  } catch (error) {
+    console.error("Error updating tax settings:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};

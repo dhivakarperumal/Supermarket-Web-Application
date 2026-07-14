@@ -108,14 +108,44 @@ const Settings = () => {
     upiId: "",
   });
 
+  const [taxSettings, setTaxSettings] = useState({
+    enableGst: true,
+    defaultGstPercentage: '5%',
+    taxMode: 'Tax Exclusive'
+  });
+
   const updatePaymentSetting = (key, value) => {
     setPaymentSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const updateTaxSetting = (key, value) => {
+    setTaxSettings(prev => ({ ...prev, [key]: value }));
   };
 
   useEffect(() => {
     fetchReceiptSettings();
     fetchPaymentSettings();
+    fetchTaxSettings();
   }, []);
+
+  const fetchTaxSettings = async () => {
+    try {
+      const response = await api.get("/settings/tax");
+      if (response.data?.success && response.data?.data) {
+        if (Object.keys(response.data.data).length > 0) {
+          const dbData = response.data.data;
+          setTaxSettings({
+            enableGst: dbData.enable_gst === 1,
+            defaultGstPercentage: dbData.default_gst_percentage || '5%',
+            taxMode: dbData.tax_mode || 'Tax Exclusive',
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching tax settings:", error);
+      toast.error("Failed to load tax settings");
+    }
+  };
 
   const fetchPaymentSettings = async () => {
     try {
@@ -215,6 +245,18 @@ const Settings = () => {
       } catch (error) {
         console.error("Error saving payment settings:", error);
         toast.error("Failed to save payment settings.");
+      }
+    } else if (activeTab === 'tax') {
+      try {
+        const response = await api.post("/settings/tax", taxSettings);
+        if (response.data?.success) {
+          toast.success("Tax settings saved successfully!");
+        } else {
+          toast.error("Failed to save tax settings.");
+        }
+      } catch (error) {
+        console.error("Error saving tax settings:", error);
+        toast.error("Failed to save tax settings.");
       }
     } else {
       toast.success("Settings saved successfully!");
@@ -790,9 +832,9 @@ const Settings = () => {
       case 'tax':
         return (
           <>
-            <Toggle label="Enable GST" defaultChecked />
-            <Select label="Default GST Percentage" options={['0%', '5%', '12%', '18%', '28%']} />
-            <Select label="Tax Mode" options={['Tax Exclusive', 'Tax Inclusive']} />
+            <Toggle label="Enable GST" checked={taxSettings.enableGst} onChange={(e) => updateTaxSetting('enableGst', e.target.checked)} />
+            <Select label="Default GST Percentage" options={['0%', '5%', '12%', '18%', '28%']} value={taxSettings.defaultGstPercentage} onChange={(e) => updateTaxSetting('defaultGstPercentage', e.target.value)} />
+            <Select label="Tax Mode" options={['Tax Exclusive', 'Tax Inclusive']} value={taxSettings.taxMode} onChange={(e) => updateTaxSetting('taxMode', e.target.value)} />
           </>
         );
       case 'localization':
