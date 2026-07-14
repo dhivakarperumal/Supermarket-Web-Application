@@ -45,7 +45,7 @@ exports.updateReceiptSettings = async (req, res) => {
     const updatedBy = userId;
 
     const [rows] = await pool.query("SELECT id, receipt_id FROM receipt_settings LIMIT 1");
-    
+
     if (rows.length > 0) {
       const id = rows[0].id;
       const receiptId = rows[0].receipt_id || crypto.randomUUID();
@@ -78,7 +78,7 @@ exports.updateReceiptSettings = async (req, res) => {
         ]
       );
     }
-    
+
     res.status(200).json({ success: true, message: "Receipt settings saved successfully." });
   } catch (error) {
     console.error("Error updating receipt settings:", error);
@@ -106,23 +106,8 @@ exports.updatePaymentSettings = async (req, res) => {
   try {
     const pool = getPool();
     const {
-      primaryGateway,
-      cashSupport,
       upiSupport,
       upiId,
-      creditDebitCard,
-      merchantId,
-      apiKey,
-      secretKey,
-      webhookUrl,
-      callbackUrl,
-      mode,
-      autoPaymentVerification,
-      refundSupport,
-      partialPayment,
-      walletPayment,
-      cod,
-      emiSupport
     } = req.body;
 
     const userId = req.headers['x-user-id'] || null;
@@ -130,42 +115,46 @@ exports.updatePaymentSettings = async (req, res) => {
     const updatedBy = userId;
 
     const [rows] = await pool.query("SELECT id, payment_id FROM payment_integration LIMIT 1");
-    
+
     if (rows.length > 0) {
       const id = rows[0].id;
       const paymentId = rows[0].payment_id || crypto.randomUUID();
       await pool.query(
-        `UPDATE payment_integration SET 
-          primary_gateway = ?, cash_support = ?, upi_support = ?, upi_id = ?, credit_debit_card = ?, 
-          merchant_id = ?, api_key = ?, secret_key = ?, webhook_url = ?, callback_url = ?, 
-          mode = ?, auto_payment_verification = ?, refund_support = ?, partial_payment = ?, 
-          wallet_payment = ?, cod = ?, emi_support = ?, payment_id = ?, updated_by = ?
-         WHERE id = ?`,
+        `UPDATE payment_integration SET
+upi_support=?,
+upi_id=?,
+payment_id=?,
+updated_by=?
+WHERE id=?`,
         [
-          primaryGateway, cashSupport, upiSupport, upiId, creditDebitCard, 
-          merchantId, apiKey, secretKey, webhookUrl, callbackUrl, 
-          mode, autoPaymentVerification, refundSupport, partialPayment, 
-          walletPayment, cod, emiSupport, paymentId, updatedBy, id
+          upiSupport,
+          upiId,
+          paymentId,
+          updatedBy,
+          id
         ]
       );
     } else {
       const paymentId = crypto.randomUUID();
       await pool.query(
-        `INSERT INTO payment_integration (
-          primary_gateway, cash_support, upi_support, upi_id, credit_debit_card,
-          merchant_id, api_key, secret_key, webhook_url, callback_url,
-          mode, auto_payment_verification, refund_support, partial_payment,
-          wallet_payment, cod, emi_support, payment_id, created_by, updated_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO payment_integration(
+upi_support,
+upi_id,
+payment_id,
+created_by,
+updated_by
+)
+VALUES (?, ?, ?, ?, ?)`,
         [
-          primaryGateway, cashSupport, upiSupport, upiId, creditDebitCard, 
-          merchantId, apiKey, secretKey, webhookUrl, callbackUrl, 
-          mode, autoPaymentVerification, refundSupport, partialPayment, 
-          walletPayment, cod, emiSupport, paymentId, createdBy, updatedBy
+          upiSupport,
+          upiId,
+          paymentId,
+          createdBy,
+          updatedBy
         ]
       );
     }
-    
+
     res.status(200).json({ success: true, message: "Payment settings saved successfully." });
   } catch (error) {
     console.error("Error updating payment settings:", error);
