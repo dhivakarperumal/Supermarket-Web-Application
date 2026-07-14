@@ -41,7 +41,7 @@ const navItems = [
     icon: Package,
     children: [
       { path: "/admin/products/all", label: "All Products", icon: List },
-      { path: "/admin/products/add", label: "Add New Product", icon: PlusCircle },
+      // { path: "/admin/products/add", label: "Add New Product", icon: PlusCircle },
       { path: "/admin/products/category", label: "Categories", icon: Layers },
       { path: "/admin/products/stock", label: "Inventory", icon: Archive },
     ],
