@@ -24,6 +24,7 @@ import {
   CalendarCheck,
   FileText,
   Wallet,
+  Home,
 } from "lucide-react";
 
 import { useAuth } from "../PrivateRouter/AuthContext";
@@ -108,6 +109,7 @@ const navItems = [
   // { path: "/admin/banners", label: "Banners", icon: Image },
   { path: "/admin/reviews", label: "Reviews", icon: Star },
   { path: "/admin/videos", label: "Videos Management", icon: Video },
+  { path: "/", label: "Back to Home", icon: Home },
 ];
 
 /* ================= SIDEBAR ================= */

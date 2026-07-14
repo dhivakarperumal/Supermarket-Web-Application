@@ -27,6 +27,8 @@ const Checkout = () => {
   const [distanceInfo, setDistanceInfo] = useState({ loading: false, error: "", distanceKm: null });
   const [deliveryCharges, setDeliveryCharges] = useState(null);
   const [deliveryChargeError, setDeliveryChargeError] = useState("");
+  const [taxSettings, setTaxSettings] = useState(null);
+  const [taxAmount, setTaxAmount] = useState(0);
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState("");
@@ -146,6 +148,7 @@ const Checkout = () => {
   useEffect(() => {
     fetchDeliveryCharges();
     fetchPaymentSettings();
+    fetchTaxSettings();
   }, []);
 
   // Recalculate delivery charge when distance or charges change
@@ -593,7 +596,30 @@ const Checkout = () => {
     discountAmount = Math.round(discountAmount * 100) / 100;
   }
 
-  const total = Math.round((subtotal - discountAmount + shipping) * 100) / 100;
+  // Calculate Tax
+  let calculatedTax = 0;
+  let taxLabel = "";
+  if (taxSettings && taxSettings.enable_gst === 1) {
+    const gstStr = taxSettings.default_gst_percentage || "0%";
+    const gstPercent = parseFloat(gstStr.replace("%", "")) || 0;
+    
+    if (taxSettings.tax_mode === 'Tax Inclusive') {
+       calculatedTax = ((subtotal - discountAmount) * gstPercent) / (100 + gstPercent);
+       taxLabel = `Includes GST (${gstPercent}%)`;
+    } else {
+       calculatedTax = ((subtotal - discountAmount) * gstPercent) / 100;
+       taxLabel = `GST (${gstPercent}%)`;
+    }
+  }
+
+  const taxAmountValue = Math.round(calculatedTax * 100) / 100;
+  
+  let total = 0;
+  if (taxSettings?.enable_gst === 1 && taxSettings?.tax_mode === 'Tax Inclusive') {
+      total = Math.round((subtotal - discountAmount + shipping) * 100) / 100;
+  } else {
+      total = Math.round((subtotal - discountAmount + taxAmountValue + shipping) * 100) / 100;
+  }
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -1030,6 +1056,14 @@ const Checkout = () => {
                       <div className="flex justify-between">
                         <span>Discount ({appliedCoupon.code})</span>
                         <span className="font-semibold text-green-600">-₹{discountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {taxSettings?.enable_gst === 1 && (
+                      <div className="flex justify-between">
+                        <span>{taxLabel}</span>
+                        <span className="font-semibold text-slate-800">
+                          {taxSettings.tax_mode === 'Tax Inclusive' ? `(₹${taxAmountValue.toFixed(2)})` : `₹${taxAmountValue.toFixed(2)}`}
+                        </span>
                       </div>
                     )}
                     <div className="flex justify-between border-t border-gray-100 pt-3 text-base font-semibold text-slate-800">

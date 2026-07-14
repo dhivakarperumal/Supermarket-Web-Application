@@ -229,6 +229,11 @@ const Navbar = () => {
               >
                 <div className="relative">
                   <Heart className="text-gray-700 group-hover:text-green-800 transition" size={26} />
+                  {wishlist.length > 0 && (
+                    <span className="absolute -top-3 -right-3 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
+                      {wishlist.length}
+                    </span>
+                  )}
                 </div>
                 <div>
                   <p className="text-sm font-bold text-gray-800 group-hover:text-green-800 transition">Wishlist</p>

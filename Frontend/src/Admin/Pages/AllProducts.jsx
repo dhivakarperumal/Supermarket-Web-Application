@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../api";
 import { toast, Toaster } from "react-hot-toast";
 import { FaRupeeSign } from "react-icons/fa";
+import jsPDF from "jspdf";
+import JsBarcode from "jsbarcode";
 import {
     FiPlus,
     FiSearch,
@@ -17,7 +19,8 @@ import {
     FiChevronRight,
     FiPackage,
     FiLayout,
-    FiDatabase
+    FiDatabase,
+    FiDownload
 } from "react-icons/fi";
 
 const AllProducts = () => {
@@ -40,6 +43,7 @@ const AllProducts = () => {
     const [products, setProducts] = useState(pageData?.products || []);
     const [loading, setLoading] = useState(!pageData);
     const [viewMode, setViewMode] = useState("table"); // 'table' or 'grid'
+    const [productTab, setProductTab] = useState("Regular");
 
     // Stock Update Modal State
     const [currentProduct, setCurrentProduct] = useState(null);
@@ -47,7 +51,15 @@ const AllProducts = () => {
     const [updatingStock, setUpdatingStock] = useState(false);
 
     const [pagination, setPagination] = useState(pageData?.pagination || { total: 0, totalPages: 1 });
-    const [stats, setStats] = useState(pageData?.stats || { total: 0, active: 0, lowStock: 0, outOfStock: 0 });
+    const [stats, setStats] = useState(pageData?.stats || { total: 0, active: 0, lowStock: 0, outOfStock: 0, combos: 0 });
+
+    const isCombo = (p) => {
+        const code = String(p.product_code || '').toUpperCase();
+        return code.startsWith('SPMC') ||
+               p.category?.toLowerCase() === 'combo' ||
+               p.category?.toLowerCase() === 'combos' ||
+               p.is_combo === true;
+    };
 
     // Rapid Add Modal
     const [isRapidAddOpen, setIsRapidAddOpen] = useState(false);
@@ -104,6 +116,7 @@ const AllProducts = () => {
                         return s > 0 && s < 10;
                     }).length,
                     outOfStock: arr.filter(p => (p.total_stock ?? p.stock ?? 0) <= 0).length,
+                    combos: arr.filter(p => isCombo(p)).length,
                 });
                 finalData = {
                     products: data,
@@ -114,7 +127,7 @@ const AllProducts = () => {
                 finalData = {
                     products: Array.isArray(data.products) ? data.products : [],
                     pagination: data.pagination || { total: 0, totalPages: 1 },
-                    stats: data.stats || { total: 0, active: 0, lowStock: 0, outOfStock: 0 }
+                    stats: data.stats || { total: 0, active: 0, lowStock: 0, outOfStock: 0, combos: 0 }
                 };
             }
             setProducts(finalData.products);
@@ -182,7 +195,17 @@ const AllProducts = () => {
 
     // Simplified Pagination (Handled by backend)
     const totalPages = pagination.totalPages;
-    const currentItems = products;
+    const regularProducts = products.filter(p => !isCombo(p));
+    const comboProducts = products.filter(p => isCombo(p));
+    const currentItems = productTab === "Combo" ? comboProducts : regularProducts;
+
+    // Helper to get combo items count
+    const getComboItemsCount = (p) => {
+        try {
+            const items = typeof p.combo_items === 'string' ? JSON.parse(p.combo_items) : p.combo_items;
+            return Array.isArray(items) ? items.length : 0;
+        } catch { return 0; }
+    };
 
     // Reset to page 1 when search/filters change
     useEffect(() => {
@@ -220,6 +243,64 @@ const AllProducts = () => {
         return `https://ui-avatars.com/api/?name=${encodeURIComponent(product.name || 'P')}&background=random`;
     };
 
+    const downloadBarcodesPDF = () => {
+        if (!products || products.length === 0) {
+            toast.error("No products available to generate barcodes.");
+            return;
+        }
+
+        toast.loading("Generating Barcode PDF...", { id: "barcode-pdf" });
+        const doc = new jsPDF();
+        
+        let x = 10;
+        let y = 10;
+        const width = 50;
+        const height = 25;
+        const paddingX = 15;
+        const paddingY = 15;
+        const columns = 3;
+        const rows = 10;
+        
+        const canvas = document.createElement("canvas");
+
+        products.forEach((product, index) => {
+            if (index > 0 && index % (columns * rows) === 0) {
+                doc.addPage();
+                x = 10;
+                y = 10;
+            } else if (index > 0 && index % columns === 0) {
+                x = 10;
+                y += height + paddingY;
+            }
+
+            const barcodeValue = product.barcode || product.product_code || `SKU${product.id}`;
+            
+            try {
+                JsBarcode(canvas, barcodeValue, {
+                    format: "CODE128",
+                    displayValue: true,
+                    fontSize: 14,
+                    margin: 2,
+                    width: 2,
+                    height: 40
+                });
+                
+                const imgData = canvas.toDataURL("image/jpeg");
+                doc.addImage(imgData, 'JPEG', x, y, width, height);
+                doc.setFontSize(8);
+                const maxLen = 25;
+                const nameStr = product.name.length > maxLen ? product.name.substring(0, maxLen) + '...' : product.name;
+                doc.text(nameStr, x + width/2, y - 2, { align: "center" });
+            } catch (e) {
+                console.error("Barcode generation error", e);
+            }
+            x += width + paddingX;
+        });
+
+        doc.save("Product_Barcodes.pdf");
+        toast.success("PDF Downloaded!", { id: "barcode-pdf" });
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 min-h-screen pb-20">
 
@@ -233,7 +314,7 @@ const AllProducts = () => {
             ) : (
                 <>
                     {/* ── Premium Stats Cards ── */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         {[
                             {
                                 label: "Total Products",
@@ -244,6 +325,16 @@ const AllProducts = () => {
                                 ring: "ring-blue-100",
                                 pct: 100,
                                 barColor: "bg-blue-400"
+                            },
+                            {
+                                label: "Combos",
+                                value: stats.combos,
+                                sub: stats.total > 0 ? `${Math.round((stats.combos/stats.total)*100)}% of catalog` : "0%",
+                                icon: <FiLayout size={20} />,
+                                gradient: "from-indigo-500 to-indigo-600",
+                                ring: "ring-indigo-100",
+                                pct: stats.total > 0 ? (stats.combos/stats.total)*100 : 0,
+                                barColor: "bg-indigo-400"
                             },
                             {
                                 label: "Active",
@@ -298,6 +389,46 @@ const AllProducts = () => {
                         ))}
                     </div>
 
+                    {/* ── Tabs ── */}
+                    <div className="flex items-center gap-4 mb-2">
+                        <button
+                            onClick={() => setProductTab("Regular")}
+                            className={`flex items-center gap-2.5 px-6 py-2.5 text-sm font-black uppercase tracking-widest rounded-2xl transition-all shadow-sm ${
+                                productTab === "Regular"
+                                    ? "bg-[#3a8b28] text-white shadow-lg shadow-green-200"
+                                    : "bg-white text-gray-400 hover:text-slate-700 border border-gray-100"
+                            }`}
+                        >
+                            <FiBox size={14} />
+                            Standard Products
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${
+                                productTab === "Regular"
+                                    ? "bg-white/20 text-white"
+                                    : "bg-gray-100 text-gray-500"
+                            }`}>
+                                {regularProducts.length}
+                            </span>
+                        </button>
+                        <button
+                            onClick={() => setProductTab("Combo")}
+                            className={`flex items-center gap-2.5 px-6 py-2.5 text-sm font-black uppercase tracking-widest rounded-2xl transition-all shadow-sm ${
+                                productTab === "Combo"
+                                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200"
+                                    : "bg-white text-gray-400 hover:text-slate-700 border border-gray-100"
+                            }`}
+                        >
+                            <FiLayout size={14} />
+                            Combo Products
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${
+                                productTab === "Combo"
+                                    ? "bg-white/20 text-white"
+                                    : "bg-indigo-50 text-indigo-600"
+                            }`}>
+                                {comboProducts.length}
+                            </span>
+                        </button>
+                    </div>
+
                     {/* ── Controls ── */}
                     <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-4 md:p-5 flex flex-col md:flex-row gap-4 items-center">
                         <div className="relative flex-1 w-full md:max-w-lg group">
@@ -329,6 +460,12 @@ const AllProducts = () => {
                             </select>
                         </div>
                          <div className="flex items-center gap-2">
+                    <button
+                        onClick={downloadBarcodesPDF}
+                        className="flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-slate-700 px-4 py-3 rounded-md font-black text-xs uppercase tracking-widest transition-all shadow-sm active:scale-95"
+                    >
+                        <FiDownload size={14}/> PDF Barcodes
+                    </button>
                     <div className="flex bg-gray-100 p-1 rounded-xl">
                         <button onClick={() => setViewMode("table")} className={`p-2 rounded-lg transition-all text-sm ${viewMode === "table" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-slate-600"}`}>
                             <FiList size={16}/>
@@ -342,6 +479,12 @@ const AllProducts = () => {
                         className="flex items-center gap-2 bg-[#1b7f29] hover:bg-[#166321] text-white px-4 py-3 rounded-md font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-200 active:scale-95"
                     >
                         <FiPlus size={14}/> New Product
+                    </button>
+                    <button
+                        onClick={() => navigate("/admin/combo/add")}
+                        className="flex items-center gap-2 bg-[#3b82f6] hover:bg-[#2563eb] text-white px-4 py-3 rounded-md font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-200 active:scale-95"
+                    >
+                        <FiPlus size={14}/> New Combo
                     </button>
                 </div>
                     </div>
@@ -395,6 +538,8 @@ const AllProducts = () => {
 
                                             const statusText = product.status || 'Active';
                                             const isActive = statusText === 'Active';
+                                            const productIsCombo = isCombo(product);
+                                            const comboCount = getComboItemsCount(product);
 
                                             return (
                                             <tr key={product.id} className="hover:bg-gray-50/50 transition-colors bg-white">
@@ -425,9 +570,16 @@ const AllProducts = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-3">
-                                                    <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${getCategoryStyle(product.category)}`}>
-                                                        {product.category || 'Grocery'}
-                                                    </span>
+                                                    <div className="flex flex-col items-start gap-1.5">
+                                                        <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${getCategoryStyle(product.category)}`}>
+                                                            {product.category || 'Grocery'}
+                                                        </span>
+                                                        {productIsCombo && comboCount > 0 && (
+                                                            <span className="flex items-center gap-1 text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100">
+                                                                <FiPackage size={10} /> {comboCount} item{comboCount !== 1 ? 's' : ''}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <div>
@@ -452,9 +604,15 @@ const AllProducts = () => {
                                                         <Link to={`/admin/products/${product.id}`} className="p-1.5 rounded-md bg-[#eefae6] text-[#3a8b28] hover:bg-[#d8f2ca] transition-colors" title="View">
                                                             <FiEye size={14} />
                                                         </Link>
-                                                        <Link to={`/admin/products/edit/${product.id}`} className="p-1.5 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Edit">
-                                                            <FiEdit2 size={14} />
-                                                        </Link>
+                                                        {isCombo(product) ? (
+                                                            <Link to={`/admin/combo/edit/${product.id}`} className="p-1.5 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Edit Combo">
+                                                                <FiEdit2 size={14} />
+                                                            </Link>
+                                                        ) : (
+                                                            <Link to={`/admin/products/edit/${product.id}`} className="p-1.5 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Edit">
+                                                                <FiEdit2 size={14} />
+                                                            </Link>
+                                                        )}
                                                         <button onClick={() => handleDelete(product.id)} className="p-1.5 rounded-md bg-red-50 text-red-600 hover:bg-red-100 transition-colors" title="Delete">
                                                             <FiTrash2 size={14} />
                                                         </button>
@@ -477,35 +635,59 @@ const AllProducts = () => {
                                 const discount = mrp > 0 && price > 0 ? Math.round(((mrp - price) / mrp) * 100) : 0;
                                 const stockPct = Math.min((stock / 50) * 100, 100);
                                 const stockColor = stock <= 0 ? "bg-rose-500" : stock < 10 ? "bg-amber-400" : "bg-emerald-500";
+                                const comboCount = getComboItemsCount(product);
+                                const productIsCombo = isCombo(product);
 
                                 return (
-                                    <div key={product.id} className="group bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col">
+                                    <div key={product.id} className={`group bg-white rounded-[2rem] border shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col ${
+                                        productIsCombo ? 'border-indigo-100 hover:border-indigo-200' : 'border-gray-100'
+                                    }`}>
 
                                         {/* Image */}
-                                        <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100" style={{aspectRatio:"4/5"}}>
+                                        <div className={`relative overflow-hidden ${
+                                            productIsCombo
+                                                ? 'bg-gradient-to-br from-indigo-50 to-purple-100'
+                                                : 'bg-gradient-to-br from-gray-50 to-gray-100'
+                                        }`} style={{aspectRatio:"4/3"}}>
                                             <img
                                                 src={getProductImage(product)}
                                                 alt={product.name}
                                                 loading="lazy"
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                                onError={(e) => e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(product.name)}&background=f1f5f9&color=94a3b8&size=400`}
+                                                onError={(e) => e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(product.name)}&background=${productIsCombo ? '6366f1' : 'f1f5f9'}&color=${productIsCombo ? 'ffffff' : '94a3b8'}&size=400`}
                                             />
 
                                             {/* Gradient overlay */}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
 
                                             {/* Top badges */}
-                                            <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
-                                                {/* Category pill */}
-                                                <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-white/90 backdrop-blur text-slate-700 border border-white/50 shadow-sm truncate max-w-[120px]">
-                                                    {product.category || "General"}
-                                                </span>
-                                                {/* Discount badge */}
-                                                {discount > 0 && (
-                                                    <span className="px-2.5 py-1 rounded-xl text-[9px] font-black bg-rose-500 text-white shadow-lg">
-                                                        -{discount}%
+                                            <div className="absolute top-3 left-3 right-3 flex justify-between items-start gap-2">
+                                                {/* Combo badge OR Category pill */}
+                                                {productIsCombo ? (
+                                                    <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-indigo-600 text-white shadow-lg border border-indigo-400">
+                                                        <FiLayout size={9} />
+                                                        Combo
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-white/90 backdrop-blur text-slate-700 border border-white/50 shadow-sm truncate max-w-[120px]">
+                                                        {product.category || "General"}
                                                     </span>
                                                 )}
+                                                {/* Right badges container */}
+                                                <div className="flex items-center gap-1.5">
+                                                    {productIsCombo && comboCount > 0 && (
+                                                        <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[9px] font-black bg-amber-400 text-white shadow-lg shrink-0">
+                                                            <FiPackage size={9} />
+                                                            {comboCount} items
+                                                        </span>
+                                                    )}
+                                                    {/* Discount badge */}
+                                                    {discount > 0 && (
+                                                        <span className="px-2.5 py-1 rounded-xl text-[9px] font-black bg-rose-500 text-white shadow-lg shrink-0">
+                                                            -{discount}%
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             {/* Hover actions */}
@@ -513,18 +695,24 @@ const AllProducts = () => {
                                                 <Link to={`/admin/products/${product.id}`} className="w-9 h-9 bg-white/95 backdrop-blur rounded-xl flex items-center justify-center text-slate-600 hover:text-blue-600 shadow-lg border border-white/50 transition-colors" title="View">
                                                     <FiEye size={15} />
                                                 </Link>
-                                                <Link to={`/admin/products/edit/${product.id}`} className="w-9 h-9 bg-white/95 backdrop-blur rounded-xl flex items-center justify-center text-slate-600 hover:text-emerald-600 shadow-lg border border-white/50 transition-colors" title="Edit">
-                                                    <FiEdit2 size={15} />
-                                                </Link>
+                                                {productIsCombo ? (
+                                                    <Link to={`/admin/combo/edit/${product.id}`} className="w-9 h-9 bg-white/95 backdrop-blur rounded-xl flex items-center justify-center text-slate-600 hover:text-indigo-600 shadow-lg border border-white/50 transition-colors" title="Edit Combo">
+                                                        <FiEdit2 size={15} />
+                                                    </Link>
+                                                ) : (
+                                                    <Link to={`/admin/products/edit/${product.id}`} className="w-9 h-9 bg-white/95 backdrop-blur rounded-xl flex items-center justify-center text-slate-600 hover:text-emerald-600 shadow-lg border border-white/50 transition-colors" title="Edit">
+                                                        <FiEdit2 size={15} />
+                                                    </Link>
+                                                )}
                                                 <button onClick={() => handleDelete(product.id)} className="w-9 h-9 bg-white/95 backdrop-blur rounded-xl flex items-center justify-center text-slate-600 hover:text-rose-600 shadow-lg border border-white/50 transition-colors" title="Delete">
                                                     <FiTrash2 size={15} />
                                                 </button>
                                             </div>
 
                                             {/* Bottom: Name + Price over image */}
-                                            <div className="absolute bottom-0 left-0 right-0 p-5">
+                                            <div className="absolute bottom-0 left-0 right-0 p-4">
                                                 <h4 className="text-sm font-black text-white leading-tight line-clamp-2 drop-shadow-sm">{product.name}</h4>
-                                                <div className="flex items-center gap-2 mt-1.5">
+                                                <div className="flex items-center gap-2 mt-1">
                                                     <span className="text-base font-black text-white drop-shadow-sm">
                                                         {price > 0 ? `₹${price.toLocaleString()}` : "—"}
                                                     </span>
@@ -537,15 +725,29 @@ const AllProducts = () => {
 
                                         {/* Card Footer */}
                                         <div className="p-4 flex flex-col gap-3">
-                                            {/* SKU row */}
+                                            {/* SKU + Status row */}
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-500 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-lg">
+                                                <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${
+                                                    productIsCombo
+                                                        ? 'text-indigo-600 bg-indigo-50 border-indigo-100'
+                                                        : 'text-blue-500 bg-blue-50 border-blue-100'
+                                                }`}>
                                                     {product.product_code || `#${product.id}`}
                                                 </span>
                                                 <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${getStatusStyle(product.status)}`}>
                                                     {product.status || "Active"}
                                                 </span>
                                             </div>
+
+                                            {/* Combo items info row (only for combos) */}
+                                            {productIsCombo && comboCount > 0 && (
+                                                <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50 rounded-xl border border-indigo-100">
+                                                    <FiPackage size={12} className="text-indigo-500 shrink-0" />
+                                                    <span className="text-[10px] font-black text-indigo-700">
+                                                        {comboCount} product{comboCount !== 1 ? 's' : ''} in this combo
+                                                    </span>
+                                                </div>
+                                            )}
 
                                             {/* Stock bar */}
                                             <div
@@ -554,10 +756,16 @@ const AllProducts = () => {
                                             >
                                                 <div className="flex items-center justify-between mb-1.5">
                                                     <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Stock</span>
-                                                    <span className="text-[10px] font-black text-slate-600 group-hover/stock:text-blue-600 transition-colors underline decoration-dotted">{stock} units</span>
+                                                    <span className={`text-[10px] font-black transition-colors underline decoration-dotted ${
+                                                        productIsCombo ? 'text-indigo-600 group-hover/stock:text-indigo-800' : 'text-slate-600 group-hover/stock:text-blue-600'
+                                                    }`}>{stock} units</span>
                                                 </div>
                                                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                                    <div className={`h-full ${stockColor} rounded-full transition-all duration-700`} style={{width:`${stockPct}%`}} />
+                                                    <div className={`h-full ${
+                                                        productIsCombo && stock > 0
+                                                            ? (stock < 10 ? 'bg-amber-400' : 'bg-indigo-500')
+                                                            : stockColor
+                                                    } rounded-full transition-all duration-700`} style={{width:`${stockPct}%`}} />
                                                 </div>
                                             </div>
 
@@ -569,12 +777,21 @@ const AllProducts = () => {
                                                 >
                                                     View
                                                 </Link>
-                                                <Link
-                                                    to={`/admin/products/edit/${product.id}`}
-                                                    className="flex-1 py-2.5 text-center text-[10px] font-black uppercase tracking-widest text-slate-600 bg-gray-50 hover:bg-emerald-600 hover:text-white rounded-xl border border-gray-100 hover:border-emerald-600 transition-all"
-                                                >
-                                                    Edit
-                                                </Link>
+                                                {productIsCombo ? (
+                                                    <Link
+                                                        to={`/admin/combo/edit/${product.id}`}
+                                                        className="flex-1 py-2.5 text-center text-[10px] font-black uppercase tracking-widest text-slate-600 bg-gray-50 hover:bg-indigo-600 hover:text-white rounded-xl border border-gray-100 hover:border-indigo-600 transition-all"
+                                                    >
+                                                        Edit
+                                                    </Link>
+                                                ) : (
+                                                    <Link
+                                                        to={`/admin/products/edit/${product.id}`}
+                                                        className="flex-1 py-2.5 text-center text-[10px] font-black uppercase tracking-widest text-slate-600 bg-gray-50 hover:bg-emerald-600 hover:text-white rounded-xl border border-gray-100 hover:border-emerald-600 transition-all"
+                                                    >
+                                                        Edit
+                                                    </Link>
+                                                )}
                                                 <button
                                                     onClick={() => handleDelete(product.id)}
                                                     className="px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 bg-gray-50 hover:bg-rose-600 hover:text-white rounded-xl border border-gray-100 hover:border-rose-600 transition-all"

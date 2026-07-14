@@ -23,9 +23,9 @@ const createProductTable = async () => {
         selling_price DECIMAL(10,2) DEFAULT 0,
         offer DECIMAL(5,2) DEFAULT 0,
         offer_price DECIMAL(10,2) DEFAULT 0,
-        stock_quantity INT DEFAULT 0,
+        stock_quantity DECIMAL(10,3) DEFAULT 0,
         pricing_options JSON,
-        total_stock INT DEFAULT 0,
+        total_stock DECIMAL(10,3) DEFAULT 0,
         expiry_date VARCHAR(50),
         manufacturing_date VARCHAR(50),
         country_of_origin VARCHAR(100),
@@ -40,6 +40,7 @@ const createProductTable = async () => {
         return_available BOOLEAN DEFAULT FALSE,
         rating DECIMAL(3,2) DEFAULT 5,
         review_count INT DEFAULT 0,
+        combo_items JSON,
         created_by CHAR(36) DEFAULT NULL,
         updated_by CHAR(36) DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -47,6 +48,22 @@ const createProductTable = async () => {
         FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
       )
     `);
+
+    // Add combo_items to existing table if it doesn't exist
+    try {
+      await connection.query("ALTER TABLE products ADD COLUMN combo_items JSON");
+    } catch (err) {
+      if (err.code !== 'ER_DUP_FIELDNAME') {
+        console.error("Error altering table combo_items:", err);
+      }
+    }
+
+    // Alter stock columns to support decimal values for kg/g/L/ml
+    try {
+      await connection.query("ALTER TABLE products MODIFY COLUMN stock_quantity DECIMAL(10,3) DEFAULT 0, MODIFY COLUMN total_stock DECIMAL(10,3) DEFAULT 0");
+    } catch (err) {
+      console.error("Error altering stock columns to decimal:", err);
+    }
 
     // Add category_id column if it doesn't exist (safe migration)
     try {
