@@ -493,81 +493,113 @@ const Checkout = () => {
 
     setDistanceInfo((prev) => ({ ...prev, loading: true, error: "" }));
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
+    // Check for store settings; if not present, attempt to fetch fresh store settings
+    const ensureStoreSettings = async () => {
+      if (!storeSettings || !storeSettings.latitude || !storeSettings.longitude) {
         try {
-          const userLat = position.coords.latitude;
-          const userLng = position.coords.longitude;
-          
-          if (!storeSettings?.latitude || !storeSettings?.longitude) {
-            setDistanceInfo({ loading: false, error: "Store location is not configured.", distanceKm: null });
+          const resp = await api.get('/settings/store');
+          if (resp.data?.success && resp.data?.data) {
+            setStoreSettings(resp.data.data);
+            try { localStorage.setItem('store_settings', JSON.stringify(resp.data.data)); } catch(e){/*ignore*/}
+            return resp.data.data;
+          }
+        } catch (err) {
+          console.warn('Failed to fetch store settings', err);
+        }
+      }
+      return storeSettings;
+    };
+
+    navigator.permissions && navigator.permissions.query
+      ? navigator.permissions.query({ name: 'geolocation' }).then(async (perm) => {
+          if (perm.state === 'denied') {
+            setDistanceInfo({ loading: false, error: 'Location permission is denied. Please enable location access in your browser.', distanceKm: null });
             return;
           }
-          
-          const shopLat = parseFloat(storeSettings.latitude);
-          const shopLng = parseFloat(storeSettings.longitude);
-          const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
 
-          // Fetch fresh delivery charges first
-          let freshCharges = deliveryCharges;
-          try {
-            const res = await api.get("/delivery-charges");
-            if (res.data && res.data.length > 0) {
-              freshCharges = res.data[0];
-              setDeliveryCharges(freshCharges);
-              console.log("Updated delivery charges:", freshCharges);
-            }
-          } catch (error) {
-            console.error("Error fetching delivery charges:", error);
-          }
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              try {
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
 
-          const reverseResponse = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${userLat}&lon=${userLng}&addressdetails=1`
+                const s = await ensureStoreSettings();
+                if (!s || !s.latitude || !s.longitude) {
+                  setDistanceInfo({ loading: false, error: 'Store location is not configured.', distanceKm: null });
+                  return;
+                }
+
+                const shopLat = parseFloat(s.latitude);
+                const shopLng = parseFloat(s.longitude);
+                const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
+
+                // attempt to refresh delivery charges
+                try {
+                  const res = await api.get('/delivery-charges');
+                  if (res.data) setDeliveryCharges(Array.isArray(res.data) ? res.data[0] : res.data);
+                } catch (err) { console.warn('Error fetching delivery charges', err); }
+
+                // Reverse geocode to fill form address fields
+                try {
+                  const reverseResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${userLat}&lon=${userLng}&addressdetails=1`);
+                  if (reverseResponse.ok) {
+                    const reverseData = await reverseResponse.json();
+                    const address = reverseData?.address || {};
+                    setForm((prev) => ({
+                      ...prev,
+                      street_address: [address.house_number, address.road, address.pedestrian, address.suburb].filter(Boolean).join(' ') || prev.street_address || '',
+                      city: address.city || address.town || address.village || address.suburb || prev.city || '',
+                      district: address.district || address.county || address.state_district || prev.district || '',
+                      state: address.state || prev.state || '',
+                      country: address.country || prev.country || 'India',
+                      zip_code: address.postcode || prev.zip_code || '',
+                    }));
+                  }
+                } catch (err) { console.warn('Reverse geocode failed', err); }
+
+                setDistanceInfo({ loading: false, error: '', distanceKm: Number(distance.toFixed(1)) });
+              } catch (error) {
+                console.error(error);
+                setDistanceInfo({ loading: false, error: 'We could not calculate the distance right now.', distanceKm: null });
+              }
+            },
+            (error) => {
+              let message = 'We could not access your location.';
+              if (error.code === 1) message = 'Location permission was denied. Please allow location access to see the distance.';
+              else if (error.code === 2) message = 'Your location is currently unavailable.';
+              else if (error.code === 3) message = 'Location request timed out.';
+              setDistanceInfo({ loading: false, error: message, distanceKm: null });
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
           );
-          const reverseData = await reverseResponse.json();
-          const address = reverseData?.address || {};
-
-          setForm((prev) => ({
-            ...prev,
-            street_address:
-              [address.house_number, address.road, address.pedestrian, address.suburb]
-                .filter(Boolean)
-                .join(" ") || prev.street_address || "",
-            city:
-              address.city ||
-              address.town ||
-              address.village ||
-              address.suburb ||
-              prev.city ||
-              "",
-            district:
-              address.district ||
-              address.county ||
-              address.state_district ||
-              prev.district ||
-              "",
-            state: address.state || prev.state || "",
-            country: address.country || prev.country || "India",
-            zip_code: address.postcode || prev.zip_code || "",
-          }));
-
-          console.log("Distance calculated:", distance, "Delivery charges object:", freshCharges);
-          setDistanceInfo({ loading: false, error: "", distanceKm: Number(distance.toFixed(1)) });
-        } catch (error) {
-          console.error(error);
-          setDistanceInfo({ loading: false, error: "We could not calculate the distance right now.", distanceKm: null });
-        }
-      },
-      (error) => {
-        let message = "We could not access your location.";
-        if (error.code === 1) message = "Location permission was denied. Please allow location access to see the distance.";
-        else if (error.code === 2) message = "Your location is currently unavailable.";
-        else if (error.code === 3) message = "Location request timed out.";
-
-        setDistanceInfo({ loading: false, error: message, distanceKm: null });
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-    );
+        })
+      : (() => {
+          // Browser doesn't support permissions API; proceed to geolocation and hope for the best
+          navigator.geolocation.getCurrentPosition(async (position) => {
+            try {
+              const userLat = position.coords.latitude;
+              const userLng = position.coords.longitude;
+              const s = await ensureStoreSettings();
+              if (!s || !s.latitude || !s.longitude) {
+                setDistanceInfo({ loading: false, error: 'Store location is not configured.', distanceKm: null });
+                return;
+              }
+              const shopLat = parseFloat(s.latitude);
+              const shopLng = parseFloat(s.longitude);
+              const distance = calculateDistanceKm(userLat, userLng, shopLat, shopLng);
+              setDistanceInfo({ loading: false, error: '', distanceKm: Number(distance.toFixed(1)) });
+            } catch (err) {
+              console.error(err);
+              setDistanceInfo({ loading: false, error: 'We could not calculate the distance right now.', distanceKm: null });
+            }
+          }, (error) => {
+            let message = 'We could not access your location.';
+            if (error.code === 1) message = 'Location permission was denied. Please allow location access to see the distance.';
+            else if (error.code === 2) message = 'Your location is currently unavailable.';
+            else if (error.code === 3) message = 'Location request timed out.';
+            setDistanceInfo({ loading: false, error: message, distanceKm: null });
+          }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+        })();
   };
 
   const indianStates = [
@@ -869,14 +901,22 @@ const Checkout = () => {
                     </div>
 
                     <div className="mt-4 rounded-[1.25rem] border border-green-100 bg-green-50 p-4">
-                      {!distanceInfo.distanceKm && !distanceInfo.error && !distanceInfo.loading ? (
-                        <div className="flex flex-col gap-3">
-                          <p className="text-sm text-slate-600">No location fetched yet.</p>
-                          <button type="button" onClick={detectDistanceToShop} className="w-fit rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-[#0e6827] transition hover:border-green-300 hover:bg-green-100">
-                            Fetch location
-                          </button>
+                      {/* Always show shop address if available */}
+                      {storeSettings ? (
+                        <div className="mb-3">
+                          <p className="text-sm text-slate-500">Shop address</p>
+                          <p className="mt-1 text-sm font-semibold text-slate-800">{[storeSettings.address, storeSettings.city, storeSettings.state, storeSettings.zip_code].filter(Boolean).join(", ")}</p>
+                          {storeSettings.latitude && storeSettings.longitude && (
+                            <p className="text-xs text-slate-500">Coordinates: {storeSettings.latitude}, {storeSettings.longitude}</p>
+                          )}
                         </div>
-                      ) : distanceInfo.loading ? (
+                      ) : (
+                        <div className="mb-3">
+                          <p className="text-sm text-slate-500">Shop address not configured</p>
+                        </div>
+                      )}
+
+                      {distanceInfo.loading ? (
                         <p className="text-sm text-slate-600">Fetching your current location...</p>
                       ) : distanceInfo.distanceKm !== null ? (
                         <>
