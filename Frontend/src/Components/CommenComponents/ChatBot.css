@@ -497,18 +497,9 @@
 }
 
 .quick-actions-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.4rem;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
-  -webkit-overflow-scrolling: touch;
-}
-.quick-actions-grid::-webkit-scrollbar {
-  height: 4px;
-}
-.quick-actions-grid::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 99px;
 }
 
 .quick-action-chip {
@@ -517,14 +508,15 @@
   gap: 0.4rem;
   background: white;
   border: 1.5px solid #e2e8f0;
-  border-radius: 99px;
-  padding: 0.3rem 0.75rem 0.3rem 0.35rem;
-  font-size: 0.75rem;
+  border-radius: 12px;
+  padding: 0.4rem 0.2rem;
+  font-size: 0.65rem;
   font-weight: 600;
   color: #334155;
   cursor: pointer;
   transition: all 0.2s ease;
-  white-space: nowrap;
+  text-align: left;
+  line-height: 1.1;
   font-family: 'Inter', sans-serif;
 }
 .quick-action-chip:hover {
@@ -532,7 +524,6 @@
   color: var(--chip-color, #1b7f29);
   background: #f8fafc;
   transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
 }
 
 .chip-icon {
