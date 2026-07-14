@@ -51,7 +51,15 @@ const AllProducts = () => {
     const [updatingStock, setUpdatingStock] = useState(false);
 
     const [pagination, setPagination] = useState(pageData?.pagination || { total: 0, totalPages: 1 });
-    const [stats, setStats] = useState(pageData?.stats || { total: 0, active: 0, lowStock: 0, outOfStock: 0 });
+    const [stats, setStats] = useState(pageData?.stats || { total: 0, active: 0, lowStock: 0, outOfStock: 0, combos: 0 });
+
+    const isCombo = (p) => {
+        const code = String(p.product_code || '').toUpperCase();
+        return code.startsWith('SPMC') ||
+               p.category?.toLowerCase() === 'combo' ||
+               p.category?.toLowerCase() === 'combos' ||
+               p.is_combo === true;
+    };
 
     // Rapid Add Modal
     const [isRapidAddOpen, setIsRapidAddOpen] = useState(false);
@@ -108,6 +116,7 @@ const AllProducts = () => {
                         return s > 0 && s < 10;
                     }).length,
                     outOfStock: arr.filter(p => (p.total_stock ?? p.stock ?? 0) <= 0).length,
+                    combos: arr.filter(p => isCombo(p)).length,
                 });
                 finalData = {
                     products: data,
@@ -118,7 +127,7 @@ const AllProducts = () => {
                 finalData = {
                     products: Array.isArray(data.products) ? data.products : [],
                     pagination: data.pagination || { total: 0, totalPages: 1 },
-                    stats: data.stats || { total: 0, active: 0, lowStock: 0, outOfStock: 0 }
+                    stats: data.stats || { total: 0, active: 0, lowStock: 0, outOfStock: 0, combos: 0 }
                 };
             }
             setProducts(finalData.products);
@@ -182,14 +191,6 @@ const AllProducts = () => {
             case "Out of Stock": return "bg-rose-50 text-rose-600 border-rose-100";
             default: return "bg-gray-50 text-gray-600 border-gray-100";
         }
-    };
-
-    const isCombo = (p) => {
-        const code = String(p.product_code || '').toUpperCase();
-        return code.startsWith('SPMC') ||
-               p.category?.toLowerCase() === 'combo' ||
-               p.category?.toLowerCase() === 'combos' ||
-               p.is_combo === true;
     };
 
     // Simplified Pagination (Handled by backend)
@@ -313,7 +314,7 @@ const AllProducts = () => {
             ) : (
                 <>
                     {/* ── Premium Stats Cards ── */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         {[
                             {
                                 label: "Total Products",
@@ -324,6 +325,16 @@ const AllProducts = () => {
                                 ring: "ring-blue-100",
                                 pct: 100,
                                 barColor: "bg-blue-400"
+                            },
+                            {
+                                label: "Combos",
+                                value: stats.combos,
+                                sub: stats.total > 0 ? `${Math.round((stats.combos/stats.total)*100)}% of catalog` : "0%",
+                                icon: <FiLayout size={20} />,
+                                gradient: "from-indigo-500 to-indigo-600",
+                                ring: "ring-indigo-100",
+                                pct: stats.total > 0 ? (stats.combos/stats.total)*100 : 0,
+                                barColor: "bg-indigo-400"
                             },
                             {
                                 label: "Active",
@@ -527,6 +538,8 @@ const AllProducts = () => {
 
                                             const statusText = product.status || 'Active';
                                             const isActive = statusText === 'Active';
+                                            const productIsCombo = isCombo(product);
+                                            const comboCount = getComboItemsCount(product);
 
                                             return (
                                             <tr key={product.id} className="hover:bg-gray-50/50 transition-colors bg-white">
@@ -557,9 +570,16 @@ const AllProducts = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-3">
-                                                    <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${getCategoryStyle(product.category)}`}>
-                                                        {product.category || 'Grocery'}
-                                                    </span>
+                                                    <div className="flex flex-col items-start gap-1.5">
+                                                        <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${getCategoryStyle(product.category)}`}>
+                                                            {product.category || 'Grocery'}
+                                                        </span>
+                                                        {productIsCombo && comboCount > 0 && (
+                                                            <span className="flex items-center gap-1 text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100">
+                                                                <FiPackage size={10} /> {comboCount} item{comboCount !== 1 ? 's' : ''}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <div>
@@ -653,17 +673,21 @@ const AllProducts = () => {
                                                         {product.category || "General"}
                                                     </span>
                                                 )}
-                                                {/* Discount badge */}
-                                                {discount > 0 ? (
-                                                    <span className="px-2.5 py-1 rounded-xl text-[9px] font-black bg-rose-500 text-white shadow-lg shrink-0">
-                                                        -{discount}%
-                                                    </span>
-                                                ) : productIsCombo && comboCount > 0 ? (
-                                                    <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[9px] font-black bg-amber-400 text-white shadow-lg shrink-0">
-                                                        <FiPackage size={9} />
-                                                        {comboCount} items
-                                                    </span>
-                                                ) : null}
+                                                {/* Right badges container */}
+                                                <div className="flex items-center gap-1.5">
+                                                    {productIsCombo && comboCount > 0 && (
+                                                        <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[9px] font-black bg-amber-400 text-white shadow-lg shrink-0">
+                                                            <FiPackage size={9} />
+                                                            {comboCount} items
+                                                        </span>
+                                                    )}
+                                                    {/* Discount badge */}
+                                                    {discount > 0 && (
+                                                        <span className="px-2.5 py-1 rounded-xl text-[9px] font-black bg-rose-500 text-white shadow-lg shrink-0">
+                                                            -{discount}%
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             {/* Hover actions */}
