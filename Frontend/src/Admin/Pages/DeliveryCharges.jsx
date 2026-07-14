@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import "./Coupons.css";
-import { Truck, Save, RotateCcw } from "lucide-react";
+import { Truck, Save, RotateCcw, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import api from "../../api";
 
 const DeliveryCharges = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     base_delivery_charge: 50,
     free_delivery_minimum_order_amount: 500,
@@ -14,6 +16,7 @@ const DeliveryCharges = () => {
     enable_express_delivery: true,
     express_delivery_charge: 100,
     estimated_delivery_time: "30 Mins",
+    is_enabled: true,
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -34,6 +37,7 @@ const DeliveryCharges = () => {
             enable_express_delivery: Boolean(data.data.enable_express_delivery),
             express_delivery_charge: data.data.express_delivery_charge ?? 100,
             estimated_delivery_time: data.data.estimated_delivery_time || "30 Mins",
+            is_enabled: data.data.is_enabled !== undefined ? Boolean(data.data.is_enabled) : true,
           });
         }
       } catch (error) {
@@ -61,6 +65,7 @@ const DeliveryCharges = () => {
       const payload = {
         ...formData,
         enable_express_delivery: formData.enable_express_delivery ? 1 : 0,
+        is_enabled: formData.is_enabled ? 1 : 0,
       };
       await api.post("/delivery-charges", payload);
       alert("Delivery charges saved successfully.");
@@ -83,16 +88,29 @@ const DeliveryCharges = () => {
       enable_express_delivery: true,
       express_delivery_charge: 100,
       estimated_delivery_time: "30 Mins",
+      is_enabled: true,
     });
   };
 
   return (
     <div className="coupons-page">
-      <div className="page-header">
-        <div className="page-title">
-          <h1>Delivery Charges Settings</h1>
-          <p>Configure standard and express delivery options, fees, and operational radiuses.</p>
-        </div>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <button 
+          onClick={() => navigate(-1)} 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem', 
+            background: 'none', 
+            border: 'none', 
+            color: '#64748b', 
+            cursor: 'pointer', 
+            fontSize: '1rem',
+            fontWeight: '500'
+          }}
+        >
+          <ArrowLeft size={18} /> Back
+        </button>
       </div>
 
       <form
@@ -104,6 +122,25 @@ const DeliveryCharges = () => {
         }}
         onSubmit={handleSubmit}
       >
+
+        {/* Global Delivery Toggle */}
+        <div className="form-section" style={{ background: formData.is_enabled ? '#f0fdf4' : '#fef2f2', padding: '1.5rem', borderRadius: '16px', border: formData.is_enabled ? '1px solid #bbf7d0' : '1px solid #fecaca', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 className="form-section-title" style={{ margin: 0, color: formData.is_enabled ? '#166534' : '#991b1b' }}>
+              <Truck className="icon" style={{ color: formData.is_enabled ? '#166534' : '#991b1b' }} /> 
+              {formData.is_enabled ? 'Delivery is Enabled' : 'Delivery is Disabled'}
+            </h3>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 'bold', color: formData.is_enabled ? '#166534' : '#991b1b' }}>
+              <input type="checkbox" name="is_enabled" style={{ width: '1.2rem', height: '1.2rem' }} checked={Boolean(formData.is_enabled)} onChange={handleChange} />
+              Enable Global Delivery
+            </label>
+          </div>
+          <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: formData.is_enabled ? '#15803d' : '#b91c1c' }}>
+            {formData.is_enabled 
+              ? "Delivery options will be available at checkout." 
+              : "All delivery charges will be bypassed and hidden at checkout. (Only store pickup or free checkout)."}
+          </p>
+        </div>
 
         {/* Standard Delivery Settings */}
         <div className="form-section">

@@ -45,6 +45,10 @@ const ensureDeliveryChargesTable = async () => {
         ALTER TABLE delivery_charges
         ADD COLUMN IF NOT EXISTS free_delivery_km DECIMAL(10,2) DEFAULT 0.00
       `);
+      await connection.query(`
+        ALTER TABLE delivery_charges
+        ADD COLUMN IF NOT EXISTS is_enabled TINYINT(1) DEFAULT 1
+      `);
     } catch (err) {}
   } finally {
     connection.release();
@@ -70,6 +74,7 @@ exports.getDeliveryCharges = async (req, res) => {
       enable_express_delivery: 0,
       express_delivery_charge: 0,
       estimated_delivery_time: "",
+      is_enabled: 1,
     };
 
     return res.status(200).json({
@@ -102,6 +107,7 @@ exports.createOrUpdateDeliveryCharges = async (req, res) => {
     const enableExpressDelivery = payload.enable_express_delivery ?? payload.enableExpressDelivery ? 1 : 0;
     const expressDeliveryCharge = payload.express_delivery_charge ?? payload.expressDeliveryCharge ?? 0;
     const estimatedDeliveryTime = payload.estimated_delivery_time ?? payload.estimatedDeliveryTime ?? "";
+    const isEnabled = payload.is_enabled ?? payload.isEnabled ?? 1;
 
     const pool = getPool();
     const connection = await pool.getConnection();
@@ -141,6 +147,7 @@ exports.createOrUpdateDeliveryCharges = async (req, res) => {
             enable_express_delivery = ?,
             express_delivery_charge = ?,
             estimated_delivery_time = ?,
+            is_enabled = ?,
             updated_by = ?,
             created_by = ?
           WHERE id = ?`,
@@ -154,6 +161,7 @@ exports.createOrUpdateDeliveryCharges = async (req, res) => {
             enableExpressDelivery,
             expressDeliveryCharge,
             estimatedDeliveryTime,
+            isEnabled,
             actorId,
             actorId,
             existingId,
@@ -179,9 +187,10 @@ exports.createOrUpdateDeliveryCharges = async (req, res) => {
           enable_express_delivery,
           express_delivery_charge,
           estimated_delivery_time,
+          is_enabled,
           created_by,
           updated_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
         [
           baseDeliveryCharge,
           freeDeliveryMinimumOrderAmount,
@@ -192,6 +201,7 @@ exports.createOrUpdateDeliveryCharges = async (req, res) => {
           enableExpressDelivery,
           expressDeliveryCharge,
           estimatedDeliveryTime,
+          isEnabled,
           actorId,
           actorId,
         ]

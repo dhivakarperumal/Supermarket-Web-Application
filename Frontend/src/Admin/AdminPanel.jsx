@@ -52,7 +52,7 @@ const AdminLayout = () => {
                 </main>
 
                 {/* Footer */}
-                <footer className="glass-footer text-center py-4 mt-10 text-sm text-white/70">
+                <footer className=" bg-[#042f1a] text-center py-4 mt-10 text-sm text-white">
                     © {new Date().getFullYear()} Q-Techx Solutions. All rights reserved.
                 </footer>
 

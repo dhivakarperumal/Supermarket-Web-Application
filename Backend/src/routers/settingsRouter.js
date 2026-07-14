@@ -11,4 +11,7 @@ router.post("/payment", settingsController.updatePaymentSettings);
 router.get("/tax", settingsController.getTaxSettings);
 router.post("/tax", settingsController.updateTaxSettings);
 
+router.get("/store", settingsController.getStoreSettings);
+router.post("/store", settingsController.updateStoreSettings);
+
 module.exports = router;

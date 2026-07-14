@@ -23,7 +23,10 @@ import {
   Usb,
   Network,
   Truck,
-  Ticket
+  Ticket,
+  MapPin,
+  Navigation,
+  Loader
 } from "lucide-react";
 
 const Toggle = ({ label, defaultChecked = false, checked, onChange }) => (
@@ -123,6 +126,77 @@ const Settings = () => {
     taxMode: 'Tax Exclusive'
   });
 
+  const [storeSettings, setStoreSettings] = useState({
+    storeName: '',
+    storeLogo: null,
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    country: '',
+    zipCode: '',
+    gstin: '',
+    fssai: '',
+    businessType: 'Supermarket',
+    timezone: 'Asia/Kolkata (IST)',
+    language: 'English',
+    currency: 'INR (₹)',
+    openingTime: '09:00',
+    closingTime: '21:00',
+    latitude: '',
+    longitude: '',
+  });
+
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+
+  const updateStoreSetting = (key, value) => {
+    setStoreSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleFetchLiveLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser.');
+      return;
+    }
+    setIsFetchingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+          );
+          const data = await res.json();
+          const addr = data.address || {};
+          setStoreSettings(prev => ({
+            ...prev,
+            latitude: latitude.toFixed(6),
+            longitude: longitude.toFixed(6),
+            address: [
+              addr.road || addr.pedestrian || addr.neighbourhood || '',
+              addr.suburb || addr.village || '',
+            ].filter(Boolean).join(', '),
+            city: addr.city || addr.town || addr.district || addr.county || '',
+            state: addr.state || '',
+            country: addr.country || '',
+            zipCode: addr.postcode || '',
+          }));
+          toast.success('Location fetched and address filled!');
+        } catch {
+          toast.error('Failed to reverse geocode location.');
+        } finally {
+          setIsFetchingLocation(false);
+        }
+      },
+      (err) => {
+        setIsFetchingLocation(false);
+        toast.error(`Location error: ${err.message}`);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
   const updatePaymentSetting = (key, value) => {
     setPaymentSettings(prev => ({ ...prev, [key]: value }));
   };
@@ -135,6 +209,7 @@ const Settings = () => {
     fetchReceiptSettings();
     fetchPaymentSettings();
     fetchTaxSettings();
+    fetchStoreSettings();
   }, []);
 
   const fetchTaxSettings = async () => {
@@ -239,6 +314,56 @@ const Settings = () => {
     }
   };
 
+  const fetchStoreSettings = async () => {
+    try {
+      const response = await api.get("/settings/store");
+      if (response.data?.success && response.data?.data) {
+        if (Object.keys(response.data.data).length > 0) {
+          const d = response.data.data;
+          setStoreSettings({
+            storeName:    d.store_name    || '',
+            storeLogo:    d.store_logo    || null,
+            email:        d.email         || '',
+            phone:        d.phone         || '',
+            address:      d.address       || '',
+            city:         d.city          || '',
+            state:        d.state         || '',
+            country:      d.country       || '',
+            zipCode:      d.zip_code      || '',
+            gstin:        d.gstin         || '',
+            fssai:        d.fssai         || '',
+            businessType: d.business_type || 'Supermarket',
+            timezone:     d.timezone      || 'Asia/Kolkata (IST)',
+            language:     d.language      || 'English',
+            currency:     d.currency      || 'INR (₹)',
+            openingTime:  d.opening_time  || '09:00',
+            closingTime:  d.closing_time  || '21:00',
+            latitude:     d.latitude      || '',
+            longitude:    d.longitude     || '',
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching store settings:', error);
+      toast.error('Failed to load store settings');
+    }
+  };
+
+  const handleStoreLogoUpload = async (e) => {
+    try {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const options = { maxSizeMB: 0.2, maxWidthOrHeight: 800, useWebWorker: true };
+      const compressed = await imageCompression(file, options);
+      const base64 = await imageCompression.getDataUrlFromFile(compressed);
+      setStoreSettings(prev => ({ ...prev, storeLogo: base64 }));
+      toast.success("Logo ready. Save settings to apply.");
+    } catch (err) {
+      console.error('Store logo upload error:', err);
+      toast.error('Logo upload failed.');
+    }
+  };
+
   const handleSave = async () => {
     if (activeTab === 'receipt') {
       try {
@@ -263,6 +388,18 @@ const Settings = () => {
       } catch (error) {
         console.error("Error saving payment settings:", error);
         toast.error("Failed to save payment settings.");
+      }
+    } else if (activeTab === 'store') {
+      try {
+        const response = await api.post("/settings/store", storeSettings);
+        if (response.data?.success) {
+          toast.success("Store settings saved successfully!");
+        } else {
+          toast.error("Failed to save store settings.");
+        }
+      } catch (error) {
+        console.error("Error saving store settings:", error);
+        toast.error("Failed to save store settings.");
       }
     } else {
       toast.success("Settings saved successfully!");
@@ -859,25 +996,212 @@ const Settings = () => {
         );
       case 'store':
         return (
-          <>
-            <Input label="Store Name" placeholder="Priyam Super Market" />
-            <Input label="Store Logo" type="file" />
-            <Input label="Email" placeholder="admin@priyam.com" />
-            <Input label="Phone" placeholder="+91 9876543210" />
-            <Input label="Address" placeholder="Main Branch, 1st Cross" />
-            <Input label="City" placeholder="Bangalore" />
-            <Input label="State" placeholder="Karnataka" />
-            <Input label="Country" placeholder="India" />
-            <Input label="ZIP Code" placeholder="560001" />
-            <Input label="GSTIN" placeholder="29AAAAA0000A1Z5" />
-            <Input label="FSSAI License" placeholder="11223344556677" />
-            <Select label="Business Type" options={['Supermarket', 'Grocery', 'Hypermarket']} />
-            <Select label="Timezone" options={['Asia/Kolkata (IST)', 'UTC']} />
-            <Select label="Language" options={['English', 'Hindi', 'Tamil']} />
-            <Select label="Currency" options={['INR (₹)', 'USD ($)']} />
-            <Input label="Opening Time" type="time" />
-            <Input label="Closing Time" type="time" />
-          </>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', width: '100%', gridColumn: '1 / -1' }}>
+
+            {/* Store Identity */}
+            <div style={{ gridColumn: '1 / -1' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '2px solid #d1fae5' }}>
+                <Store size={16} style={{ color: '#10b981' }} />
+                <span style={{ fontWeight: '700', fontSize: '0.85rem', color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Store Identity</span>
+              </div>
+            </div>
+
+            <Input
+              label="Store Name"
+              placeholder="Priyam Super Market"
+              value={storeSettings.storeName}
+              onChange={(e) => updateStoreSetting('storeName', e.target.value)}
+            />
+
+            <div className="form-group">
+              <label className="form-label">Store Logo</label>
+              <input
+                type="file"
+                accept="image/*"
+                className="form-input"
+                onChange={handleStoreLogoUpload}
+              />
+              {storeSettings.storeLogo && (
+                <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <img
+                    src={storeSettings.storeLogo}
+                    alt="Store Logo Preview"
+                    style={{ width: '56px', height: '56px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#f8fafc', padding: '4px' }}
+                  />
+                  <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: '600' }}>✓ Logo loaded</span>
+                </div>
+              )}
+            </div>
+
+            <Input
+              label="Email"
+              placeholder="admin@priyam.com"
+              value={storeSettings.email}
+              onChange={(e) => updateStoreSetting('email', e.target.value)}
+            />
+
+            <Input
+              label="Phone"
+              placeholder="+91 9876543210"
+              value={storeSettings.phone}
+              onChange={(e) => updateStoreSetting('phone', e.target.value)}
+            />
+
+            <Select
+              label="Business Type"
+              options={['Supermarket', 'Grocery', 'Hypermarket']}
+              value={storeSettings.businessType}
+              onChange={(e) => updateStoreSetting('businessType', e.target.value)}
+            />
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <Input
+                label="Opening Time"
+                type="time"
+                value={storeSettings.openingTime}
+                onChange={(e) => updateStoreSetting('openingTime', e.target.value)}
+              />
+              <Input
+                label="Closing Time"
+                type="time"
+                value={storeSettings.closingTime}
+                onChange={(e) => updateStoreSetting('closingTime', e.target.value)}
+              />
+            </div>
+
+            {/* Location Section */}
+            <div style={{ gridColumn: '1 / -1', marginTop: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '2px solid #d1fae5' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <MapPin size={16} style={{ color: '#10b981' }} />
+                  <span style={{ fontWeight: '700', fontSize: '0.85rem', color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Store Location</span>
+                </div>
+                <button
+                  onClick={handleFetchLiveLocation}
+                  disabled={isFetchingLocation}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    background: isFetchingLocation ? '#e2e8f0' : 'linear-gradient(135deg, #10b981, #34d399)',
+                    color: isFetchingLocation ? '#94a3b8' : 'white',
+                    border: 'none',
+                    padding: '0.5rem 1.1rem',
+                    borderRadius: '10px',
+                    fontWeight: '600',
+                    fontSize: '0.85rem',
+                    cursor: isFetchingLocation ? 'not-allowed' : 'pointer',
+                    boxShadow: isFetchingLocation ? 'none' : '0 4px 12px rgba(16,185,129,0.35)',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  {isFetchingLocation
+                    ? <><Loader size={15} style={{ animation: 'spin 1s linear infinite' }} /> Fetching...</>
+                    : <><Navigation size={15} /> Fetch Live Location</>}
+                </button>
+              </div>
+            </div>
+
+            {/* Coordinates row */}
+            <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '1rem' }}>
+              <div style={{ flex: 1 }}>
+                <Input
+                  label="Latitude"
+                  placeholder="e.g. 12.479808"
+                  value={storeSettings.latitude}
+                  onChange={(e) => updateStoreSetting('latitude', e.target.value)}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <Input
+                  label="Longitude"
+                  placeholder="e.g. 78.573702"
+                  value={storeSettings.longitude}
+                  onChange={(e) => updateStoreSetting('longitude', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div style={{ gridColumn: '1 / -1' }}>
+              <Input
+                label="Address"
+                placeholder="Main Branch, 1st Cross"
+                value={storeSettings.address}
+                onChange={(e) => updateStoreSetting('address', e.target.value)}
+              />
+            </div>
+
+            <Input
+              label="City"
+              placeholder="Bangalore"
+              value={storeSettings.city}
+              onChange={(e) => updateStoreSetting('city', e.target.value)}
+            />
+
+            <Input
+              label="State"
+              placeholder="Karnataka"
+              value={storeSettings.state}
+              onChange={(e) => updateStoreSetting('state', e.target.value)}
+            />
+
+            <Input
+              label="Country"
+              placeholder="India"
+              value={storeSettings.country}
+              onChange={(e) => updateStoreSetting('country', e.target.value)}
+            />
+
+            <Input
+              label="ZIP Code"
+              placeholder="560001"
+              value={storeSettings.zipCode}
+              onChange={(e) => updateStoreSetting('zipCode', e.target.value)}
+            />
+
+            {/* Compliance */}
+            <div style={{ gridColumn: '1 / -1', marginTop: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '2px solid #d1fae5' }}>
+                <span style={{ fontWeight: '700', fontSize: '0.85rem', color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Compliance & Preferences</span>
+              </div>
+            </div>
+
+            <Input
+              label="GSTIN"
+              placeholder="29AAAAA0000A1Z5"
+              value={storeSettings.gstin}
+              onChange={(e) => updateStoreSetting('gstin', e.target.value)}
+            />
+
+            <Input
+              label="FSSAI License"
+              placeholder="11223344556677"
+              value={storeSettings.fssai}
+              onChange={(e) => updateStoreSetting('fssai', e.target.value)}
+            />
+
+            <Select
+              label="Timezone"
+              options={['Asia/Kolkata (IST)', 'UTC', 'America/New_York']}
+              value={storeSettings.timezone}
+              onChange={(e) => updateStoreSetting('timezone', e.target.value)}
+            />
+
+            <Select
+              label="Language"
+              options={['English', 'Hindi', 'Tamil', 'Telugu', 'Kannada']}
+              value={storeSettings.language}
+              onChange={(e) => updateStoreSetting('language', e.target.value)}
+            />
+
+            <Select
+              label="Currency"
+              options={['INR (₹)', 'USD ($)', 'EUR (€)']}
+              value={storeSettings.currency}
+              onChange={(e) => updateStoreSetting('currency', e.target.value)}
+            />
+
+          </div>
         );
       case 'tax':
         return (
@@ -975,21 +1299,7 @@ const Settings = () => {
   return (
     <div className="settings-page">
       <Toaster position="top-right" />
-      <div className="settings-header">
-        <div className="settings-title-area">
-          <h1>System Settings</h1>
-          <p>Configure your supermarket system, billing, payments, and preferences.</p>
-        </div>
 
-        {!activeTab && (
-          <div className="settings-header-actions">
-            <div style={{ position: 'relative' }}>
-              <Search style={{ position: 'absolute', left: 12, top: 10, color: '#94a3b8' }} size={18} />
-              <input type="text" className="settings-search" placeholder="Search categories..." style={{ paddingLeft: '2.5rem' }} />
-            </div>
-          </div>
-        )}
-      </div>
 
       {!activeTab ? (
         <div className="settings-grid">
