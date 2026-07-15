@@ -348,9 +348,9 @@ const SalaryManagement = () => {
           <div className="overflow-x-auto">
             <table className="min-w-full text-xs">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
+                <tr className="bg-[#1b7f29] border-b border-[#dce9df]">
                   {["Employee","Month","Gross","Deductions","Net Salary","Status","Payment","Actions"].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-gray-400">{h}</th>
+                    <th key={h} className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-white">{h}</th>
                   ))}
                 </tr>
               </thead>

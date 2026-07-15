@@ -250,41 +250,41 @@ const Staffs = () => {
 
         <table className="w-full">
 
-          <thead className="bg-[#f6faf7] border-b border-[#dce9df]">
+          <thead className="bg-[#1b7f29] border-b border-[#dce9df]">
 
             <tr className="text-[#123524] text-sm">
 
-              <th className="px-6 py-4 text-left font-bold">S.No</th>
+              <th className="px-6 py-4 text-left font-bold text-white">S.No</th>
 
-              <th className="px-6 py-4 text-left font-bold">
+              <th className="px-6 py-4 text-left font-bold text-white">
                 Employee
               </th>
 
-              <th className="px-6 py-4 text-left font-bold">
+              <th className="px-6 py-4 text-left font-bold text-white">
                 Email
               </th>
 
-              <th className="px-6 py-4 text-left font-bold">
+              <th className="px-6 py-4 text-left font-bold text-white">
                 Mobile
               </th>
 
-              <th className="px-6 py-4 text-left font-bold">
+              <th className="px-6 py-4 text-left font-bold text-white">
                 Role
               </th>
 
-              <th className="px-6 py-4 text-left font-bold">
+              <th className="px-6 py-4 text-left font-bold text-white">
                 Time In
               </th>
 
-              <th className="px-6 py-4 text-left font-bold">
+              <th className="px-6 py-4 text-left font-bold text-white">
                 Time Out
               </th>
 
-              <th className="px-6 py-4 text-center font-bold">
+              <th className="px-6 py-4 text-center font-bold text-white">
                 Status
               </th>
 
-              <th className="px-6 py-4 text-center font-bold">
+              <th className="px-6 py-4 text-center font-bold text-white">
                 Actions
               </th>
 

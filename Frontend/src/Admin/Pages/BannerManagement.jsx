@@ -195,11 +195,11 @@ const BannerManagement = () => {
                     <div className="overflow-x-auto hide-scrollbar">
                         <table className="w-full text-left border-collapse block md:table">
                             <thead className="hidden md:table-header-group">
-                                <tr className="bg-gray-50/50">
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Visual Assets</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Promotion Details</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Configuration</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                                <tr className="bg-[#1b7f29]">
+                                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider">Visual Assets</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider">Promotion Details</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider">Configuration</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="block md:table-row-group divide-y divide-gray-50 text-slate-800 px-3 py-4 md:p-0">

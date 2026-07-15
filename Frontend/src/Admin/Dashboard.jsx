@@ -67,7 +67,7 @@ const LineChart = ({ data }) => {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af' }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af' }} tickFormatter={(val) => `₹${val/1000}k`} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af' }} tickFormatter={(val) => `₹${val / 1000}k`} />
                 <RechartsTooltip content={<CustomTooltip />} cursor={{ stroke: '#e5e7eb', strokeWidth: 1, strokeDasharray: '4 4' }} />
                 <Area type="monotone" dataKey="Sales" stroke="#3a8b28" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" activeDot={{ r: 6, strokeWidth: 0, fill: '#3a8b28' }} />
             </AreaChart>
@@ -98,7 +98,7 @@ const Donut = ({ segments, center, sub, size = 160 }) => {
                             <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                         ))}
                     </Pie>
-                    <RechartsTooltip 
+                    <RechartsTooltip
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
                         itemStyle={{ color: '#1f2937', fontWeight: 600 }}
                         formatter={(value) => [`${value}%`, '']}
@@ -411,7 +411,7 @@ const Dashboard = () => {
                         </div>
                         <p className="stat-card-value stat-value">{String(totalSales).replace("$", "₹")}</p>
                         <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
-                            {[40,55,35,65,50,70,85].map((h,i) => (
+                            {[40, 55, 35, 65, 50, 70, 85].map((h, i) => (
                                 <span key={i} style={{ height: `${h}%`, background: "rgba(255,255,255,0.6)" }} />
                             ))}
                         </div>
@@ -443,7 +443,7 @@ const Dashboard = () => {
                         </div>
                         <p className="stat-card-value stat-value">{String(totalOrders)}</p>
                         <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
-                            {[30,60,45,75,55,65,90].map((h,i) => (
+                            {[30, 60, 45, 75, 55, 65, 90].map((h, i) => (
                                 <span key={i} style={{ height: `${h}%`, background: "rgba(255,255,255,0.6)" }} />
                             ))}
                         </div>
@@ -475,7 +475,7 @@ const Dashboard = () => {
                         </div>
                         <p className="stat-card-value stat-value">{String(totalCustomers)}</p>
                         <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
-                            {[50,40,70,60,80,55,75].map((h,i) => (
+                            {[50, 40, 70, 60, 80, 55, 75].map((h, i) => (
                                 <span key={i} style={{ height: `${h}%`, background: "rgba(255,255,255,0.6)" }} />
                             ))}
                         </div>
@@ -507,7 +507,7 @@ const Dashboard = () => {
                         </div>
                         <p className="stat-card-value stat-value" style={{ color: "rgba(0,0,0,0.8)", textShadow: "none" }}>{String(totalProducts)}</p>
                         <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
-                            {[80,65,72,58,68,62,55].map((h,i) => (
+                            {[80, 65, 72, 58, 68, 62, 55].map((h, i) => (
                                 <span key={i} style={{ height: `${h}%`, background: "rgba(0,0,0,0.2)" }} />
                             ))}
                         </div>
@@ -544,7 +544,7 @@ const Dashboard = () => {
                         </div>
                         <p className="stat-card-value stat-value">{String(totalDeliveries)}</p>
                         <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
-                            {[55,70,60,80,65,75,90].map((h,i) => (
+                            {[55, 70, 60, 80, 65, 75, 90].map((h, i) => (
                                 <span key={i} style={{ height: `${h}%`, background: "rgba(255,255,255,0.6)" }} />
                             ))}
                         </div>
@@ -576,7 +576,7 @@ const Dashboard = () => {
                         </div>
                         <p className="stat-card-value stat-value">{String(ordersToday)}</p>
                         <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
-                            {[20,45,30,60,50,55,72].map((h,i) => (
+                            {[20, 45, 30, 60, 50, 55, 72].map((h, i) => (
                                 <span key={i} style={{ height: `${h}%`, background: "rgba(255,255,255,0.6)" }} />
                             ))}
                         </div>
@@ -608,7 +608,7 @@ const Dashboard = () => {
                         </div>
                         <p className="stat-card-value stat-value">{String(todaysRevenue)}</p>
                         <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
-                            {[45,65,55,80,60,75,88].map((h,i) => (
+                            {[45, 65, 55, 80, 60, 75, 88].map((h, i) => (
                                 <span key={i} style={{ height: `${h}%`, background: "rgba(165,214,167,0.7)" }} />
                             ))}
                         </div>
@@ -640,7 +640,7 @@ const Dashboard = () => {
                         </div>
                         <p className="stat-card-value stat-value">{String(lowStockCount)}</p>
                         <div className="stat-sparkbar" style={{ marginBottom: 10 }}>
-                            {[30,50,45,65,55,70,60].map((h,i) => (
+                            {[30, 50, 45, 65, 55, 70, 60].map((h, i) => (
                                 <span key={i} style={{ height: `${h}%`, background: "rgba(255,255,255,0.6)" }} />
                             ))}
                         </div>
@@ -816,202 +816,227 @@ const Dashboard = () => {
                 </div>
             </div> */}
 
-            {/* ══ ROW 2: Sales Overview | Orders Overview | Top Selling ══ */}
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
 
                 {/* Sales Overview */}
-                <div className="xl:col-span-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                    <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-sm font-black text-gray-800">Sales Overview</h2>
-                        <button className="flex items-center gap-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-500 font-semibold hover:bg-gray-50">
-                            This Week <ChevronDown className="w-3 h-3" />
-                        </button>
-                    </div>
-                    {/* Legend */}
-                    <div className="flex items-center gap-5 mb-2 text-xs text-gray-500 font-semibold">
-                        <span className="flex items-center gap-1.5">
-                            <span className="inline-block w-5 h-0.5 bg-[#3a8b28] rounded" />
-                            This Week
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                            <span className="inline-block w-5 border-t border-dashed border-gray-400" />
-                            Last Week
-                        </span>
-                    </div>
-                    {/* Chart Area */}
-                    <div className="w-full mt-2" style={{ height: 200 }}>
-                        <LineChart data={revenueTrends} />
-                    </div>
-                    {/* Bottom stats */}
-                    <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-gray-50">
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center text-green-600 shrink-0">
-                                <BarChart2 className="w-4 h-4" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] text-gray-400 font-bold">Total Sales</p>
-                                <p className="text-sm font-black text-gray-800">{String(totalSales).replace("$", "₹")}</p>
-                            </div>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                    {/* Sales Overview */}
+                    <div className="xl:col-span-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-sm font-black text-gray-800">Sales Overview</h2>
+                            <button className="flex items-center gap-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-500 font-semibold hover:bg-gray-50">
+                                This Week <ChevronDown className="w-3 h-3" />
+                            </button>
                         </div>
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 shrink-0">
-                                <RefreshCw className="w-4 h-4" />
+                        {/* Legend */}
+                        <div className="flex items-center gap-5 mb-2 text-xs text-gray-500 font-semibold">
+                            <span className="flex items-center gap-1.5">
+                                <span className="inline-block w-5 h-0.5 bg-[#3a8b28] rounded" />
+                                This Week
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                                <span className="inline-block w-5 border-t border-dashed border-gray-400" />
+                                Last Week
+                            </span>
+                        </div>
+                        {/* Chart Area */}
+                        <div className="w-full mt-2" style={{ height: 200 }}>
+                            <LineChart data={revenueTrends} />
+                        </div>
+                        {/* Bottom stats */}
+                        <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-gray-50">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center text-green-600 shrink-0">
+                                    <BarChart2 className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] text-gray-400 font-bold">Total Sales</p>
+                                    <p className="text-sm font-black text-gray-800">{String(totalSales).replace("$", "₹")}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-[10px] text-gray-400 font-bold">Average Order Value</p>
-                                <p className="text-sm font-black text-gray-800">₹1,186.53</p>
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 shrink-0">
+                                    <RefreshCw className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] text-gray-400 font-bold">Average Order Value</p>
+                                    <p className="text-sm font-black text-gray-800">₹1,186.53</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Orders Overview */}
-                <div className="xl:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col">
-                    <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-sm font-black text-gray-800">Orders Overview</h2>
-                        <button className="flex items-center gap-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-500 font-semibold hover:bg-gray-50">
-                            This Week <ChevronDown className="w-3 h-3" />
-                        </button>
-                    </div>
-                    <div className="flex justify-center my-2">
-                        <Donut segments={orderSegs} center={String(totalOrders)} sub="Total Orders" size={160} />
-                    </div>
-                    <div className="space-y-2 mt-2">
-                        {orderSegs.map((seg, i) => (
-                            <div key={i} className="flex items-center justify-between text-xs">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: segColors[i] }} />
-                                    <span className="text-gray-600 font-semibold">{seg.label}</span>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                    {/* Orders Overview */}
+                    <div className="xl:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-sm font-black text-gray-800">Orders Overview</h2>
+                            <button className="flex items-center gap-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-500 font-semibold hover:bg-gray-50">
+                                This Week <ChevronDown className="w-3 h-3" />
+                            </button>
+                        </div>
+                        <div className="flex justify-center my-2">
+                            <Donut segments={orderSegs} center={String(totalOrders)} sub="Total Orders" size={160} />
+                        </div>
+                        <div className="space-y-2 mt-2">
+                            {orderSegs.map((seg, i) => (
+                                <div key={i} className="flex items-center justify-between text-xs">
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-2.5 h-2.5 rounded-full" style={{ background: segColors[i] }} />
+                                        <span className="text-gray-600 font-semibold">{seg.label}</span>
+                                    </div>
+                                    <span className="font-bold text-gray-700">{seg.count} <span className="text-gray-400 font-medium">({seg.pct}%)</span></span>
                                 </div>
-                                <span className="font-bold text-gray-700">{seg.count} <span className="text-gray-400 font-medium">({seg.pct}%)</span></span>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
+                        <Link to="/admin/orders/all" className="flex items-center gap-1 mt-4 text-xs text-[#3a8b28] font-bold hover:underline">
+                            View all orders <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
                     </div>
-                    <Link to="/admin/orders/all" className="flex items-center gap-1 mt-4 text-xs text-[#3a8b28] font-bold hover:underline">
-                        View all orders <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
+
                 </div>
 
-                {/* Top Selling Products */}
-                <div className="xl:col-span-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col">
-                    <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-sm font-black text-gray-800">Top Selling Products</h2>
-                        <button className="flex items-center gap-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-500 font-semibold hover:bg-gray-50">
-                            This Week <ChevronDown className="w-3 h-3" />
-                        </button>
-                    </div>
-                    <div className="space-y-3 flex-1">
-                        {displayTop.map((item, i) => (
-                            <div key={i} className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-green-50 border border-green-100 overflow-hidden shrink-0 flex items-center justify-center">
-                                    {item.img
-                                        ? <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
-                                        : <Package className="w-5 h-5 text-green-400" />}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-bold text-gray-800 truncate">{item.name}</p>
-                                    <p className="text-[10px] text-gray-400">{item.price ?? item.rev?.toString().replace("$", "₹")}</p>
-                                </div>
-                                <span className="bg-green-50 text-green-700 text-[10px] font-bold px-2.5 py-1 rounded-lg shrink-0 border border-green-100">
-                                    {item.sold ?? item.sales} sold
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                    <Link to="/admin/products/all" className="flex items-center gap-1 mt-4 text-xs text-[#3a8b28] font-bold hover:underline">
-                        View all products <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                </div>
             </div>
 
-            {/* ══ ROW 3: Low Stock | Recent Orders | Sales by Category ══ */}
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
+
+                {/* Top Selling Products */}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                    {/* Top Selling Products */}
+                    <div className="xl:col-span-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-sm font-black text-gray-800">Top Selling Products</h2>
+                            <button className="flex items-center gap-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-500 font-semibold hover:bg-gray-50">
+                                This Week <ChevronDown className="w-3 h-3" />
+                            </button>
+                        </div>
+                        <div className="space-y-3 flex-1">
+                            {displayTop.map((item, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-green-50 border border-green-100 overflow-hidden shrink-0 flex items-center justify-center">
+                                        {item.img
+                                            ? <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
+                                            : <Package className="w-5 h-5 text-green-400" />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-bold text-gray-800 truncate">{item.name}</p>
+                                        <p className="text-[10px] text-gray-400">{item.price ?? item.rev?.toString().replace("$", "₹")}</p>
+                                    </div>
+                                    <span className="bg-green-50 text-green-700 text-[10px] font-bold px-2.5 py-1 rounded-lg shrink-0 border border-green-100">
+                                        {item.sold ?? item.sales} sold
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                        <Link to="/admin/products/all" className="flex items-center gap-1 mt-4 text-xs text-[#3a8b28] font-bold hover:underline">
+                            View all products <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                    </div>
+                </div>
 
                 {/* Low Stock Alert */}
-                <div className="xl:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                    <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-sm font-black text-orange-500">Low Stock Alert</h2>
-                        <button className="text-xs text-[#3a8b28] font-bold hover:underline">View all</button>
-                    </div>
-                    <div className="space-y-3">
-                        {displayLow.map((item, i) => (
-                            <div key={i} className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-100 overflow-hidden shrink-0 flex items-center justify-center">
-                                    {item.img
-                                        ? <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
-                                        : <Package className="w-5 h-5 text-orange-400" />}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                    {/* Low Stock Alert */}
+                    <div className="xl:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-sm font-black text-orange-500">Low Stock Alert</h2>
+                            <button className="text-xs text-[#3a8b28] font-bold hover:underline">View all</button>
+                        </div>
+                        <div className="space-y-3">
+                            {displayLow.map((item, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-100 overflow-hidden shrink-0 flex items-center justify-center">
+                                        {item.img
+                                            ? <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
+                                            : <Package className="w-5 h-5 text-orange-400" />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-bold text-gray-800 truncate">{item.name}</p>
+                                        <p className="text-[10px] text-gray-400">Current Stock: {item.stock ?? item.qty}</p>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-1 rounded-lg shrink-0">
+                                        Low Stock
+                                    </span>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-bold text-gray-800 truncate">{item.name}</p>
-                                    <p className="text-[10px] text-gray-400">Current Stock: {item.stock ?? item.qty}</p>
-                                </div>
-                                <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-1 rounded-lg shrink-0">
-                                    Low Stock
-                                </span>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
+
+            </div>
+
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
 
                 {/* Recent Orders */}
-                <div className="xl:col-span-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                    <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-sm font-black text-gray-800">Recent Orders</h2>
-                        <button className="text-xs text-[#3a8b28] font-bold hover:underline">View all</button>
-                    </div>
-                    <div className="space-y-0">
-                        {displayOrders.map((o, i) => (
-                            <div key={i} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
-                                <div className="min-w-0 w-28">
-                                    <p className="text-xs font-bold text-gray-700">{o.id}</p>
-                                    <p className="text-[10px] text-gray-400">{o.date}</p>
-                                </div>
-                                <p className="text-xs font-semibold text-gray-700 flex-1 truncate">{o.customer}</p>
-                                <p className="text-xs font-black text-gray-800 shrink-0">{o.amount}</p>
-                                <div className="shrink-0">
-                                    <StatusBadge s={o.status} />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Sales by Category */}
-                <div className="xl:col-span-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                    <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-sm font-black text-gray-800">Sales by Category</h2>
-                        <button className="flex items-center gap-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-500 font-semibold hover:bg-gray-50">
-                            This Week <ChevronDown className="w-3 h-3" />
-                        </button>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <div className="shrink-0">
-                            <Donut
-                                segments={displayCat.map((c, i) => ({ pct: c.pct }))}
-                                center="₹1,48,256"
-                                sub="Total Sales"
-                                size={130}
-                            />
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                    {/* Recent Orders */}
+                    <div className="xl:col-span-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-sm font-black text-gray-800">Recent Orders</h2>
+                            <button className="text-xs text-[#3a8b28] font-bold hover:underline">View all</button>
                         </div>
-                        <div className="flex-1 space-y-2 min-w-0">
-                            {displayCat.map((cat, i) => (
-                                <div key={i} className="flex items-center justify-between gap-1">
-                                    <div className="flex items-center gap-1.5 min-w-0">
-                                        <span className={`w-2 h-2 rounded-full shrink-0 ${catDots[i]}`} />
-                                        <span className="text-[11px] text-gray-600 font-semibold truncate">{cat.name}</span>
+                        <div className="space-y-0">
+                            {displayOrders.map((o, i) => (
+                                <div key={i} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
+                                    <div className="min-w-0 w-28">
+                                        <p className="text-xs font-bold text-gray-700">{o.id}</p>
+                                        <p className="text-[10px] text-gray-400">{o.date}</p>
                                     </div>
-                                    <div className="text-right shrink-0">
-                                        <span className="text-[10px] font-bold text-gray-700">{cat.rev?.toString().replace("$", "₹")}</span>
-                                        <span className="text-[10px] text-gray-400 ml-1">({cat.pct}%)</span>
+                                    <p className="text-xs font-semibold text-gray-700 flex-1 truncate">{o.customer}</p>
+                                    <p className="text-xs font-black text-gray-800 shrink-0">{o.amount}</p>
+                                    <div className="shrink-0">
+                                        <StatusBadge s={o.status} />
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
-                    <Link to="/admin/reports" className="flex items-center gap-1 mt-4 text-xs text-[#3a8b28] font-bold hover:underline">
-                        View full report <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
                 </div>
+
+                {/* Sales by Category */}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                    {/* Sales by Category */}
+                    <div className="xl:col-span-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-sm font-black text-gray-800">Sales by Category</h2>
+                            <button className="flex items-center gap-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-500 font-semibold hover:bg-gray-50">
+                                This Week <ChevronDown className="w-3 h-3" />
+                            </button>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="shrink-0">
+                                <Donut
+                                    segments={displayCat.map((c, i) => ({ pct: c.pct }))}
+                                    center="₹1,48,256"
+                                    sub="Total Sales"
+                                    size={130}
+                                />
+                            </div>
+                            <div className="flex-1 space-y-2 min-w-0">
+                                {displayCat.map((cat, i) => (
+                                    <div key={i} className="flex items-center justify-between gap-1">
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            <span className={`w-2 h-2 rounded-full shrink-0 ${catDots[i]}`} />
+                                            <span className="text-[11px] text-gray-600 font-semibold truncate">{cat.name}</span>
+                                        </div>
+                                        <div className="text-right shrink-0">
+                                            <span className="text-[10px] font-bold text-gray-700">{cat.rev?.toString().replace("$", "₹")}</span>
+                                            <span className="text-[10px] text-gray-400 ml-1">({cat.pct}%)</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <Link to="/admin/reports" className="flex items-center gap-1 mt-4 text-xs text-[#3a8b28] font-bold hover:underline">
+                            View full report <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                    </div>
+                </div>
+
             </div>
 
             {/* ══ BOTTOM STATS BAR ══ */}

@@ -537,29 +537,29 @@ const AllProducts = () => {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse whitespace-nowrap">
                                     <thead>
-                                        <tr className="bg-[#f8fbf6] border-b border-gray-100">
+                                        <tr className="bg-[#1b7f29] border-b border-gray-100">
                                             <th className="px-4 py-4 w-12 text-center">
                                                 <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[#3a8b28] focus:ring-[#3a8b28]" />
                                             </th>
-                                            <th className="px-4 py-4 text-xs font-bold text-gray-800">
-                                                <div className="flex items-center gap-1">Product <span className="text-gray-400 text-[10px]">↕</span></div>
+                                            <th className="px-4 py-4 text-xs font-bold text-white">
+                                                <div className="flex items-center gap-1">Product <span className="text-white text-[10px]">↕</span></div>
                                             </th>
-                                            <th className="px-4 py-4 text-xs font-bold text-gray-800">
-                                                <div className="flex items-center gap-1">SKU / Barcode <span className="text-gray-400 text-[10px]">↕</span></div>
+                                            <th className="px-4 py-4 text-xs font-bold text-white">
+                                                <div className="flex items-center gap-1">SKU / Barcode <span className="text-white text-[10px]">↕</span></div>
                                             </th>
-                                            <th className="px-4 py-4 text-xs font-bold text-gray-800">
-                                                <div className="flex items-center gap-1">Category <span className="text-gray-400 text-[10px]">↕</span></div>
+                                            <th className="px-4 py-4 text-xs font-bold text-white">
+                                                <div className="flex items-center gap-1">Category <span className="text-white text-[10px]">↕</span></div>
                                             </th>
-                                            <th className="px-4 py-4 text-xs font-bold text-gray-800">
-                                                <div className="flex items-center gap-1">Price <span className="text-gray-400 text-[10px]">↕</span></div>
+                                            <th className="px-4 py-4 text-xs font-bold text-white">
+                                                <div className="flex items-center gap-1">Price <span className="text-white text-[10px]">↕</span></div>
                                             </th>
-                                            <th className="px-4 py-4 text-xs font-bold text-gray-800">
-                                                <div className="flex items-center gap-1">Stock <span className="text-gray-400 text-[10px]">↕</span></div>
+                                            <th className="px-4 py-4 text-xs font-bold text-white">
+                                                <div className="flex items-center gap-1">Stock <span className="text-white text-[10px]">↕</span></div>
                                             </th>
-                                            <th className="px-4 py-4 text-xs font-bold text-gray-800">
-                                                <div className="flex items-center gap-1">Status <span className="text-gray-400 text-[10px]">↕</span></div>
+                                            <th className="px-4 py-4 text-xs font-bold text-white">
+                                                <div className="flex items-center gap-1">Status <span className="text-white text-[10px]">↕</span></div>
                                             </th>
-                                            <th className="px-4 py-4 text-xs font-bold text-gray-800 text-center">Actions</th>
+                                            <th className="px-4 py-4 text-xs font-bold text-white text-center">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">

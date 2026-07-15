@@ -423,12 +423,11 @@ const Category = () => {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse block md:table">
                                     <thead className="hidden md:table-header-group">
-                                        <tr className="bg-gray-50/50 text-gray-500 text-xs uppercase tracking-wider font-bold border-b border-gray-100">
+                                        <tr className="bg-[#1b7f29] text-white text-xs uppercase tracking-wider font-bold border-b border-gray-100">
                                             <th className="px-6 py-4">S No</th>
                                             <th className="px-6 py-4">Cat ID</th>
                                             <th className="px-6 py-4">Name</th>
                                             <th className="px-6 py-4">Image</th>
-
                                             <th className="px-6 py-4">Subcategories</th>
                                             <th className="px-6 py-4 text-right">Actions</th>
                                         </tr>
