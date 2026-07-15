@@ -144,7 +144,12 @@ export default function CartPage() {
                               <span className="min-w-8 text-center text-base font-semibold text-slate-800">{item.quantity}</span>
                               <button
                                 onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
-                                className="rounded-full border border-gray-200 bg-gray-50 p-2 text-slate-700 transition hover:border-green-300 hover:bg-green-50 hover:text-[#0e6827]"
+                                disabled={(item.quantity || 1) >= (item.total_stock ?? item.stock_quantity ?? 0)}
+                                className={`rounded-full border border-gray-200 p-2 text-slate-700 transition ${
+                                  (item.quantity || 1) >= (item.total_stock ?? item.stock_quantity ?? 0)
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed border-gray-200'
+                                    : 'bg-gray-50 hover:border-green-300 hover:bg-green-50 hover:text-[#0e6827]'
+                                }`}
                               >
                                 <FiPlus />
                               </button>

@@ -595,7 +595,12 @@ const Navbar = () => {
                                             (item.quantity || 1) + 1
                                           )
                                         }
-                                        className="h-7 w-7 rounded-lg bg-[#0e6827] text-white hover:bg-green-700 transition flex items-center justify-center"
+                                        disabled={(item.quantity || 1) >= (item.total_stock ?? item.stock_quantity ?? 0)}
+                                        className={`h-7 w-7 rounded-lg transition flex items-center justify-center ${
+                                          (item.quantity || 1) >= (item.total_stock ?? item.stock_quantity ?? 0)
+                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                            : 'bg-[#0e6827] text-white hover:bg-green-700'
+                                        }`}
                                       >
                                         <Plus size={15} />
                                       </button>

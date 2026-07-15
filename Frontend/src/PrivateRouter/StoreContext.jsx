@@ -168,6 +168,16 @@ export const StoreProvider = ({ children }) => {
         const targetItem = cart.find(i => i.id === cartItemId);
         if (!targetItem) return;
 
+        const availableStock = parseFloat(targetItem.total_stock ?? targetItem.stock_quantity ?? 0);
+        if (qty > availableStock) {
+            toast.error(
+                availableStock > 0
+                    ? `Only ${availableStock} item${availableStock === 1 ? '' : 's'} available in stock.`
+                    : "This item is out of stock."
+            );
+            return;
+        }
+
         if (budgetMode) {
             const currentQty = targetItem.quantity;
             if (qty > currentQty) {
@@ -194,7 +204,8 @@ export const StoreProvider = ({ children }) => {
             ));
         } catch (err) {
             console.error("Update qty error:", err);
-            toast.error("Failed to update quantity");
+            const message = err?.response?.data?.message || "Failed to update quantity";
+            toast.error(message);
         }
     };
 

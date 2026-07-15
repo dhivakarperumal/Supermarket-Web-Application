@@ -16,7 +16,7 @@ const enrichCartItem = async (item, pool) => {
 
     if (productId) {
         const [rows] = await pool.query(
-            "SELECT id, name, thumbnail_image, product_images, mrp, offer_price, selling_price FROM products WHERE id = ?",
+            "SELECT id, name, thumbnail_image, product_images, mrp, offer_price, selling_price, total_stock FROM products WHERE id = ?",
             [productId]
         );
         product = rows?.[0] || null;
@@ -33,6 +33,7 @@ const enrichCartItem = async (item, pool) => {
         product_image: item.product_image || fallbackImage,
         mrp: item.mrp ?? product?.mrp ?? null,
         price: item.price ?? product?.offer_price ?? product?.selling_price ?? null,
+        total_stock: product?.total_stock ?? item.total_stock ?? 0,
     };
 };
 
@@ -94,7 +95,18 @@ const addToCart = async (req, res) => {
         await initCartTable();
         const pool = getPool();
         const { user_id, product_id, category_id, variant_color, variant_size, image, email, price, quantity, total_price } = req.body;
-        
+        const requestQuantity = parseInt(quantity || 1, 10);
+
+        const [productRows] = await pool.query(
+            "SELECT total_stock FROM products WHERE id = ?",
+            [product_id]
+        );
+        const availableStock = parseFloat(productRows?.[0]?.total_stock ?? 0);
+
+        if (!productRows.length) {
+            return res.status(400).json({ success: false, message: "Product not found" });
+        }
+
         // Check if item already exists in cart with same variants
         const [existing] = await pool.query(
             "SELECT * FROM cart WHERE user_id = ? AND product_id = ? AND (variant_color = ? OR (variant_color IS NULL AND ? IS NULL)) AND (variant_size = ? OR (variant_size IS NULL AND ? IS NULL))",
@@ -102,21 +114,35 @@ const addToCart = async (req, res) => {
         );
 
         if (existing.length > 0) {
-            // Update quantity
             const item = existing[0];
-            const newQuantity = item.quantity + (quantity || 1);
+            const newQuantity = item.quantity + requestQuantity;
+            if (newQuantity > availableStock) {
+                return res.status(400).json({
+                    success: false,
+                    message: availableStock > 0
+                        ? `Only ${availableStock} item${availableStock === 1 ? '' : 's'} available in stock.`
+                        : "This item is out of stock.",
+                });
+            }
             const newTotal = newQuantity * price;
             await pool.query(
                 "UPDATE cart SET quantity = ?, total_price = ? WHERE id = ?",
                 [newQuantity, newTotal, item.id]
             );
         } else {
-            // Insert new item
+            if (requestQuantity > availableStock) {
+                return res.status(400).json({
+                    success: false,
+                    message: availableStock > 0
+                        ? `Only ${availableStock} item${availableStock === 1 ? '' : 's'} available in stock.`
+                        : "This item is out of stock.",
+                });
+            }
             await pool.query(`
                 INSERT INTO cart (user_id, product_id, category_id, variant_color, variant_size, image, email, price, quantity, total_price)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
-                user_id, product_id, category_id || null, variant_color || null, variant_size || null, image || null, email || null, price, quantity || 1, total_price || price
+                user_id, product_id, category_id || null, variant_color || null, variant_size || null, image || null, email || null, price, requestQuantity, total_price || price
             ]);
         }
         
@@ -134,14 +160,43 @@ const updateCartItem = async (req, res) => {
         const pool = getPool();
         const { cartItemId } = req.params;
         const { quantity, price } = req.body;
-        
+
+        if (!quantity || quantity < 1) {
+            return res.status(400).json({ success: false, message: "Quantity must be at least 1" });
+        }
+
+        const [cartRows] = await pool.query(
+            "SELECT product_id FROM cart WHERE id = ?",
+            [cartItemId]
+        );
+
+        if (!cartRows.length) {
+            return res.status(404).json({ success: false, message: "Cart item not found" });
+        }
+
+        const productId = cartRows[0].product_id;
+        const [productRows] = await pool.query(
+            "SELECT total_stock FROM products WHERE id = ?",
+            [productId]
+        );
+        const availableStock = parseFloat(productRows?.[0]?.total_stock ?? 0);
+
+        if (quantity > availableStock) {
+            return res.status(400).json({
+                success: false,
+                message: availableStock > 0
+                    ? `Only ${availableStock} item${availableStock === 1 ? '' : 's'} available in stock.`
+                    : "This item is out of stock.",
+            });
+        }
+
         const total_price = quantity * price;
-        
+
         await pool.query(
             "UPDATE cart SET quantity = ?, total_price = ? WHERE id = ?",
             [quantity, total_price, cartItemId]
         );
-        
+
         res.status(200).json({ success: true, message: "Cart updated" });
     } catch (error) {
         console.error("Error updating cart:", error);
