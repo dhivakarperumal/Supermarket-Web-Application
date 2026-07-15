@@ -248,49 +248,95 @@ const AllProducts = () => {
         toast.loading("Generating Barcode PDF...", { id: "barcode-pdf" });
         const doc = new jsPDF();
         
-        let x = 10;
-        let y = 10;
-        const width = 50;
-        const height = 25;
-        const paddingX = 15;
-        const paddingY = 15;
+        let x = 15;
+        let y = 15;
+        const boxWidth = 55;
+        const boxHeight = 42;
+        const paddingX = 7;
+        const paddingY = 8;
         const columns = 3;
-        const rows = 10;
+        const rows = 6; // Adjusted rows to fit height comfortably
         
         const canvas = document.createElement("canvas");
 
         products.forEach((product, index) => {
             if (index > 0 && index % (columns * rows) === 0) {
                 doc.addPage();
-                x = 10;
-                y = 10;
+                x = 15;
+                y = 15;
             } else if (index > 0 && index % columns === 0) {
-                x = 10;
-                y += height + paddingY;
+                x = 15;
+                y += boxHeight + paddingY;
             }
 
+            // Prefer actual barcode, fallback to generated internal code
             const barcodeValue = product.barcode || product.product_code || `SKU${product.id}`;
             
             try {
+                // Render barcode on canvas
                 JsBarcode(canvas, barcodeValue, {
                     format: "CODE128",
-                    displayValue: true,
-                    fontSize: 14,
-                    margin: 2,
-                    width: 2,
-                    height: 40
+                    displayValue: false, 
+                    margin: 0, // Remove internal margin to prevent scaling issues
+                    width: 2, // Standard bar width
+                    height: 60, // Standard bar height
+                    background: "#ffffff",
+                    lineColor: "#000000"
                 });
                 
-                const imgData = canvas.toDataURL("image/jpeg");
-                doc.addImage(imgData, 'JPEG', x, y, width, height);
+                // Use PNG for lossless compression
+                const imgData = canvas.toDataURL("image/png");
+                
+                // Draw label border
+                doc.setDrawColor(220, 220, 220);
+                doc.setLineWidth(0.5);
+                doc.rect(x, y, boxWidth, boxHeight);
+                
+                // Draw product name (bold, centered)
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(9);
+                const maxLen = 28;
+                const nameStr = product.name.length > maxLen ? product.name.substring(0, maxLen - 3) + '...' : product.name;
+                doc.text(nameStr, x + boxWidth / 2, y + 5, { align: "center" });
+
+                // **CRITICAL FIX**: Preserve exact aspect ratio so scanner can read the bar widths!
+                const targetWidth = 45;
+                // Calculate proportional height based on actual canvas pixel dimensions
+                const proportionalHeight = (canvas.height / canvas.width) * targetWidth;
+                
+                // Center the barcode horizontally and vertically within its designated area
+                const xOffset = x + (boxWidth - targetWidth) / 2;
+                const yOffset = y + 7 + (18 - proportionalHeight) / 2;
+
+                doc.addImage(imgData, 'PNG', xOffset, yOffset, targetWidth, proportionalHeight);
+
+                // Draw the barcode value perfectly crisp using native PDF text
+                doc.setFont("courier", "bold");
+                doc.setFontSize(9);
+                doc.text(barcodeValue, x + boxWidth / 2, y + 30, { align: "center" });
+
+                // Add Price / Weight if available (below barcode text)
+                doc.setFont("helvetica", "normal");
                 doc.setFontSize(8);
-                const maxLen = 25;
-                const nameStr = product.name.length > maxLen ? product.name.substring(0, maxLen) + '...' : product.name;
-                doc.text(nameStr, x + width/2, y - 2, { align: "center" });
+                
+                let detailStr = "";
+                if (product.variants && product.variants.length > 0) {
+                     const v = product.variants[0];
+                     detailStr = `Qty: ${v.quantity} ${v.unit}  |  Rs.${v.sellingPrice || v.mrp}`;
+                } else if (product.sellingPrice || product.price) {
+                     detailStr = `Price: Rs.${product.sellingPrice || product.price}`;
+                }
+                
+                if (detailStr) {
+                    doc.text(detailStr, x + boxWidth / 2, y + 38, { align: "center" });
+                } else {
+                    doc.text(`Code: ${product.product_code || '-'}`, x + boxWidth / 2, y + 38, { align: "center" });
+                }
+
             } catch (e) {
                 console.error("Barcode generation error", e);
             }
-            x += width + paddingX;
+            x += boxWidth + paddingX;
         });
 
         doc.save("Product_Barcodes.pdf");
