@@ -215,15 +215,15 @@ const Billing = () => {
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead>
-                                    <tr className="bg-gray-50/50">
-                                        <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Order</th>
-                                        <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Type</th>
-                                        <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Date</th>
-                                        <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
-                                        <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Payment</th>
-                                        <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                                        <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Amount</th>
-                                        <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                                    <tr className="bg-[#1b7f29]">
+                                        <th className="px-8 py-4 text-xs font-bold text-white uppercase tracking-wider">Order</th>
+                                        <th className="px-8 py-4 text-xs font-bold text-white uppercase tracking-wider">Type</th>
+                                        <th className="px-8 py-4 text-xs font-bold text-white uppercase tracking-wider">Date</th>
+                                        <th className="px-8 py-4 text-xs font-bold text-white uppercase tracking-wider">Customer</th>
+                                        <th className="px-8 py-4 text-xs font-bold text-white uppercase tracking-wider">Payment</th>
+                                        <th className="px-8 py-4 text-xs font-bold text-white uppercase tracking-wider">Status</th>
+                                        <th className="px-8 py-4 text-xs font-bold text-white uppercase tracking-wider">Amount</th>
+                                        <th className="px-8 py-4 text-xs font-bold text-white uppercase tracking-wider text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">

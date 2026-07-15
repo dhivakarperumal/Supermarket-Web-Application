@@ -267,15 +267,15 @@ const Coupons = () => {
         <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Code</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Discount</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Validity</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Usage</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Scope</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-right">Actions</th>
+              <tr className="border-b border-gray-200 bg-[#1b7f29]">
+                <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider">Code</th>
+                <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider">Name</th>
+                <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider">Discount</th>
+                <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider">Validity</th>
+                <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider">Usage</th>
+                <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider">Scope</th>
+                <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider text-center">Status</th>
+                <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

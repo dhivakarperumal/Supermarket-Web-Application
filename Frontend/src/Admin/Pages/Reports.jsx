@@ -104,9 +104,9 @@ const Table = ({ id, headers, rows, renderRow, emptyMsg = "No records found" }) 
   <div id={id} className="overflow-x-auto">
     <table className="min-w-full text-xs">
       <thead>
-        <tr className="bg-gray-50">
+        <tr className="bg-[#1b7f29]">
           {headers.map((h) => (
-            <th key={h} className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">{h}</th>
+            <th key={h} className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-white whitespace-nowrap">{h}</th>
           ))}
         </tr>
       </thead>
