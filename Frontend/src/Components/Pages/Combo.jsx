@@ -70,7 +70,7 @@ const isCombo = (p) => {
   return String(p.type) === "1";
 };
 
-const CATEGORIES = ["All", "Rice", "Breakfast", "Cooking", "Healthy", "Snacks", "Family"];
+const CATEGORIES = [];
 
 const Combo = () => {
   const { toggleWishlist, wishlist, addToCart } = useContext(StoreContext);
