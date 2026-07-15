@@ -258,14 +258,14 @@ const Orders = ({ statusFilter = "All", dateFilter = "All" }) => {
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto rounded-[2rem] ">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-24 gap-4">
                             <div className="w-8 h-8 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
                             <p className="text-gray-400 text-xs font-semibold">Loading orders...</p>
                         </div>
                     ) : (
-                        <table className="w-full text-left border-collapse whitespace-nowrap">
+                        <table className="w-full text-left border-collapse whitespace-nowrap ">
                             <thead>
                                 <tr className="bg-[#1b7f29] border-b border-gray-100">
                                     <th className="px-5 py-4 text-xs font-semibold text-white uppercase tracking-wider">Order</th>

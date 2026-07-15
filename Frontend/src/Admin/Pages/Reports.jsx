@@ -101,7 +101,7 @@ const DateRangeBar = ({ range, setRange, customFrom, setCustomFrom, customTo, se
 );
 
 const Table = ({ id, headers, rows, renderRow, emptyMsg = "No records found" }) => (
-  <div id={id} className="overflow-x-auto">
+  <div id={id} className="overflow-x-auto rounded-[1rem]">
     <table className="min-w-full text-xs">
       <thead>
         <tr className="bg-[#1b7f29]">

@@ -333,7 +333,7 @@ const Reviews = () => {
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-[2rem]">
             <table className="w-full min-w-[860px]">
               <thead>
                 <tr className="border-b border-slate-100 bg-[#1b7f29]">

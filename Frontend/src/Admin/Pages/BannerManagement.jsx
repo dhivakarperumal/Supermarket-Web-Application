@@ -192,7 +192,7 @@ const BannerManagement = () => {
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto hide-scrollbar">
+                    <div className="overflow-x-auto hide-scrollbar rounded-[2rem]">
                         <table className="w-full text-left border-collapse block md:table">
                             <thead className="hidden md:table-header-group">
                                 <tr className="bg-[#1b7f29]">

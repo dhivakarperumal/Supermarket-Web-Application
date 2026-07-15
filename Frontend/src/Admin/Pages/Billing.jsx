@@ -212,7 +212,7 @@ const Billing = () => {
                         <div className="text-center py-20 font-bold text-gray-400">No orders found matching criteria</div>
                     ) : viewMode === "table" ? (
                         /* TABLE MODE */
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto rounded-[2rem]">
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="bg-[#1b7f29]">

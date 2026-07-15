@@ -298,7 +298,7 @@ const VideoManagement = () => {
                         <div />
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto rounded-[2rem]">
                         {viewMode === 'table' ? (
                             <table className="w-full text-left border-collapse block md:table">
                                 <thead className="hidden md:table-header-group">
