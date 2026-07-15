@@ -1,23 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import {
-  ShoppingCart,
-  Heart,
-  Star,
-  Eye,
-  Package,
-  Truck,
-  Leaf,
-  ShieldCheck,
-  Wallet,
-  BadgePercent,
-  BadgeCheck,
-  ArrowRight,
-  CircleCheck,
-  Sparkles,
-  Hash,
-  Flame,
-  Tag,
-} from "lucide-react";
+import { ShoppingCart, Heart, Tag, Star, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import api from "../../api";
 import { StoreContext } from "../../PrivateRouter/StoreContext";
@@ -130,19 +112,14 @@ const Combo = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f5fff7] via-[#fbfffc] to-[#eefaf2]">
+    <div className="bg-[#f8faf8] min-h-screen">
 
       <PageHeader title="Combo Products" />
 
       {/* Combo Cards */}
-      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-12">
+      <section className="max-w-8xl mx-auto mt-10 px-10 pb-16">
         {loading ? (
-          <div className="grid
-grid-cols-1
-sm:grid-cols-2
-lg:grid-cols-3
-xl:grid-cols-4
-gap-8">
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-lg animate-pulse">
                 <div className="h-64 bg-gray-200" />
@@ -195,16 +172,15 @@ gap-8">
               return (
                 <div
                   key={combo.id}
-                  className="group relative bg-white rounded-[30px] overflow-hidden border border-green-100 shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 flex flex-col h-full"
+                  className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 group flex flex-col"
                 >
-                  {/* Product Image */}
-                  <div className="relative overflow-hidden">
-
+                  {/* Image */}
+                  <div className="relative flex-shrink-0">
                     <Link to={`/products/${combo.id}`}>
                       <img
                         src={imgSrc}
                         alt={combo.name}
-                        className="w-full h-[300px] object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="h-64 w-full object-cover group-hover:scale-105 transition duration-500"
                         onError={(e) => {
                           e.target.onerror = null;
                           e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -213,366 +189,136 @@ gap-8">
                         }}
                       />
                     </Link>
-
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-
-                    {/* Discount */}
                     {discountPct > 0 && (
-                      <div className="absolute top-4 left-4">
-                        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-xl">
-
-                          <BadgePercent size={15} />
-
-                          <span className="font-bold text-xs">
-
-                            {discountPct}% OFF
-
-                          </span>
-
-                        </div>
-                      </div>
+                      <span className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
+                        {discountPct}% OFF
+                      </span>
                     )}
-
-                    {/* Combo Badge */}
-
-                    <div className="absolute bottom-4 left-4">
-
-                      <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-600/95 backdrop-blur-md text-white shadow-xl">
-
-                        <Package size={15} />
-
-                        <span className="font-semibold text-xs">
-
-                          Combo Pack
-
-                        </span>
-
-                      </div>
-
-                    </div>
-
-                    {/* Wishlist */}
-
+                    <span className="absolute top-4 left-4 mt-8 bg-[#0e6827] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow hidden">
+                      COMBO
+                    </span>
                     <button
                       onClick={() => toggleWishlist(combo)}
-                      className={`absolute top-4 right-4 w-12 h-12 rounded-full backdrop-blur-xl flex items-center justify-center shadow-xl transition-all duration-300 ${inWishlist
+                      className={`absolute top-4 right-4 p-2 rounded-full shadow transition ${inWishlist
                         ? "bg-red-500 text-white"
-                        : "bg-white/90 text-gray-700 hover:bg-red-500 hover:text-white"
+                        : "bg-white text-gray-500 hover:bg-red-500 hover:text-white"
                         }`}
                     >
-
-                      <Heart
-                        size={20}
-                        fill={inWishlist ? "currentColor" : "none"}
-                      />
-
+                      <Heart size={18} fill={inWishlist ? "currentColor" : "none"} />
                     </button>
-
                   </div>
 
                   {/* Card Body */}
-
-                  <div className="flex flex-col flex-1 p-6">
-
-                    {/* Product Title */}
-
-                    <div className="flex justify-between gap-3">
-
-                      <div className="flex-1">
-
-                        <Link to={`/products/${combo.id}`}>
-
-                          <h2
-                            onClick={() => navigate(`/products/${combo.id}`)}
-                            className="text-xl font-bold text-gray-800 leading-7 line-clamp-2 group-hover:text-green-700 transition-colors"
-                          >
-                            {combo.name}
-                          </h2>
-
-                        </Link>
-
-                        {combo.product_code && (
-
-                          <div className="mt-3 inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
-
-                            <Hash size={13} />
-
-                            {combo.product_code}
-
-                          </div>
-
-                        )}
-
-                      </div>
-
-                      {/* Rating */}
-
-                      <div className="bg-yellow-50 rounded-2xl px-3 py-2 h-fit">
-
-                        <div className="flex items-center gap-1">
-
-                          <Star
-                            size={15}
-                            className="text-yellow-500"
-                            fill="currentColor"
-                          />
-
-                          <span className="font-bold text-gray-700">
-
-                            {combo.rating || "4.8"}
-
-                          </span>
-
-                        </div>
-
-                        <div className="flex justify-center mt-1">
-
-                          <BadgeCheck
-                            size={14}
-                            className="text-green-600"
-                          />
-
-                        </div>
-
-                      </div>
-
-                      {/* Combo Items */}
-                      <div className="mt-6 flex-1">
-
-                        <div className="flex items-center gap-2 mb-3">
-
-                          <Package size={17} className="text-green-600" />
-
-                          <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wide">
-                            Combo Includes
-                          </h4>
-
-                        </div>
-
-                        {comboItems.length > 0 ? (
-
-                          <div className="space-y-2">
-
-                            {comboItems.slice(0, 4).map((item, index) => (
-
-                              <div
-                                key={index}
-                                className="flex items-center gap-2 text-sm text-gray-600"
-                              >
-
-                                <CircleCheck
-                                  size={16}
-                                  className="text-green-600 shrink-0"
-                                />
-
-                                <span className="line-clamp-1">
-
-                                  {item.product_name ||
-                                    item.name ||
-                                    `Item ${index + 1}`}
-
-                                  {item.quantity > 1
-                                    ? ` × ${item.quantity}`
-                                    : ""}
-
-                                </span>
-
-                              </div>
-
-                            ))}
-
-                            {comboItems.length > 4 && (
-
-                              <div className="text-sm font-semibold text-green-600">
-
-                                + {comboItems.length - 4} More Items
-
-                              </div>
-
-                            )}
-
-                          </div>
-
-                        ) : (
-
-                          <p className="text-sm text-gray-500 leading-6 line-clamp-3">
-
-                            {combo.description || "Premium grocery combo pack."}
-
-                          </p>
-
-                        )}
-
-                      </div>
-
-                      {/* Features */}
-
-                      <div className="grid grid-cols-3 gap-2 mt-6">
-
-                        <div className="bg-green-50 rounded-xl py-3 flex flex-col items-center">
-
-                          <Truck
-                            size={18}
-                            className="text-green-600 mb-1"
-                          />
-
-                          <span className="text-[11px] font-semibold text-gray-600">
-                            Delivery
-                          </span>
-
-                        </div>
-
-                        <div className="bg-green-50 rounded-xl py-3 flex flex-col items-center">
-
-                          <Leaf
-                            size={18}
-                            className="text-green-600 mb-1"
-                          />
-
-                          <span className="text-[11px] font-semibold text-gray-600">
-                            Fresh
-                          </span>
-
-                        </div>
-
-                        <div className="bg-green-50 rounded-xl py-3 flex flex-col items-center">
-
-                          <ShieldCheck
-                            size={18}
-                            className="text-green-600 mb-1"
-                          />
-
-                          <span className="text-[11px] font-semibold text-gray-600">
-                            Quality
-                          </span>
-
-                        </div>
-
-                      </div>
-
-                      {/* Price */}
-
-                      <div className="mt-6 rounded-2xl bg-gradient-to-r from-green-50 to-emerald-50 p-4 border border-green-100">
-
-                        <div className="flex justify-between items-center">
-
-                          <div>
-
-                            <p className="text-3xl font-black text-green-700">
-
-                              ₹{price.toFixed(2)}
-
-                            </p>
-
-                            {mrp > price && (
-
-                              <div className="flex items-center gap-2 mt-1">
-
-                                <span className="line-through text-gray-400">
-
-                                  ₹{mrp.toFixed(2)}
-
-                                </span>
-
-                                <span className="text-red-500 text-sm font-semibold">
-
-                                  Save ₹{savings}
-
-                                </span>
-
-                              </div>
-
-                            )}
-
-                          </div>
-
-                          {discountPct > 0 && (
-
-                            <div className="bg-green-600 text-white rounded-xl px-3 py-2">
-
-                              <div className="flex items-center gap-1">
-
-                                <Wallet size={16} />
-
-                                <span className="font-bold">
-
-                                  {discountPct}%
-
-                                </span>
-
-                              </div>
-
-                            </div>
-
-                          )}
-
-                        </div>
-
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="mt-6 space-y-3">
-
-                        {/* Top Buttons */}
-                        <div className="grid grid-cols-2 gap-3">
-
-                          {/* Quick View */}
-                          <button
-                            onClick={() => {
-                              setSelectedProduct(combo);
-                              setQuickView(true);
-                            }}
-                            className="flex items-center justify-center gap-2 py-3 rounded-2xl border border-green-200 bg-green-50 text-green-700 font-semibold hover:bg-green-600 hover:text-white transition-all duration-300"
-                          >
-                            <Eye size={18} />
-                            Quick View
-                          </button>
-
-                          {/* Add to Cart */}
-                          <button
-                            onClick={() => addToCart(combo)}
-                            className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-500 text-white font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
-                          >
-                            <ShoppingCart size={18} />
-                            Add Cart
-                          </button>
-
-                        </div>
-
-                        {/* View Details */}
-                        <Link
-                          to={`/products/${combo.id}`}
-                          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-green-600 text-green-700 font-bold hover:bg-green-600 hover:text-white transition-all duration-300"
+                  <div className="p-6 flex flex-col flex-1">
+                    {/* Title + Rating */}
+                    <div className="flex justify-between items-start gap-2">
+                      <Link to={`/products/${combo.id}`} className="flex-1">
+                        <h2
+                          onClick={() => navigate(`/products/${combo.id}`)}
+                          className="text-lg font-bold text-gray-800 line-clamp-2 hover:text-[#0e6827] transition-colors cursor-pointer hover:text-[#0e6827]"
                         >
-                          <ArrowRight size={18} />
-                          View Details
-                        </Link>
-
+                          {combo.name}
+                        </h2>
+                      </Link>
+                      <div className="flex items-center gap-1 text-yellow-500 font-semibold shrink-0">
+                        <Star size={14} fill="currentColor" />
+                        <span className="text-sm">{combo.rating || "4.5"}</span>
                       </div>
+                    </div>
 
-                    </div> {/* Card Body */}
+                    {/* Product Code */}
+                    {combo.product_code && (
+                      <span className="text-[10px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full mt-1 self-start">
+                        {combo.product_code}
+                      </span>
+                    )}
 
-                  </div> {/* Card */}
+                    {/* Combo Items */}
+                    {comboItems.length > 0 ? (
+                      <div className="mt-4 space-y-1.5 flex-1">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                          Includes
+                        </p>
+                        {comboItems.slice(0, 4).map((item, index) => (
+                          <div key={index} className="flex items-center text-gray-600 text-sm">
+                            <Tag size={12} className="mr-2 text-[#0e6827] shrink-0" />
+                            <span className="line-clamp-1">
+                              {item.product_name || item.name || `Item ${index + 1}`}
+                              {item.quantity && item.quantity > 1
+                                ? ` × ${item.quantity}`
+                                : ""}
+                            </span>
+                          </div>
+                        ))}
+                        {comboItems.length > 4 && (
+                          <p className="text-xs text-green-600 font-semibold">
+                            +{comboItems.length - 4} more items
+                          </p>
+                        )}
+                      </div>
+                    ) : combo.description ? (
+                      <p className="mt-3 text-sm text-gray-500 line-clamp-2 flex-1">
+                        {combo.description}
+                      </p>
+                    ) : (
+                      <div className="flex-1" />
+                    )}
 
+                    {/* Pricing */}
+                    <div className="mt-5 flex items-center gap-3">
+                      <span className="text-2xl font-bold text-[#0e6827]">
+                        ₹{price.toFixed(2)}
+                      </span>
+                      {mrp > price && (
+                        <span className="line-through text-gray-400 text-sm">₹{mrp.toFixed(2)}</span>
+                      )}
+                    </div>
+                    {savings > 0 && (
+                      <p className="text-red-500 font-semibold text-sm mt-1">
+                        You save ₹{savings}
+                      </p>
+                    )}
+
+                    {/* Actions */}
+                    <div className="mt-5 flex gap-3">
+                      <AnimatedButton
+                        text="Quick View"
+                        onClick={() => {
+                          setSelectedProduct(combo);
+                          setQuickView(true);
+                        }}
+                        className="flex-1 py-3 rounded-xl"
+                      />
+
+                      <button
+                        onClick={() => addToCart(combo)}
+                        className="flex-1 bg-[#0e6827] hover:bg-[#168637] text-white rounded-xl font-bold"
+                      >
+                        Add to Cart
+                      </button>
+                      <Link to={`/products/${combo.id}`}
+                        className="flex items-center justify-center gap-1.5 border-2 border-[#0e6827] text-[#0e6827] hover:bg-[#0e6827] hover:text-white px-4 py-3 rounded-xl font-bold transition text-sm cursor-pointer"
+                      >
+                        <Eye size={16} />
+                        View
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-
               );
             })}
           </div>
         )}
       </section>
-      {
-        quickView && selectedProduct && (
-          <QuickViewModal
-            product={selectedProduct}
-            onClose={() => {
-              setQuickView(false);
-              setSelectedProduct(null);
-            }}
-          />
-        )
-      }
+      {quickView && selectedProduct && (
+        <QuickViewModal
+          product={selectedProduct}
+          onClose={() => {
+            setQuickView(false);
+            setSelectedProduct(null);
+          }}
+        />
+      )}
     </div>
   );
 };
