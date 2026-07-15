@@ -336,9 +336,9 @@ const Reviews = () => {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[860px]">
               <thead>
-                <tr className="border-b border-slate-100">
+                <tr className="border-b border-slate-100 bg-[#1b7f29]">
                   {["S No", "Customer", "Product", "Rating", "Comment", "Status", "Date", "Actions"].map(h => (
-                    <th key={h} className="px-5 py-3.5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                    <th key={h} className="px-5 py-3.5 text-left text-[10px] font-black text-white uppercase tracking-widest whitespace-nowrap">
                       {h}
                     </th>
                   ))}
