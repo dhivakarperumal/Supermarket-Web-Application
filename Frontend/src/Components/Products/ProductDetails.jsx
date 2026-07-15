@@ -203,32 +203,38 @@ const ProductDetails = () => {
     }
   };
 
+  const parseStockNumber = (raw) => {
+    if (raw === undefined || raw === null) return 0;
+    // Allow strings like "27.750" or "27,750" or extra whitespace
+    const cleaned = String(raw).replace(/,/g, '').trim();
+    const n = parseFloat(cleaned);
+    return Number.isFinite(n) ? n : 0;
+  };
+
   const getStockValue = (variant, productItem) => {
-    const rawStock = variant?.stock ?? variant?.stock_quantity ?? productItem?.total_stock ?? productItem?.stock_quantity ?? productItem?.stock ?? 0;
-    const parsedStock = Number(rawStock);
-    return Number.isFinite(parsedStock) ? parsedStock : 0;
+    const candidate = variant?.stock ?? variant?.stock_quantity ?? productItem?.total_stock ?? productItem?.stock_quantity ?? productItem?.stock ?? 0;
+    return parseStockNumber(candidate);
   };
 
   const formatStockValue = (value) => {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return "0";
-    return Number.isInteger(parsed) ? String(parsed) : parsed.toFixed(2);
+    const parsed = parseStockNumber(value);
+    return Number.isInteger(parsed) ? String(parsed) : parsed.toFixed(3).replace(/\.0+$/, '') ;
   };
 
   const getVariantUnitSize = (variant) => {
-    const size = Number(variant?.quantity || variant?.weight_volume || variant?.weight || variant?.size || 1);
-    if (!Number.isFinite(size) || size <= 0) return 1;
-
-    const unit = String(variant?.unit || "").trim().toLowerCase();
-    if (["g", "gram", "grams", "ml", "milliliter", "millilitre", "milliliters", "millilitres"].includes(unit)) {
-      return size / 1000;
-    }
-    return size;
+    const val = variant?.quantity ?? variant?.weight_volume ?? variant?.weight ?? variant?.size ?? 1;
+    const sizeNum = parseFloat(String(val || '').replace(/,/g, '').trim()) || 0;
+    const unit = String(variant?.unit || '').trim().toLowerCase();
+    if (!sizeNum || sizeNum <= 0) return 1;
+    if (["g", "gram", "grams"].includes(unit)) return sizeNum / 1000;
+    if (["ml", "milliliter", "millilitre", "milliliters", "millilitres"].includes(unit)) return sizeNum / 1000;
+    return sizeNum;
   };
 
   const availableStock = getStockValue(selectedVariant, product);
-  const isOutOfStock = availableStock <= 0;
-  const maxQuantity = availableStock > 0 ? Math.max(1, Math.floor(availableStock / getVariantUnitSize(selectedVariant))) : 0;
+  const variantUnitSize = getVariantUnitSize(selectedVariant);
+  const maxQuantity = availableStock > 0 ? Math.floor(availableStock / variantUnitSize) : 0;
+  const isOutOfStock = maxQuantity < 1;
 
   const handleBuyNow = () => {
 
