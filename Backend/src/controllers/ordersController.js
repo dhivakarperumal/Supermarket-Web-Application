@@ -197,7 +197,7 @@ const createOrder = async (req, res) => {
                         const prod = prodRows[0];
                         let updatedPricingOptions = prod.pricing_options;
                         const consumedStock = calculateStockConsumptionInBaseUnits(
-                            item.variant_info?.weight || item.variant_info?.quantity || item.variant_size || null,
+                            item.variant_info?.weight || item.variant_info?.quantity || item.variant_size || item.size || null,
                             item.variant_info?.unit || item.variant_info?.measurementUnit || item.variant_unit || null,
                             item.quantity
                         );

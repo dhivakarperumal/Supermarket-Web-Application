@@ -1,12 +1,34 @@
 const normalizeUnit = (unit) => String(unit || '').trim().toLowerCase();
 
+const parseVariantValueAndUnit = (value, unit) => {
+  const rawValue = String(value || '').trim();
+  const providedUnit = normalizeUnit(unit);
+
+  if (!rawValue) {
+    return { value: 0, unit: providedUnit };
+  }
+
+  const match = rawValue.match(/^(-?\d+(?:\.\d+)?)\s*([a-zA-Z]+)$/);
+  if (match) {
+    return {
+      value: parseFloat(match[1]),
+      unit: providedUnit || normalizeUnit(match[2]),
+    };
+  }
+
+  return {
+    value: parseFloat(rawValue) || 0,
+    unit: providedUnit,
+  };
+};
+
 const convertToBaseUnit = (value, unit) => {
-  const normalizedUnit = normalizeUnit(unit);
-  const quantity = parseFloat(value) || 0;
+  const { value: parsedValue, unit: normalizedUnit } = parseVariantValueAndUnit(value, unit);
+  const quantity = parseFloat(parsedValue) || 0;
 
   if (!quantity) return 0;
 
-  switch (normalizedUnit) {
+  switch (normalizeUnit(normalizedUnit)) {
     case 'kg':
     case 'kilogram':
     case 'kilograms':
@@ -41,7 +63,7 @@ const convertToBaseUnit = (value, unit) => {
 
 const calculateStockConsumptionInBaseUnits = (variantValue, unit, quantity = 1) => {
   const purchaseQuantity = parseFloat(quantity) || 0;
-  if (variantValue === undefined || variantValue === null || variantValue === '' || unit === undefined || unit === null || unit === '') {
+  if (variantValue === undefined || variantValue === null || variantValue === '') {
     return purchaseQuantity;
   }
 
@@ -51,6 +73,7 @@ const calculateStockConsumptionInBaseUnits = (variantValue, unit, quantity = 1) 
 
 module.exports = {
   normalizeUnit,
+  parseVariantValueAndUnit,
   convertToBaseUnit,
   calculateStockConsumptionInBaseUnits,
 };
