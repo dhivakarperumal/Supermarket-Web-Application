@@ -59,11 +59,27 @@ const createProductTable = async () => {
       }
     }
 
-    // Alter stock columns to support decimal values for kg/g/L/ml
+    // Ensure stock columns exist and support decimal values for kg/g/L/ml
     try {
-      await connection.query("ALTER TABLE products MODIFY COLUMN stock_quantity DECIMAL(10,3) DEFAULT 0, MODIFY COLUMN total_stock DECIMAL(10,3) DEFAULT 0");
+      const stockColumns = ["stock_quantity", "total_stock"];
+      for (const columnName of stockColumns) {
+        const [existingColumns] = await connection.query(
+          `SELECT COLUMN_NAME
+           FROM INFORMATION_SCHEMA.COLUMNS
+           WHERE TABLE_SCHEMA = DATABASE()
+             AND TABLE_NAME = 'products'
+             AND COLUMN_NAME = ?`,
+          [columnName]
+        );
+
+        if (existingColumns.length === 0) {
+          await connection.query(`ALTER TABLE products ADD COLUMN ${columnName} DECIMAL(10,3) DEFAULT 0`);
+        } else {
+          await connection.query(`ALTER TABLE products MODIFY COLUMN ${columnName} DECIMAL(10,3) DEFAULT 0`);
+        }
+      }
     } catch (err) {
-      console.error("Error altering stock columns to decimal:", err);
+      console.error("Error ensuring stock columns:", err);
     }
 
     // Add category_id column if it doesn't exist (safe migration)
