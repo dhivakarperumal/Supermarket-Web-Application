@@ -464,19 +464,34 @@ const AddCombo = () => {
     const hasMrp = formData.mrp || (formData.pricing_options && formData.pricing_options.length > 0 && formData.pricing_options[0].mrp);
 
     if (!formData.name || !hasCategory || !hasMrp) {
+      console.warn("[AddCombo] Validation failed", {
+        name: formData.name,
+        category: formData.category,
+        mrp: formData.mrp,
+      });
       toast.error("Please fill in the required product details (Name, Category, and at least one MRP).");
+      return;
+    }
+
+    const normalizedComboItems = Array.isArray(formData.combo_items)
+      ? formData.combo_items.filter((item) => item?.product_id && String(item.product_id).trim() !== "")
+      : [];
+
+    if (!normalizedComboItems.length) {
+      console.warn("[AddCombo] Validation failed: no combo items selected");
+      toast.error("Please add at least one product to the combo.");
       return;
     }
 
     setLoading(true);
     try {
+      const selectedCategory = categories.find((cat) => cat.name === formData.category);
       const finalData = {
         ...formData,
         type: 1,
-        category: formData.category || "General",
-        combo_items: Array.isArray(formData.combo_items)
-          ? formData.combo_items.filter(item => item.product_id && item.product_id.toString().trim() !== "")
-          : [],
+        category: selectedCategory?.name || formData.category || "General",
+        category_id: selectedCategory?.id || null,
+        combo_items: normalizedComboItems,
         pricing_options: [], // empty for combos
         minimum_stock: Number(formData.minimum_stock || 0),
         maximum_stock: Number(formData.maximum_stock || 0),
@@ -503,18 +518,32 @@ const AddCombo = () => {
       // explicitly use the edited total stock value
       finalData.total_stock = Number(formData.total_stock || 0);
 
+      console.info("[AddCombo] Saving combo product", {
+        isEdit,
+        id,
+        payload: finalData,
+      });
+
+      let response;
       if (isEdit) {
-        await api.put(`/products/${id}`, finalData);
+        response = await api.put(`/products/${id}`, finalData);
         toast.success("Product updated successfully.");
       } else {
-        await api.post("/products", finalData);
+        response = await api.post("/products", finalData);
         toast.success("Product added successfully.");
       }
 
+      console.info("[AddCombo] Save success", response?.data);
       setTimeout(() => navigate("/admin/products/all"), 1500);
     } catch (error) {
-      console.error("Submit error:", error);
+      console.error("[AddCombo] Save failed", {
+        error,
+        response: error?.response?.data,
+        status: error?.response?.status,
+        payload: formData,
+      });
       toast.error(error.response?.data?.message || "Operation failed.");
+    } finally {
       setLoading(false);
     }
   };

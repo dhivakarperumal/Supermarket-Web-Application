@@ -3,7 +3,10 @@ import { ShoppingCart, Heart, Tag, Star, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import api from "../../api";
 import { StoreContext } from "../../PrivateRouter/StoreContext";
+import PageHeader from "../CommenComponents/PageHeader";
+import { useNavigate } from "react-router-dom";
 import QuickViewModal from "../Products/QuickModel";
+import AnimatedButton from "../AnimatedButton";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
@@ -74,7 +77,9 @@ const Combo = () => {
   const [allCombos, setAllCombos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
-  const [quickViewProduct, setQuickViewProduct] = useState(null);
+  const navigate = useNavigate();
+  const [quickView, setQuickView] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     const fetchCombos = async () => {
@@ -83,8 +88,8 @@ const Combo = () => {
         const data = Array.isArray(res.data)
           ? res.data
           : Array.isArray(res.data?.products)
-          ? res.data.products
-          : [];
+            ? res.data.products
+            : [];
         setAllCombos(data.filter(isCombo));
       } catch (error) {
         console.error("Error fetching combos:", error);
@@ -99,33 +104,17 @@ const Combo = () => {
     activeCategory === "All"
       ? allCombos
       : allCombos.filter(
-          (c) =>
-            c.category?.toLowerCase().includes(activeCategory.toLowerCase()) ||
-            c.name?.toLowerCase().includes(activeCategory.toLowerCase())
-        );
+        (c) =>
+          c.category?.toLowerCase().includes(activeCategory.toLowerCase()) ||
+          c.name?.toLowerCase().includes(activeCategory.toLowerCase())
+      );
 
 
 
   return (
     <div className="bg-[#f8faf8] min-h-screen">
 
-      {/* Hero */}
-      <section className="bg-gradient-to-r from-[#0e6827] via-[#168637] to-[#ffc107] text-white">
-        <div className="max-w-7xl mx-auto px-6 py-20">
-          <span className="bg-white/20 px-4 py-1 rounded-full text-sm font-semibold">
-            SAVE MORE
-          </span>
-          <h1 className="text-5xl font-extrabold mt-5">Grocery Combo Offers</h1>
-          <p className="mt-4 text-white/90 max-w-2xl text-lg">
-            Handpicked grocery bundles with exclusive discounts. Buy more and save more every day.
-          </p>
-          <button className="mt-8 bg-[#ffc107] text-black font-bold px-8 py-3 rounded-full hover:scale-105 transition">
-            Shop Combos
-          </button>
-        </div>
-      </section>
-
-      
+      <PageHeader title="Combo Products" />
 
       {/* Combo Cards */}
       <section className="max-w-8xl mx-auto mt-10 px-10 pb-16">
@@ -210,11 +199,10 @@ const Combo = () => {
                     </span>
                     <button
                       onClick={() => toggleWishlist(combo)}
-                      className={`absolute top-4 right-4 p-2 rounded-full shadow transition ${
-                        inWishlist
-                          ? "bg-red-500 text-white"
-                          : "bg-white text-gray-500 hover:bg-red-500 hover:text-white"
-                      }`}
+                      className={`absolute top-4 right-4 p-2 rounded-full shadow transition ${inWishlist
+                        ? "bg-red-500 text-white"
+                        : "bg-white text-gray-500 hover:bg-red-500 hover:text-white"
+                        }`}
                     >
                       <Heart size={18} fill={inWishlist ? "currentColor" : "none"} />
                     </button>
@@ -225,7 +213,10 @@ const Combo = () => {
                     {/* Title + Rating */}
                     <div className="flex justify-between items-start gap-2">
                       <Link to={`/products/${combo.id}`} className="flex-1">
-                        <h2 className="text-lg font-bold text-gray-800 line-clamp-2 hover:text-[#0e6827] transition-colors">
+                        <h2
+                          onClick={() => navigate(`/products/${combo.id}`)}
+                          className="text-lg font-bold text-gray-800 line-clamp-2 hover:text-[#0e6827] transition-colors cursor-pointer hover:text-[#0e6827]"
+                        >
                           {combo.name}
                         </h2>
                       </Link>
@@ -290,19 +281,27 @@ const Combo = () => {
 
                     {/* Actions */}
                     <div className="mt-5 flex gap-3">
+                      <AnimatedButton
+                        text="Quick View"
+                        onClick={() => {
+                          setSelectedProduct(combo);
+                          setQuickView(true);
+                        }}
+                        className="flex-1 py-3 rounded-xl"
+                      />
+
                       <button
                         onClick={() => addToCart(combo)}
-                        className="flex-1 flex items-center justify-center gap-2 bg-[#0e6827] hover:bg-[#168637] text-white py-3 rounded-xl font-bold transition text-sm">
-                        <ShoppingCart size={16} />
+                        className="flex-1 bg-[#0e6827] hover:bg-[#168637] text-white rounded-xl font-bold"
+                      >
                         Add to Cart
                       </button>
-                      <button
-                        onClick={() => setQuickViewProduct(combo)}
+                      <Link to={`/products/${combo.id}`}
                         className="flex items-center justify-center gap-1.5 border-2 border-[#0e6827] text-[#0e6827] hover:bg-[#0e6827] hover:text-white px-4 py-3 rounded-xl font-bold transition text-sm cursor-pointer"
                       >
                         <Eye size={16} />
                         View
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -311,10 +310,13 @@ const Combo = () => {
           </div>
         )}
       </section>
-      {quickViewProduct && (
+      {quickView && selectedProduct && (
         <QuickViewModal
-          product={quickViewProduct}
-          onClose={() => setQuickViewProduct(null)}
+          product={selectedProduct}
+          onClose={() => {
+            setQuickView(false);
+            setSelectedProduct(null);
+          }}
         />
       )}
     </div>

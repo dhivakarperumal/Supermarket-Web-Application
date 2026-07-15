@@ -160,10 +160,12 @@ const Coupons = () => {
     }
   };
 
-  const filteredCoupons = coupons.filter(c => 
-    c.code.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    c.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCoupons = coupons.filter(c => {
+    const q = String(searchTerm || "").toLowerCase();
+    const code = String(c?.code || "").toLowerCase();
+    const name = String(c?.name || "").toLowerCase();
+    return code.includes(q) || name.includes(q);
+  });
 
   if (loading) return <Loader />;
 

@@ -97,10 +97,12 @@ const Category = () => {
 
     // ---- Derived Data (Search & Pagination) ----
     const filteredCategories = useMemo(() => {
-        return categories.filter(cat =>
-            cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            cat.catId.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+        const q = String(searchQuery || "").toLowerCase();
+        return categories.filter(cat => {
+            const name = String(cat?.name || "").toLowerCase();
+            const catId = String(cat?.catId || "").toLowerCase();
+            return name.includes(q) || catId.includes(q);
+        });
     }, [categories, searchQuery]);
 
     const totalPages = Math.ceil(filteredCategories.length / itemsPerPage) || 1;

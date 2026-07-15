@@ -143,10 +143,46 @@ const QuickViewModal = ({ product, onClose }) => {
 
   if (!product) return null;
 
-  let stock = parseInt(selectedVariant?.stock || selectedVariant?.stock_quantity || product?.total_stock || product?.stock_quantity || 10, 10);
-  if (isNaN(stock) || stock <= 0) stock = 10;
+  const parseStockNumber = (raw) => {
+    if (raw === undefined || raw === null) return 0;
+    const cleaned = String(raw).replace(/,/g, '').trim();
+    const n = parseFloat(cleaned);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const getStockValue = (variant, productItem) => {
+    // Use product-level `total_stock` exclusively (ignore variant-level stock)
+    return parseStockNumber(productItem?.total_stock);
+  };
+
+  const formatStockValue = (value) => {
+    const parsed = parseStockNumber(value);
+    return Number.isInteger(parsed) ? String(parsed) : parsed.toFixed(3).replace(/\.0+$/, '') ;
+  };
+
+  const getVariantUnitSize = (variant) => {
+    const val = variant?.quantity ?? variant?.weight_volume ?? variant?.weight ?? variant?.size ?? 1;
+    const sizeNum = parseFloat(String(val || '').replace(/,/g, '').trim()) || 0;
+    const unit = String(variant?.unit || '').trim().toLowerCase();
+    if (!sizeNum || sizeNum <= 0) return 1;
+    if (["g", "gram", "grams"].includes(unit)) return sizeNum / 1000;
+    if (["ml", "milliliter", "millilitre", "milliliters", "millilitres"].includes(unit)) return sizeNum / 1000;
+    return sizeNum;
+  };
+
+  const stock = getStockValue(selectedVariant, product);
+  const isOutOfStock = (() => {
+    const unitSize = getVariantUnitSize(selectedVariant);
+    const maxQ = stock > 0 ? Math.floor(stock / unitSize) : 0;
+    return maxQ < 1;
+  })();
+  const maxQuantity = stock > 0 ? Math.floor(stock / getVariantUnitSize(selectedVariant)) : 0;
 
   const handleBuyNow = () => {
+    if (isOutOfStock) {
+      return;
+    }
+
     navigate("/checkout", {
       state: {
         product: product,
@@ -571,11 +607,14 @@ const QuickViewModal = ({ product, onClose }) => {
 
             <div>
 
-              <h3 className="font-bold text-gray-800 mb-3">
-
-                Quantity
-
-              </h3>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <h3 className="font-bold text-gray-800">
+                  Quantity
+                </h3>
+                <p className={`text-sm font-semibold ${isOutOfStock ? "text-red-500" : "text-green-700"}`}>
+                  {isOutOfStock ? "Out of Stock" : `Available: ${formatStockValue(stock)} ${selectedVariant?.unit || product?.unit || "units"}`}
+                </p>
+              </div>
 
               <div className="flex items-center w-fit rounded-xl border border-green-200 bg-green-50 overflow-hidden">
 
@@ -600,7 +639,7 @@ const QuickViewModal = ({ product, onClose }) => {
 
                 <button
                   onClick={() => {
-                    if (quantity < stock) {
+                    if (maxQuantity > 0 && quantity < maxQuantity) {
                       setQuantity(quantity + 1);
                     }
                   }}
@@ -617,49 +656,54 @@ const QuickViewModal = ({ product, onClose }) => {
             </div>
             {/* Bottom Buttons */}
             <div className="sticky bottom-0 bg-white border-t border-green-100 pt-5 mt-auto">
+              {isOutOfStock ? (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-semibold text-red-600">
+                  This variant is currently out of stock.
+                </div>
+              ) : (
+                <div className="flex flex-col sm:flex-row gap-3">
 
-              <div className="flex flex-col sm:flex-row gap-3">
+                  {/* Add To Cart */}
+                  <button
+                    onClick={() => {
+                      addToCart(
+                        product,
+                        selectedVariant,
+                        selectedSize,
+                        quantity
+                      );
+                      onClose();
+                    }}
+                    className="flex-1 h-14 rounded-xl bg-gradient-to-r from-[#0e6827] to-[#168637] text-white font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+                  >
+                    <FiShoppingCart size={20} />
+                    Add To Cart
+                  </button>
 
-                {/* Add To Cart */}
-                <button
-                  onClick={() => {
-                    addToCart(
-                      product,
-                      selectedVariant,
-                      selectedSize,
-                      quantity
-                    );
-                    onClose();
-                  }}
-                  className="flex-1 h-14 rounded-xl bg-gradient-to-r from-[#0e6827] to-[#168637] text-white font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
-                >
-                  <FiShoppingCart size={20} />
-                  Add To Cart
-                </button>
+                  {/* Buy Now */}
+                  <button
+                    onClick={handleBuyNow}
+                    className="flex-1 h-14 rounded-xl bg-[#ffc107] hover:bg-[#e7b100] text-black font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
+                  >
+                    Buy Now
+                  </button>
 
-                {/* Buy Now */}
-                <button
-                  onClick={handleBuyNow}
-                  className="flex-1 h-14 rounded-xl bg-[#ffc107] hover:bg-[#e7b100] text-black font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
-                >
-                  Buy Now
-                </button>
+                  {/* Wishlist */}
+                  <button
+                    onClick={() => toggleWishlist(product)}
+                    className={`w-14 h-14 rounded-xl border-2 flex items-center justify-center transition-all ${isInWishlist
+                      ? "border-red-400 bg-red-50 text-red-500"
+                      : "border-green-200 hover:border-green-700 hover:bg-green-50 text-gray-600"
+                      }`}
+                  >
+                    <FiHeart
+                      size={22}
+                      className={isInWishlist ? "fill-current" : ""}
+                    />
+                  </button>
 
-                {/* Wishlist */}
-                <button
-                  onClick={() => toggleWishlist(product)}
-                  className={`w-14 h-14 rounded-xl border-2 flex items-center justify-center transition-all ${isInWishlist
-                    ? "border-red-400 bg-red-50 text-red-500"
-                    : "border-green-200 hover:border-green-700 hover:bg-green-50 text-gray-600"
-                    }`}
-                >
-                  <FiHeart
-                    size={22}
-                    className={isInWishlist ? "fill-current" : ""}
-                  />
-                </button>
-
-              </div>
+                </div>
+              )}
 
               {/* Trust Badges */}
               {/* <div className="mt-5 grid grid-cols-3 gap-3">

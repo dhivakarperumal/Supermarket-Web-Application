@@ -1,5 +1,6 @@
 const { getPool } = require("../config/db");
 const crypto = require("crypto");
+const { calculateStockConsumptionInBaseUnits } = require("./stockUtils");
 
 const initOrdersTable = async () => {
     const pool = getPool();
@@ -191,44 +192,75 @@ const createOrder = async (req, res) => {
                 // Reduce stock in products table (including variants)
                 const pId = item.product_id || item.id;
                 if (pId) {
-                    const [prodRows] = await connection.query("SELECT total_stock, stock_quantity, pricing_options FROM products WHERE id = ?", [pId]);
+                    // Try to find by numeric `id` or by `product_id` (UUID) so API callers can send either
+                    const [prodRows] = await connection.query(
+                        "SELECT * FROM products WHERE id = ? OR product_id = ? LIMIT 1",
+                        [pId, pId]
+                    );
                     if (prodRows.length > 0) {
                         const prod = prodRows[0];
+                        // Use the actual numeric id from DB for subsequent updates
+                        const dbNumericId = prod.id;
                         let updatedPricingOptions = prod.pricing_options;
 
-                        // Parse and update variant stock if needed
-                        if (item.variant_info && prod.pricing_options) {
-                            try {
-                                const options = typeof prod.pricing_options === 'string' ? JSON.parse(prod.pricing_options) : prod.pricing_options;
-                                if (Array.isArray(options)) {
-                                    for (let opt of options) {
-                                        const optWeight = String(opt.weight_volume || opt.quantity || "").trim().toLowerCase();
-                                        const optUnit = String(opt.unit || "").trim().toLowerCase();
-                                        const itemWeight = String(item.variant_info.weight || "").trim().toLowerCase();
-                                        const itemUnit = String(item.variant_info.unit || "").trim().toLowerCase();
-
-                                        if (optWeight === itemWeight && optUnit === itemUnit) {
-                                            opt.stock_quantity = Math.max(0, (parseFloat(opt.stock_quantity) || 0) - item.quantity);
-                                            break;
-                                        }
-                                    }
-                                    updatedPricingOptions = JSON.stringify(options);
-                                }
-                            } catch (e) {
-                                console.error("Error parsing pricing_options for stock update:", e);
-                            }
-                        }
-
-                        const optionsString = typeof updatedPricingOptions === 'object' ? JSON.stringify(updatedPricingOptions) : updatedPricingOptions;
-
-                        await connection.query(
-                            `UPDATE products 
-                             SET total_stock = GREATEST(0, IFNULL(total_stock, 0) - ?),
-                                 stock_quantity = GREATEST(0, IFNULL(stock_quantity, 0) - ?),
-                                 pricing_options = ?
-                             WHERE id = ?`,
-                            [item.quantity, item.quantity, optionsString, pId]
+                        // Determine consumption based on variant_info if present, otherwise fallback to quantity
+                        const consumedStock = calculateStockConsumptionInBaseUnits(
+                            item.variant_info?.weight || item.variant_info?.quantity || item.variant_size || item.size || null,
+                            item.variant_info?.unit || item.variant_info?.measurementUnit || item.variant_unit || null,
+                            item.quantity
                         );
+
+                        // When no variant information exists, consume by quantity directly
+                        const finalConsumedStock = consumedStock > 0 ? consumedStock : (parseFloat(item.quantity) || 0);
+
+                        // Detect combo products by type or product_code prefix 'SPMC'
+                        const productCode = String(prod.product_code || '').trim().toUpperCase();
+                        const isComboProduct = productCode.startsWith('SPMC') || String(prod.type || '').trim() === '1';
+
+                        // If product is a combo, deduct from total_stock and keep stock_quantity in sync if present
+                        if (isComboProduct) {
+                            await connection.query(
+                                `UPDATE products 
+                                 SET total_stock = GREATEST(0, IFNULL(total_stock, 0) - ?),
+                                     stock_quantity = GREATEST(0, IFNULL(stock_quantity, 0) - ?)
+                                 WHERE id = ?`,
+                                [finalConsumedStock, finalConsumedStock, dbNumericId]
+                            );
+                        } else {
+                            // Parse and update variant stock if needed
+                            if (item.variant_info && prod.pricing_options) {
+                                try {
+                                    const options = typeof prod.pricing_options === 'string' ? JSON.parse(prod.pricing_options) : prod.pricing_options;
+                                    if (Array.isArray(options)) {
+                                        for (let opt of options) {
+                                            const optWeight = String(opt.weight_volume || opt.quantity || "").trim().toLowerCase();
+                                            const optUnit = String(opt.unit || "").trim().toLowerCase();
+                                            const itemWeight = String(item.variant_info?.weight || item.variant_info?.quantity || "").trim().toLowerCase();
+                                            const itemUnit = String(item.variant_info?.unit || item.variant_info?.measurementUnit || "").trim().toLowerCase();
+
+                                            if (optWeight === itemWeight && optUnit === itemUnit) {
+                                                opt.stock_quantity = Math.max(0, (parseFloat(opt.stock_quantity) || 0) - consumedStock);
+                                                break;
+                                            }
+                                        }
+                                        updatedPricingOptions = JSON.stringify(options);
+                                    }
+                                } catch (e) {
+                                    console.error("Error parsing pricing_options for stock update:", e);
+                                }
+                            }
+
+                            const optionsString = typeof updatedPricingOptions === 'object' ? JSON.stringify(updatedPricingOptions) : updatedPricingOptions;
+
+                            await connection.query(
+                                `UPDATE products 
+                                 SET total_stock = GREATEST(0, IFNULL(total_stock, 0) - ?),
+                                     stock_quantity = GREATEST(0, IFNULL(stock_quantity, 0) - ?),
+                                     pricing_options = ?
+                                 WHERE id = ?`,
+                                [consumedStock, consumedStock, optionsString, dbNumericId]
+                            );
+                        }
                     }
                 }
             }
