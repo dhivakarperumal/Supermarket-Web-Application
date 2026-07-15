@@ -11,10 +11,19 @@ import "swiper/css/effect-fade";
 import PageContainer from "./CommenComponents/PageContainer";
 import "swiper/css/pagination";
 
+const defaultSlides = [
+    {
+        title: "Timeless Elegance",
+        subtitle: "Premium Collection",
+        image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1600&q=80",
+        link: "/shop"
+    }
+];
+
 export default function HeroSlider() {
     const { bannersCache, setBannersCache } = useContext(StoreContext);
-    const [slides, setSlides] = useState(bannersCache.hero || []);
-    const [loading, setLoading] = useState(!bannersCache.hero);
+    const [slides, setSlides] = useState(Array.isArray(bannersCache?.hero) ? bannersCache.hero : defaultSlides);
+    const [loading, setLoading] = useState(!Array.isArray(bannersCache?.hero));
 
     useEffect(() => {
         const fetchBanners = async () => {
@@ -33,6 +42,7 @@ export default function HeroSlider() {
             } catch (error) {
                 console.error("Error fetching hero banners:", error);
                 setSlides(defaultSlides);
+                setBannersCache(prev => ({ ...prev, hero: defaultSlides }));
             } finally {
                 setLoading(false);
             }
