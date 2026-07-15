@@ -203,10 +203,41 @@ const ProductDetails = () => {
     }
   };
 
+  const getStockValue = (variant, productItem) => {
+    const rawStock = variant?.stock ?? variant?.stock_quantity ?? productItem?.total_stock ?? productItem?.stock_quantity ?? productItem?.stock ?? 0;
+    const parsedStock = Number(rawStock);
+    return Number.isFinite(parsedStock) ? parsedStock : 0;
+  };
+
+  const formatStockValue = (value) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return "0";
+    return Number.isInteger(parsed) ? String(parsed) : parsed.toFixed(2);
+  };
+
+  const getVariantUnitSize = (variant) => {
+    const size = Number(variant?.quantity || variant?.weight_volume || variant?.weight || variant?.size || 1);
+    if (!Number.isFinite(size) || size <= 0) return 1;
+
+    const unit = String(variant?.unit || "").trim().toLowerCase();
+    if (["g", "gram", "grams", "ml", "milliliter", "millilitre", "milliliters", "millilitres"].includes(unit)) {
+      return size / 1000;
+    }
+    return size;
+  };
+
+  const availableStock = getStockValue(selectedVariant, product);
+  const isOutOfStock = availableStock <= 0;
+  const maxQuantity = availableStock > 0 ? Math.max(1, Math.floor(availableStock / getVariantUnitSize(selectedVariant))) : 0;
+
   const handleBuyNow = () => {
 
     if (!selectedVariant) {
       alert("Please select a variant");
+      return;
+    }
+
+    if (isOutOfStock) {
       return;
     }
 
@@ -232,11 +263,8 @@ const ProductDetails = () => {
   };
 
   const increaseQty = () => {
-    let stock = parseInt(selectedVariant?.stock || selectedVariant?.stock_quantity || product?.total_stock || product?.stock_quantity || 10, 10);
-    if (isNaN(stock) || stock <= 0) stock = 10;
-
     setQuantity((prev) => {
-      if (prev < stock) return prev + 1;
+      if (maxQuantity > 0 && prev < maxQuantity) return prev + 1;
       return prev;
     });
   };
@@ -551,7 +579,12 @@ const ProductDetails = () => {
               </p> */}
 
               <div className="mt-5">
-                <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">Quantity</p>
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">Quantity</p>
+                  <p className={`text-sm font-semibold ${isOutOfStock ? "text-red-500" : "text-green-600"}`}>
+                    {isOutOfStock ? "Out of Stock" : `Available: ${formatStockValue(availableStock)} ${selectedVariant?.unit || product?.unit || "units"}`}
+                  </p>
+                </div>
                 <div className="flex w-fit items-center overflow-hidden rounded-full border border-gray-200 bg-gray-50">
                   <button onClick={decreaseQty} className="px-4 py-2 text-lg font-bold text-gray-700 hover:bg-gray-100">
                     -
@@ -609,27 +642,33 @@ const ProductDetails = () => {
               </div>
             )}
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button
-                onClick={() => addToCart(product, selectedVariant, selectedSize, quantity)}
-                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-white shadow-lg shadow-green-100 transition hover:scale-[1.01]"
-              >
-                <FiShoppingCart size={18} />
-                Add to Cart
-              </button>
-              <button
-                onClick={handleBuyNow}
-                className="flex flex-1 items-center justify-center rounded-full bg-gray-900 px-6 py-3 font-semibold text-white transition hover:bg-black"
-              >
-                Buy Now
-              </button>
-              <button
-                onClick={() => toggleWishlist(product, selectedVariant)}
-                className={`flex items-center justify-center rounded-full border px-5 py-3 font-semibold transition ${wishlist.some((w) => w.product_id === product.id) ? "border-rose-300 bg-rose-50 text-rose-500" : "border-gray-200 text-gray-600 hover:border-rose-300 hover:text-rose-500"}`}
-              >
-                <FiHeart size={18} className={wishlist.some((w) => w.product_id === product.id) ? "fill-current" : ""} />
-              </button>
-            </div>
+            {isOutOfStock ? (
+              <div className="mt-8 rounded-full border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-semibold text-red-600">
+                This variant is currently out of stock.
+              </div>
+            ) : (
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <button
+                  onClick={() => addToCart(product, selectedVariant, selectedSize, quantity)}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-white shadow-lg shadow-green-100 transition hover:scale-[1.01]"
+                >
+                  <FiShoppingCart size={18} />
+                  Add to Cart
+                </button>
+                <button
+                  onClick={handleBuyNow}
+                  className="flex flex-1 items-center justify-center rounded-full bg-gray-900 px-6 py-3 font-semibold text-white transition hover:bg-black"
+                >
+                  Buy Now
+                </button>
+                <button
+                  onClick={() => toggleWishlist(product, selectedVariant)}
+                  className={`flex items-center justify-center rounded-full border px-5 py-3 font-semibold transition ${wishlist.some((w) => w.product_id === product.id) ? "border-rose-300 bg-rose-50 text-rose-500" : "border-gray-200 text-gray-600 hover:border-rose-300 hover:text-rose-500"}`}
+                >
+                  <FiHeart size={18} className={wishlist.some((w) => w.product_id === product.id) ? "fill-current" : ""} />
+                </button>
+              </div>
+            )}
 
             <div className="mt-8 rounded-[1.5rem] border border-gray-100 bg-gray-50 p-6 shadow-sm">
               <div className="flex items-center justify-between">
