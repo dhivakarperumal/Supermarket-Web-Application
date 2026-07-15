@@ -192,9 +192,15 @@ const createOrder = async (req, res) => {
                 // Reduce stock in products table (including variants)
                 const pId = item.product_id || item.id;
                 if (pId) {
-                    const [prodRows] = await connection.query("SELECT total_stock, stock_quantity, pricing_options, product_code FROM products WHERE id = ?", [pId]);
+                    // Try to find by numeric `id` or by `product_id` (UUID) so API callers can send either
+                    const [prodRows] = await connection.query(
+                        "SELECT * FROM products WHERE id = ? OR product_id = ? LIMIT 1",
+                        [pId, pId]
+                    );
                     if (prodRows.length > 0) {
                         const prod = prodRows[0];
+                        // Use the actual numeric id from DB for subsequent updates
+                        const dbNumericId = prod.id;
                         let updatedPricingOptions = prod.pricing_options;
                         const consumedStock = calculateStockConsumptionInBaseUnits(
                             item.variant_info?.weight || item.variant_info?.quantity || item.variant_size || item.size || null,
@@ -203,7 +209,7 @@ const createOrder = async (req, res) => {
                         );
 
                         // Detect combo products by product_code prefix 'SPMC' (combo codes start with SPMC...)
-                        const productCode = String(prod.product_code || '').trim().toUpperCase();
+                        const productCode = String(prod.product_code || prod.product_code || '').trim().toUpperCase();
                         const isComboProduct = productCode.startsWith('SPMC');
 
                         // If product is a combo, only deduct from product.total_stock and skip per-variant pricing option updates
@@ -212,7 +218,7 @@ const createOrder = async (req, res) => {
                                 `UPDATE products 
                                  SET total_stock = GREATEST(0, IFNULL(total_stock, 0) - ?)
                                  WHERE id = ?`,
-                                [consumedStock, pId]
+                                [consumedStock, dbNumericId]
                             );
                         } else {
                             // Parse and update variant stock if needed
@@ -246,7 +252,7 @@ const createOrder = async (req, res) => {
                                      stock_quantity = GREATEST(0, IFNULL(stock_quantity, 0) - ?),
                                      pricing_options = ?
                                  WHERE id = ?`,
-                                [consumedStock, consumedStock, optionsString, pId]
+                                [consumedStock, consumedStock, optionsString, dbNumericId]
                             );
                         }
                     }
