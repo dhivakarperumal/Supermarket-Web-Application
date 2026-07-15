@@ -70,7 +70,7 @@ const isCombo = (p) => {
   return String(p.type) === "1";
 };
 
-const CATEGORIES = ["All", "Rice", "Breakfast", "Cooking", "Healthy", "Snacks", "Family"];
+const CATEGORIES = [];
 
 const Combo = () => {
   const { toggleWishlist, wishlist, addToCart } = useContext(StoreContext);
@@ -116,11 +116,33 @@ const Combo = () => {
 
       <PageHeader title="Combo Products" />
 
-      {/* Combo Cards */}
-      <section className="max-w-8xl mx-auto mt-10 px-10 pb-16">
+      <section className="max-w-8xl mx-auto mt-10 px-6 pb-16">
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-green-700">Combo Collection</p>
+            <h2 className="mt-2 text-3xl font-bold text-slate-900">Bundles made for every kitchen</h2>
+            <p className="mt-2 text-sm text-slate-500 max-w-xl">Explore curated combo packs with savings, hand-picked items, and fast delivery.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {CATEGORIES.map((category) => (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                  activeCategory === category
+                    ? 'border-[#0e6827] bg-[#0e6827] text-white'
+                    : 'border-gray-200 bg-white text-slate-700 hover:border-green-400 hover:bg-green-50'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {loading ? (
-          <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8">
-            {Array.from({ length: 6 }).map((_, i) => (
+          <div className="grid xl:grid-cols-4 lg:grid-cols-4 md:grid-cols-2 gap-8">
+            {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-lg animate-pulse">
                 <div className="h-64 bg-gray-200" />
                 <div className="p-6 space-y-3">
@@ -147,7 +169,7 @@ const Combo = () => {
             </button>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8">
+          <div className="grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-8">
             {filteredCombos.map((combo) => {
               const price = parseFloat(
                 combo.offer_price || combo.selling_price || combo.price || 0
@@ -194,7 +216,7 @@ const Combo = () => {
                         {discountPct}% OFF
                       </span>
                     )}
-                    <span className="absolute top-4 left-4 mt-8 bg-[#0e6827] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow hidden">
+                    <span className="absolute top-4 left-4 mt-8 bg-[#0e6827] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
                       COMBO
                     </span>
                     <button
@@ -280,28 +302,33 @@ const Combo = () => {
                     )}
 
                     {/* Actions */}
-                    <div className="mt-5 flex gap-3">
-                      <AnimatedButton
-                        text="Quick View"
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                      <button
                         onClick={() => {
                           setSelectedProduct(combo);
                           setQuickView(true);
                         }}
-                        className="flex-1 py-3 rounded-xl"
-                      />
+                        className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:border-green-400 hover:bg-green-50 transition"
+                      >
+                        <Eye size={16} />
+                        Quick View
+                      </button>
 
                       <button
                         onClick={() => addToCart(combo)}
-                        className="flex-1 bg-[#0e6827] hover:bg-[#168637] text-white rounded-xl font-bold"
+                        className="flex items-center justify-center gap-2 rounded-2xl bg-[#0e6827] px-4 py-3 text-sm font-semibold text-white hover:bg-[#168637] transition"
                       >
+                        <ShoppingCart size={16} />
                         Add to Cart
                       </button>
-                      <Link to={`/products/${combo.id}`}
-                        className="flex items-center justify-center gap-1.5 border-2 border-[#0e6827] text-[#0e6827] hover:bg-[#0e6827] hover:text-white px-4 py-3 rounded-xl font-bold transition text-sm cursor-pointer"
+{/* 
+                      <Link
+                        to={`/products/${combo.id}`}
+                        className="flex items-center justify-center gap-2 rounded-2xl border border-[#0e6827] bg-white px-4 py-3 text-sm font-semibold text-[#0e6827] hover:border-transparent hover:bg-[#0e6827] hover:text-white transition"
                       >
                         <Eye size={16} />
-                        View
-                      </Link>
+                        View details
+                      </Link> */}
                     </div>
                   </div>
                 </div>
