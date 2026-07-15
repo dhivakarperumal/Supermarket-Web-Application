@@ -91,7 +91,7 @@ const startServer = async () => {
   });
 };
 
-if (require.main === module) {
+if (process.env.NODE_ENV !== "test") {
   startServer();
 }
 
