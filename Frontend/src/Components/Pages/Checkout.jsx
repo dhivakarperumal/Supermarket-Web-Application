@@ -750,6 +750,10 @@ const Checkout = () => {
         image: item.image,
         email: form.customer_email,
         user_id: user?.user_id,
+        variant_info: item.variant_info || (item.variant ? {
+          weight: item.variant.quantity,
+          unit: item.variant.unit,
+        } : null),
       }));
 
       const orderData = {
