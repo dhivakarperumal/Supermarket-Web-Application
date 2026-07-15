@@ -302,7 +302,7 @@ const Combo = () => {
                     )}
 
                     {/* Actions */}
-                    <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
                       <button
                         onClick={() => {
                           setSelectedProduct(combo);
@@ -311,7 +311,7 @@ const Combo = () => {
                         className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:border-green-400 hover:bg-green-50 transition"
                       >
                         <Eye size={16} />
-                        Quick view
+                        Quick View
                       </button>
 
                       <button
@@ -319,16 +319,16 @@ const Combo = () => {
                         className="flex items-center justify-center gap-2 rounded-2xl bg-[#0e6827] px-4 py-3 text-sm font-semibold text-white hover:bg-[#168637] transition"
                       >
                         <ShoppingCart size={16} />
-                        Add to cart
+                        Add to Cart
                       </button>
-
+{/* 
                       <Link
                         to={`/products/${combo.id}`}
                         className="flex items-center justify-center gap-2 rounded-2xl border border-[#0e6827] bg-white px-4 py-3 text-sm font-semibold text-[#0e6827] hover:border-transparent hover:bg-[#0e6827] hover:text-white transition"
                       >
                         <Eye size={16} />
                         View details
-                      </Link>
+                      </Link> */}
                     </div>
                   </div>
                 </div>
