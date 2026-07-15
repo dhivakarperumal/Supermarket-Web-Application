@@ -151,7 +151,18 @@ const QuickViewModal = ({ product, onClose }) => {
   };
 
   const getStockValue = (variant, productItem) => {
-    const candidate = variant?.stock ?? variant?.stock_quantity ?? productItem?.total_stock ?? productItem?.stock_quantity ?? productItem?.stock ?? 0;
+    // Prefer product-level `total_stock` when it's a positive number
+    const totalStock = parseStockNumber(productItem?.total_stock);
+    if (totalStock > 0) return totalStock;
+
+    // Otherwise prefer variant-specific stock fields, then product-level fallbacks
+    const candidate =
+      variant?.stock ??
+      variant?.stock_quantity ??
+      productItem?.stock_quantity ??
+      productItem?.stock ??
+      0;
+
     return parseStockNumber(candidate);
   };
 

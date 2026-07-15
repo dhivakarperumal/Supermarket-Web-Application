@@ -212,8 +212,8 @@ const ProductDetails = () => {
   };
 
   const getStockValue = (variant, productItem) => {
-    const candidate = variant?.stock ?? variant?.stock_quantity ?? productItem?.total_stock ?? productItem?.stock_quantity ?? productItem?.stock ?? 0;
-    return parseStockNumber(candidate);
+    // Use product-level `total_stock` exclusively (ignore variant-level stock)
+    return parseStockNumber(productItem?.total_stock);
   };
 
   const formatStockValue = (value) => {
