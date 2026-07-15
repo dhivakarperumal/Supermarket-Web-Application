@@ -168,6 +168,22 @@ const CreateBilling = () => {
         html5QrcodeRef.current = qrCode;
         let isScanned = false; // Lock to prevent multiple rapid scans
 
+        // Simple checkout beep sound
+        const playBeep = () => {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 800;
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.1);
+            } catch (e) { console.error(e) }
+        };
+
         const onSuccess = (decodedText) => {
             if (isScanned) return; // Ignore subsequent frames once we got a match
 
@@ -175,23 +191,23 @@ const CreateBilling = () => {
             const product = findProductByCode(code);
 
             if (!product) {
-                // If invalid code, we can allow scanning again immediately
                 isScanned = true;
                 toast.error(`❌ "${code}" — not registered`);
                 setLastScannedCode(code);
-                setTimeout(() => { isScanned = false; }, 1500); // Cool down before next error
+                setTimeout(() => { isScanned = false; }, 2000); // Cool down
                 return;
             }
             if (isOutOfStock(product)) {
                 isScanned = true;
                 toast.error(`"${product.name}" is out of stock`);
-                setTimeout(() => { isScanned = false; }, 1500);
+                setTimeout(() => { isScanned = false; }, 2000);
                 return;
             }
 
-            // SUCCESS! Lock the scanner so it doesn't fire again while closing
+            // SUCCESS! Lock the scanner
             isScanned = true;
             setLastScannedCode(code);
+            playBeep();
 
             const variant = product.variants?.length > 0 ? product.variants[0] : null;
             
@@ -201,21 +217,16 @@ const CreateBilling = () => {
             }
             toast.success(`✅ Added: ${product.name}${variant ? ` (${variant.quantity} ${variant.unit})` : ""}`);
 
-            // Gracefully stop camera, THEN close modal to prevent DOM unmount crashes
-            qrCode.stop().then(() => {
-                html5QrcodeRef.current = null;
-                setShowCameraScanner(false);
-                setCameraStatus("idle");
-            }).catch(() => {
-                html5QrcodeRef.current = null;
-                setShowCameraScanner(false);
-                setCameraStatus("idle");
-            });
+            // CONTINUOUS SCANNING: Do not close the modal!
+            // Wait 1.5 seconds, then unlock the scanner to allow the NEXT product to be scanned.
+            setTimeout(() => { 
+                isScanned = false; 
+            }, 1500);
         };
 
         qrCode.start(
             { facingMode: "environment" },   // back camera first
-            { fps: 10, qrbox: { width: 260, height: 160 }, aspectRatio: 1.333 },
+            { fps: 10, qrbox: { width: 320, height: 160 }, aspectRatio: 1.333 },
             onSuccess,
             () => {}   // ignore per-frame decode errors
         )
@@ -224,7 +235,7 @@ const CreateBilling = () => {
             // Fallback: try any available camera
             qrCode.start(
                 { facingMode: "user" },
-                { fps: 10, qrbox: { width: 260, height: 160 } },
+                { fps: 10, qrbox: { width: 320, height: 160 } },
                 onSuccess,
                 () => {}
             )
@@ -811,14 +822,37 @@ const CreateBilling = () => {
                             <h3 className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-slate-400"><FiLayers className="text-blue-500" /> Bill Items</h3>
                             <div className="overflow-x-auto min-h-[250px]">
                                 <table className="w-full text-left text-xs">
-                                    <thead className="text-slate-400 border-b border-gray-100 uppercase font-black tracking-widest"><tr><th className="px-4 py-4">Product</th><th className="px-4 py-4">Weight</th><th className="px-4 py-4">Price</th><th className="px-4 py-4 w-20">Qty</th><th className="px-4 py-4 text-right">Total</th><th className="px-4 py-4"></th></tr></thead>
+                                    <thead className="text-slate-400 border-b border-gray-100 uppercase font-black tracking-widest">
+                                        <tr>
+                                            <th className="px-4 py-4 w-12 text-center">#</th>
+                                            <th className="px-4 py-4">Product</th>
+                                            <th className="px-4 py-4">Weight</th>
+                                            <th className="px-4 py-4">Price</th>
+                                            <th className="px-4 py-4 w-20">Qty</th>
+                                            <th className="px-4 py-4 text-right">Total</th>
+                                            <th className="px-4 py-4"></th>
+                                        </tr>
+                                    </thead>
                                     <tbody className="divide-y divide-gray-50">
-                                        {formData.items.length === 0 ? (<tr><td colSpan={6} className="py-20 text-center opacity-30 font-black uppercase tracking-widest text-slate-500">No Items Added</td></tr>) : formData.items.map((item, i) => {
+                                        {formData.items.length === 0 ? (
+                                            <tr><td colSpan={7} className="py-20 text-center opacity-30 font-black uppercase tracking-widest text-slate-500">No Items Added</td></tr>
+                                        ) : formData.items.map((item, i) => {
                                             const product = products.find(p => p.id === item.product_id);
                                             const hasVariants = product && product.variants && product.variants.length > 0;
                                             return (
                                             <tr key={item.id} className="hover:bg-blue-50/50 transition-colors group">
-                                                <td className="px-4 py-4"><p className="font-bold text-slate-800 leading-none">{product ? product.name : item.name}</p></td>
+                                                <td className="px-4 py-4 text-center font-black text-slate-400">{i + 1}</td>
+                                                <td className="px-4 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center p-1 overflow-hidden shrink-0 shadow-sm">
+                                                            <img src={getProductImage(product)} alt="" className="w-full h-full object-contain" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-slate-800 leading-tight">{product ? product.name : item.name}</p>
+                                                            {product && <p className="text-[9px] font-black text-gray-400 mt-0.5 uppercase tracking-widest">{product.product_code}</p>}
+                                                        </div>
+                                                    </div>
+                                                </td>
                                                 <td className="px-4 py-4">
                                                     {hasVariants ? (
                                                         <select
@@ -930,7 +964,7 @@ const CreateBilling = () => {
 
             {showCameraScanner && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
-                    <div className="bg-white rounded-[2rem] w-full max-w-md overflow-hidden shadow-2xl">
+                    <div className="bg-white rounded-[2rem] w-full max-w-xl overflow-hidden shadow-2xl">
 
                         {/* Header */}
                         <div className="px-5 py-4 bg-gradient-to-r from-blue-700 to-blue-500 flex justify-between items-center">
@@ -961,14 +995,9 @@ const CreateBilling = () => {
                             {/* Scanning animation overlay (shown while active) */}
                             {cameraStatus === "active" && (
                                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                                    <div className="relative w-56 h-36">
-                                        {/* Corner brackets */}
-                                        <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-blue-400 rounded-tl-md" />
-                                        <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-blue-400 rounded-tr-md" />
-                                        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-blue-400 rounded-bl-md" />
-                                        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-blue-400 rounded-br-md" />
-                                        {/* Scanning line animation */}
-                                        <div className="absolute left-1 right-1 h-0.5 bg-blue-400 opacity-80 animate-bounce" style={{ top: "50%" }} />
+                                    <div className="relative w-[320px] h-[160px]">
+                                        {/* Scanning line animation only (corners are handled natively by html5-qrcode) */}
+                                        <div className="absolute left-1 right-1 h-0.5 bg-blue-400 opacity-80 animate-bounce shadow-[0_0_8px_rgba(59,130,246,0.8)]" style={{ top: "50%" }} />
                                     </div>
                                 </div>
                             )}
