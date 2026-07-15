@@ -202,23 +202,29 @@ const createOrder = async (req, res) => {
                         // Use the actual numeric id from DB for subsequent updates
                         const dbNumericId = prod.id;
                         let updatedPricingOptions = prod.pricing_options;
+
+                        // Determine consumption based on variant_info if present, otherwise fallback to quantity
                         const consumedStock = calculateStockConsumptionInBaseUnits(
                             item.variant_info?.weight || item.variant_info?.quantity || item.variant_size || item.size || null,
                             item.variant_info?.unit || item.variant_info?.measurementUnit || item.variant_unit || null,
                             item.quantity
                         );
 
-                        // Detect combo products by product_code prefix 'SPMC' (combo codes start with SPMC...)
-                        const productCode = String(prod.product_code || prod.product_code || '').trim().toUpperCase();
-                        const isComboProduct = productCode.startsWith('SPMC');
+                        // When no variant information exists, consume by quantity directly
+                        const finalConsumedStock = consumedStock > 0 ? consumedStock : (parseFloat(item.quantity) || 0);
 
-                        // If product is a combo, only deduct from product.total_stock and skip per-variant pricing option updates
+                        // Detect combo products by type or product_code prefix 'SPMC'
+                        const productCode = String(prod.product_code || '').trim().toUpperCase();
+                        const isComboProduct = productCode.startsWith('SPMC') || String(prod.type || '').trim() === '1';
+
+                        // If product is a combo, deduct from total_stock and keep stock_quantity in sync if present
                         if (isComboProduct) {
                             await connection.query(
                                 `UPDATE products 
-                                 SET total_stock = GREATEST(0, IFNULL(total_stock, 0) - ?)
+                                 SET total_stock = GREATEST(0, IFNULL(total_stock, 0) - ?),
+                                     stock_quantity = GREATEST(0, IFNULL(stock_quantity, 0) - ?)
                                  WHERE id = ?`,
-                                [consumedStock, dbNumericId]
+                                [finalConsumedStock, finalConsumedStock, dbNumericId]
                             );
                         } else {
                             // Parse and update variant stock if needed
