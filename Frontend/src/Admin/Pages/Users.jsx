@@ -117,8 +117,8 @@ const Users = ({ initialTab = "All" }) => {
                 name: u.username || u.name || u.user_id,
                 email: u.email || "",
                 phone: u.phone || "",
-                role: u.role ? u.role.toLowerCase() : 'user',
-                status: u.status ? u.status.charAt(0).toUpperCase() + u.status.slice(1).toLowerCase() : 'Active',
+                role: String(u.role || 'user').toLowerCase(),
+                status: String(u.status || 'Active').charAt(0).toUpperCase() + String(u.status || 'Active').slice(1).toLowerCase(),
                 joined: u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A',
                 rawCreated_at: u.created_at,
                 avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username || u.name || 'User')}&background=random`
@@ -151,10 +151,10 @@ const Users = ({ initialTab = "All" }) => {
         setSubmitLoading(true);
         try {
             if (isEditing) {
-                await api.put(`/auth/users/${editUserId}`, { ...formData, role: formData.role.toLowerCase() });
+                await api.put(`/auth/users/${editUserId}`, { ...formData, role: String(formData.role || 'user').toLowerCase() });
                 toast.success("User updated successfully!");
             } else {
-                await api.post("/auth/register", { ...formData, role: formData.role.toLowerCase() });
+                await api.post("/auth/register", { ...formData, role: String(formData.role || 'user').toLowerCase() });
                 toast.success("User registered successfully!");
             }
             setIsModalOpen(false);
@@ -189,8 +189,8 @@ const Users = ({ initialTab = "All" }) => {
                 email: user.email,
                 phone: user.phone || ""
             };
-            await api.put(`/auth/users/${id}`, { ...payload, role: newRole.toLowerCase() });
-            toast.success(`Role updated to ${newRole.toLowerCase()}`);
+            await api.put(`/auth/users/${id}`, { ...payload, role: String(newRole || 'user').toLowerCase() });
+            toast.success(`Role updated to ${String(newRole || 'user').toLowerCase()}`);
             fetchUsers(true);
         } catch (error) {
             toast.error("Failed to update role");
@@ -199,7 +199,7 @@ const Users = ({ initialTab = "All" }) => {
 
     const handleToggleStatus = async (user) => {
         try {
-            const newStatus = user.status?.toLowerCase() === "active" ? "inactive" : "active";
+            const newStatus = String(user?.status || "active").toLowerCase() === "active" ? "inactive" : "active";
             const payload = {
                 username: user.username || user.name,
                 name: user.name,
@@ -248,14 +248,14 @@ const Users = ({ initialTab = "All" }) => {
     };
 
     const filteredUsers = users.filter(user => {
+        const query = String(searchTerm || "").toLowerCase();
         const matchesSearch =
-            (user.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (user.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (user.phone || "").toLowerCase().includes(searchTerm.toLowerCase());
+            String(user?.name || "").toLowerCase().includes(query) ||
+            String(user?.email || "").toLowerCase().includes(query) ||
+            String(user?.phone || "").toLowerCase().includes(query);
 
         const matchesTab = selectedTab === "All" || (selectedTab === "New" && isToday(user.rawCreated_at));
-        const matchesRole = selectedRole === "all" || (user.role && user.role.toLowerCase() === selectedRole.toLowerCase());
-
+        const matchesRole = selectedRole === "all" || String(user?.role || "").toLowerCase() === String(selectedRole || "").toLowerCase();
         return matchesSearch && matchesTab && matchesRole;
     });
 

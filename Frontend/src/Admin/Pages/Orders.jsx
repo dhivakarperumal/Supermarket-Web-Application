@@ -119,11 +119,12 @@ const Orders = ({ statusFilter = "All", dateFilter = "All" }) => {
     };
 
     const filteredOrders = orders.filter(order => {
+        const query = String(searchTerm || "").toLowerCase();
         const matchesSearch =
-            order.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            order.customer_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            order.user_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            order.id?.toString().includes(searchTerm);
+            String(order?.customer_name || "").toLowerCase().includes(query) ||
+            String(order?.customer_email || "").toLowerCase().includes(query) ||
+            String(order?.user_id || "").toLowerCase().includes(query) ||
+            String(order?.id || "").includes(searchTerm);
             
         let matchesDate = true;
         if (dateFilter === "today") {

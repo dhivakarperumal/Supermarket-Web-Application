@@ -145,18 +145,20 @@ const CreateOrder = () => {
     };
 
     const filteredProducts = products.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(productSearchTerm.toLowerCase()) ||
-            p.product_code?.toLowerCase().includes(productSearchTerm.toLowerCase());
+        const search = String(productSearchTerm || "").toLowerCase();
+        const matchesSearch = String(p?.name || "").toLowerCase().includes(search) ||
+            String(p?.product_code || "").toLowerCase().includes(search);
         const matchesCategory = !selectedCategory || p.category === selectedCategory.name;
         return matchesSearch && matchesCategory;
     });
 
-    const filteredUsers = users.filter(u =>
-        u.name?.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-        u.username?.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-        u.phone?.includes(userSearchTerm) ||
-        u.email?.toLowerCase().includes(userSearchTerm.toLowerCase())
-    );
+    const filteredUsers = users.filter(u => {
+        const search = String(userSearchTerm || "").toLowerCase();
+        return String(u?.name || "").toLowerCase().includes(search) ||
+            String(u?.username || "").toLowerCase().includes(search) ||
+            String(u?.phone || "").includes(userSearchTerm) ||
+            String(u?.email || "").toLowerCase().includes(search);
+    });
 
     const handleSelectUser = (user) => {
         setFormData(prev => ({
