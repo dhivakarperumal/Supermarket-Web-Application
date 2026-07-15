@@ -53,10 +53,8 @@ app.use((err, req, res, next) => {
 
 // Test Route
 app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "Backend Server is Running 🚀",
-  });
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.send("<h1>Backend Server is Running 🚀</h1>");
 });
 
 
