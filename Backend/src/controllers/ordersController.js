@@ -1,5 +1,6 @@
 const { getPool } = require("../config/db");
 const crypto = require("crypto");
+const { calculateStockConsumptionInBaseUnits } = require("./stockUtils");
 
 const initOrdersTable = async () => {
     const pool = getPool();
@@ -195,6 +196,11 @@ const createOrder = async (req, res) => {
                     if (prodRows.length > 0) {
                         const prod = prodRows[0];
                         let updatedPricingOptions = prod.pricing_options;
+                        const consumedStock = calculateStockConsumptionInBaseUnits(
+                            item.variant_info?.weight || item.variant_info?.quantity || item.variant_size || null,
+                            item.variant_info?.unit || item.variant_info?.measurementUnit || item.variant_unit || null,
+                            item.quantity
+                        );
 
                         // Parse and update variant stock if needed
                         if (item.variant_info && prod.pricing_options) {
@@ -204,11 +210,11 @@ const createOrder = async (req, res) => {
                                     for (let opt of options) {
                                         const optWeight = String(opt.weight_volume || opt.quantity || "").trim().toLowerCase();
                                         const optUnit = String(opt.unit || "").trim().toLowerCase();
-                                        const itemWeight = String(item.variant_info.weight || "").trim().toLowerCase();
-                                        const itemUnit = String(item.variant_info.unit || "").trim().toLowerCase();
+                                        const itemWeight = String(item.variant_info?.weight || item.variant_info?.quantity || "").trim().toLowerCase();
+                                        const itemUnit = String(item.variant_info?.unit || item.variant_info?.measurementUnit || "").trim().toLowerCase();
 
                                         if (optWeight === itemWeight && optUnit === itemUnit) {
-                                            opt.stock_quantity = Math.max(0, (parseFloat(opt.stock_quantity) || 0) - item.quantity);
+                                            opt.stock_quantity = Math.max(0, (parseFloat(opt.stock_quantity) || 0) - consumedStock);
                                             break;
                                         }
                                     }
@@ -227,7 +233,7 @@ const createOrder = async (req, res) => {
                                  stock_quantity = GREATEST(0, IFNULL(stock_quantity, 0) - ?),
                                  pricing_options = ?
                              WHERE id = ?`,
-                            [item.quantity, item.quantity, optionsString, pId]
+                            [consumedStock, consumedStock, optionsString, pId]
                         );
                     }
                 }
