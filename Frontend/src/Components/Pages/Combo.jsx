@@ -214,9 +214,9 @@ const Combo = () => {
                     <div className="flex justify-between items-start gap-2">
                       <Link to={`/products/${combo.id}`} className="flex-1">
                         <h2
-                        onClick={() => navigate(`/products/${combo.id}`)}
-                        className="text-lg font-bold text-gray-800 line-clamp-2 hover:text-[#0e6827] transition-colors cursor-pointer hover:text-[#0e6827]"
-                      >
+                          onClick={() => navigate(`/products/${combo.id}`)}
+                          className="text-lg font-bold text-gray-800 line-clamp-2 hover:text-[#0e6827] transition-colors cursor-pointer hover:text-[#0e6827]"
+                        >
                           {combo.name}
                         </h2>
                       </Link>
@@ -296,13 +296,12 @@ const Combo = () => {
                       >
                         Add to Cart
                       </button>
-                      <button
-                        onClick={() => setQuickViewProduct(combo)}
+                      <Link to={`/products/${combo.id}`}
                         className="flex items-center justify-center gap-1.5 border-2 border-[#0e6827] text-[#0e6827] hover:bg-[#0e6827] hover:text-white px-4 py-3 rounded-xl font-bold transition text-sm cursor-pointer"
                       >
                         <Eye size={16} />
                         View
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
