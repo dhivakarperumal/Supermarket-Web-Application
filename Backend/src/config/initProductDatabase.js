@@ -41,6 +41,7 @@ const createProductTable = async () => {
         rating DECIMAL(3,2) DEFAULT 5,
         review_count INT DEFAULT 0,
         combo_items JSON,
+        type INT DEFAULT 0,
         created_by CHAR(36) DEFAULT NULL,
         updated_by CHAR(36) DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -75,6 +76,7 @@ const createProductTable = async () => {
     }
 
     const alterColumns = [
+      "ALTER TABLE products ADD COLUMN IF NOT EXISTS type INT DEFAULT 0",
       "ALTER TABLE products ADD COLUMN IF NOT EXISTS product_id CHAR(36) UNIQUE",
       "ALTER TABLE products ADD COLUMN IF NOT EXISTS created_by CHAR(36) DEFAULT NULL",
       "ALTER TABLE products ADD COLUMN IF NOT EXISTS updated_by CHAR(36) DEFAULT NULL"

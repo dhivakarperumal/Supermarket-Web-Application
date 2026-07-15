@@ -60,9 +60,9 @@ const createProduct = async (req, res) => {
           product_id, name, product_code, barcode, barcode_image, category, category_id, subcategory, brand, description,
           mrp, selling_price, offer, offer_price, stock_quantity, pricing_options, total_stock,
           expiry_date, manufacturing_date, country_of_origin, supplier, product_images, thumbnail_image,
-          status, featured_product, best_seller, todays_deal, delivery_time, return_available, rating, review_count, combo_items,
+          status, featured_product, best_seller, todays_deal, delivery_time, return_available, rating, review_count, combo_items, type,
           created_by, updated_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           product_id,
           data.name,
@@ -96,6 +96,7 @@ const createProduct = async (req, res) => {
           data.rating || 5,
           data.review_count || 0,
           JSON.stringify(Array.isArray(data.combo_items) ? data.combo_items : []),
+          data.type || 0,
           created_by,
           updated_by
         ]
@@ -293,7 +294,7 @@ const updateProduct = async (req, res) => {
           name = ?, product_code = ?, barcode = ?, barcode_image = ?, category = ?, category_id = ?, subcategory = ?, brand = ?, description = ?,
           mrp = ?, selling_price = ?, offer = ?, offer_price = ?, stock_quantity = ?, pricing_options = ?, total_stock = ?,
           expiry_date = ?, manufacturing_date = ?, country_of_origin = ?, supplier = ?, product_images = ?, thumbnail_image = ?,
-          status = ?, featured_product = ?, best_seller = ?, todays_deal = ?, delivery_time = ?, return_available = ?, rating = ?, review_count = ?, combo_items = ?,
+          status = ?, featured_product = ?, best_seller = ?, todays_deal = ?, delivery_time = ?, return_available = ?, rating = ?, review_count = ?, combo_items = ?, type = ?,
           updated_by = ?, updated_at = NOW() 
         WHERE id = ?`,
         [
@@ -328,6 +329,7 @@ const updateProduct = async (req, res) => {
           data.rating || 5,
           data.review_count || 0,
           JSON.stringify(Array.isArray(data.combo_items) ? data.combo_items : parseJsonField(existingRows[0].combo_items)),
+          data.type !== undefined ? data.type : existingRows[0].type,
           updated_by,
           id
         ]

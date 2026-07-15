@@ -67,13 +67,7 @@ const getImage = (product) => {
 };
 
 const isCombo = (p) => {
-  const code = String(p.product_code || "").toUpperCase();
-  return (
-    code.startsWith("SPMC") ||
-    p.category?.toLowerCase() === "combo" ||
-    p.category?.toLowerCase() === "combos" ||
-    p.is_combo === true
-  );
+  return String(p.type) === "1";
 };
 
 const CATEGORIES = ["All", "Rice", "Breakfast", "Cooking", "Healthy", "Snacks", "Family"];
@@ -181,21 +175,20 @@ const Combo = () => {
                   className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 group flex flex-col"
                 >
                   {/* Image */}
-                  <div
-                    className="relative flex-shrink-0 cursor-pointer"
-                    onClick={() => navigate(`/products/${combo.id}`)}
-                  >
-                    <img
-                      src={imgSrc}
-                      alt={combo.name}
-                      className="h-64 w-full object-cover group-hover:scale-105 transition duration-500"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          combo.name || "Combo"
-                        )}&background=d1fae5&color=065f46&size=400`;
-                      }}
-                    />
+                  <div className="relative flex-shrink-0">
+                    <Link to={`/products/${combo.id}`}>
+                      <img
+                        src={imgSrc}
+                        alt={combo.name}
+                        className="h-64 w-full object-cover group-hover:scale-105 transition duration-500"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            combo.name || "Combo"
+                          )}&background=d1fae5&color=065f46&size=400`;
+                        }}
+                      />
+                    </Link>
                     {discountPct > 0 && (
                       <span className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
                         {discountPct}% OFF
@@ -219,12 +212,14 @@ const Combo = () => {
                   <div className="p-6 flex flex-col flex-1">
                     {/* Title + Rating */}
                     <div className="flex justify-between items-start gap-2">
-                      <h2
+                      <Link to={`/products/${combo.id}`} className="flex-1">
+                        <h2
                         onClick={() => navigate(`/products/${combo.id}`)}
-                        className="text-lg font-bold text-gray-800 line-clamp-2 flex-1 cursor-pointer hover:text-[#0e6827]"
+                        className="text-lg font-bold text-gray-800 line-clamp-2 hover:text-[#0e6827] transition-colors cursor-pointer hover:text-[#0e6827]"
                       >
-                        {combo.name}
-                      </h2>
+                          {combo.name}
+                        </h2>
+                      </Link>
                       <div className="flex items-center gap-1 text-yellow-500 font-semibold shrink-0">
                         <Star size={14} fill="currentColor" />
                         <span className="text-sm">{combo.rating || "4.5"}</span>
@@ -300,6 +295,13 @@ const Combo = () => {
                         className="flex-1 bg-[#0e6827] hover:bg-[#168637] text-white rounded-xl font-bold"
                       >
                         Add to Cart
+                      </button>
+                      <button
+                        onClick={() => setQuickViewProduct(combo)}
+                        className="flex items-center justify-center gap-1.5 border-2 border-[#0e6827] text-[#0e6827] hover:bg-[#0e6827] hover:text-white px-4 py-3 rounded-xl font-bold transition text-sm cursor-pointer"
+                      >
+                        <Eye size={16} />
+                        View
                       </button>
                     </div>
                   </div>
