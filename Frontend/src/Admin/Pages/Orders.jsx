@@ -267,12 +267,12 @@ const Orders = ({ statusFilter = "All", dateFilter = "All" }) => {
                     ) : (
                         <table className="w-full text-left border-collapse whitespace-nowrap">
                             <thead>
-                                <tr className="bg-gray-50/50 border-b border-gray-100">
-                                    <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Order</th>
-                                    <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
-                                    <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Payment</th>
-                                    <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
+                                <tr className="bg-[#1b7f29] border-b border-gray-100">
+                                    <th className="px-5 py-4 text-xs font-semibold text-white uppercase tracking-wider">Order</th>
+                                    <th className="px-5 py-4 text-xs font-semibold text-white uppercase tracking-wider">Customer</th>
+                                    <th className="px-5 py-4 text-xs font-semibold text-white uppercase tracking-wider">Status</th>
+                                    <th className="px-5 py-4 text-xs font-semibold text-white uppercase tracking-wider">Payment</th>
+                                    <th className="px-5 py-4 text-xs font-semibold text-white uppercase tracking-wider">Total</th>
                                     <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
                                 </tr>
                             </thead>

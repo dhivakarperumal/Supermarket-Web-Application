@@ -404,12 +404,12 @@ const StockDetails = () => {
                     ) : (
                         <table className="w-full text-left border-collapse block md:table">
                             <thead className="hidden md:table-header-group">
-                                <tr className="bg-gray-50/50">
-                                    <th className="px-8 py-4 text-xs font-black text-gray-400 uppercase tracking-widest leading-none">Product</th>
-                                    <th className="px-8 py-4 text-xs font-black text-gray-400 uppercase tracking-widest leading-none">Category</th>
-                                    <th className="px-8 py-4 text-xs font-black text-gray-400 uppercase tracking-widest leading-none">Current Stock</th>
-                                    <th className="px-8 py-4 text-xs font-black text-gray-400 uppercase tracking-widest leading-none">Status</th>
-                                    <th className="px-8 py-4 text-xs font-black text-gray-400 uppercase tracking-widest leading-none text-right">Actions</th>
+                                <tr className="bg-[#1b7f29]">
+                                    <th className="px-8 py-4 text-xs text-white uppercase tracking-widest leading-none">Product</th>
+                                    <th className="px-8 py-4 text-xs text-white uppercase tracking-widest leading-none">Category</th>
+                                    <th className="px-8 py-4 text-xs text-white uppercase tracking-widest leading-none">Current Stock</th>
+                                    <th className="px-8 py-4 text-xs text-white uppercase tracking-widest leading-none">Status</th>
+                                    <th className="px-8 py-4 text-xs text-white uppercase tracking-widest leading-none text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="block md:table-row-group divide-y divide-gray-50 px-3 py-4 md:p-0">
