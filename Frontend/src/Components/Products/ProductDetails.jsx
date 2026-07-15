@@ -138,15 +138,7 @@ const ProductDetails = () => {
 
   const isComboProduct = (item) => {
     if (!item) return false;
-    const category = String(item.category || '').trim().toLowerCase();
-    return (
-      category === 'combo' ||
-      category === 'combos' ||
-      category === 'combo product' ||
-      category === 'combo products' ||
-      item.is_combo === true ||
-      getComboItems(item.combo_items).length > 0
-    );
+    return String(item.type) === "1";
   };
 
   const getDisplayImages = (data, variant) => {

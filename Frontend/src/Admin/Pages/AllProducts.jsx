@@ -54,11 +54,7 @@ const AllProducts = () => {
     const [stats, setStats] = useState(pageData?.stats || { total: 0, active: 0, lowStock: 0, outOfStock: 0, combos: 0 });
 
     const isCombo = (p) => {
-        const code = String(p.product_code || '').toUpperCase();
-        return code.startsWith('SPMC') ||
-               p.category?.toLowerCase() === 'combo' ||
-               p.category?.toLowerCase() === 'combos' ||
-               p.is_combo === true;
+        return String(p.type) === "1";
     };
 
     // Rapid Add Modal
