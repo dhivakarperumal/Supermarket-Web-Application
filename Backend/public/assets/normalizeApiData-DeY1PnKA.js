@@ -1,1 +1,0 @@
-var e=e=>{if(Array.isArray(e))return e;if(!e||typeof e!=`object`)return[];let t=[e.data,e.items,e.result,e.products,e.categories,e.users,e.orders,e.coupons,e.suppliers,e.purchases,e.payments,e.returns,e.rows];for(let e of t)if(Array.isArray(e))return e;return[]};export{e as t};
