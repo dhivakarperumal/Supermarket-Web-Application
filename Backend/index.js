@@ -4,6 +4,8 @@ const dotenv = require("dotenv");
 const fileUpload = require("express-fileupload");
 const fs = require("fs");
 const path = require("path");
+const jwt = require("jsonwebtoken");
+const als = require("./src/config/context");
 const { initDatabase } = require("./src/config/db");
 const authRouter = require("./src/routers/authRouter");
 const categoriesRouter = require("./src/routers/categoriesRouter");
@@ -31,31 +33,89 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Request logging for debugging
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+const allowedOrigins = [
+  "https://supermarket.qtechx.com",
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      try {
+        const url = new URL(origin);
+        const isLocalhost = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+        if (isLocalhost) return callback(null, origin);
+      } catch (err) {
+        return callback(new Error("Not allowed by CORS"));
+      }
+      if (allowedOrigins.includes(origin)) return callback(null, origin);
+      callback(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-access-token", "x-user-id"],
+    credentials: true,
+  })
+);
+
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
-app.use(fileUpload({
-  limits: { fileSize: 500 * 1024 * 1024 }, // 500MB
-}));
+app.use(
+  fileUpload({
+    limits: { fileSize: 500 * 1024 * 1024 }, // 500MB
+  })
+);
 
 // Serve static files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-const frontendPublicPath = path.join(__dirname, "public");
-const frontendIndexPath = path.join(frontendPublicPath, "index.html");
-const shouldServeFrontend = process.env.NODE_ENV === "production" || process.env.SERVE_FRONTEND === "true";
+// Global Context Middleware for tracking created_by / updated_by
+app.use((req, res, next) => {
+  let user = null;
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.substring(7);
+    try {
+      user = jwt.verify(token, process.env.JWT_SECRET || "supersecretkey");
+    } catch (err) {
+      // Ignore invalid token and continue without user context
+    }
+  }
 
-if (shouldServeFrontend && fs.existsSync(frontendPublicPath)) {
-  app.use(express.static(frontendPublicPath));
-  app.get(["/", "/index.html"], (req, res) => {
+  als.run(new Map([["user", user]]), () => {
+    next();
+  });
+});
+
+// Health check
+app.get("/api/health", (req, res) => {
+  res.json({ ok: true });
+});
+
+const frontendPublicPath = path.join(__dirname, "public");
+const frontendDistPath = path.join(__dirname, "..", "Frontend", "dist");
+const frontendPath = fs.existsSync(frontendPublicPath)
+  ? frontendPublicPath
+  : fs.existsSync(frontendDistPath)
+  ? frontendDistPath
+  : null;
+
+if (frontendPath) {
+  const frontendIndexPath = path.join(frontendPath, "index.html");
+  app.use(express.static(frontendPath));
+  console.log(`Serving frontend from ${frontendPath}`);
+
+  app.get("/index.html", (req, res) => {
     res.sendFile(frontendIndexPath);
   });
-  app.get(/^(?!\/api\/).*/, (req, res, next) => {
-    if (req.path.startsWith("/uploads/")) return next();
-    res.sendFile(frontendIndexPath, (err) => {
-      if (err) next(err);
-    });
+
+  app.get(/^(?!\/api\/|\/uploads\/|\/assets\/|\/images\/|\/favicon\.ico$|\/logo(?:1)?\.png$|\/robots\.txt$|\/manifest\.json$).*/, (req, res) => {
+    res.sendFile(frontendIndexPath);
   });
 }
 
@@ -97,6 +157,13 @@ app.use("/api/leave", leaveRouter);
 app.use("/api/salary", salaryRouter);
 app.use("/api/purchases", purchaseRouter);
 app.use("/api/settings", settingsRouter);
+
+if (frontendPath) {
+  const frontendIndexPath = path.join(frontendPath, "index.html");
+  app.get(/^(?!\/api\/|\/uploads\/|\/health$).*/, (req, res) => {
+    res.sendFile(frontendIndexPath);
+  });
+}
 
 // Port
 const PORT = process.env.PORT || 5000;
