@@ -160,7 +160,7 @@ const Shop = ({ defaultCategory = "" }) => {
 
   /* -------- UNIQUE FILTER DATA -------- */
 
-  const categories = [...new Set(products.map((p) => p.category))];
+  const categories = [...new Set(products.map((p) => p.category))].filter(Boolean);
 
   const subCategories = [
     ...new Set(
@@ -168,7 +168,7 @@ const Shop = ({ defaultCategory = "" }) => {
         .filter((p) => p.category === selectedCategory)
         .map((p) => p.subcategory),
     ),
-  ];
+  ].filter(Boolean);
 
   const colors = selectedCategory
     ? [
@@ -177,7 +177,7 @@ const Shop = ({ defaultCategory = "" }) => {
           .filter((p) => p.category === selectedCategory)
           .flatMap((p) => p.variants?.map((v) => v.colorName)),
       ),
-    ]
+    ].filter(Boolean)
     : [];
 
   const sizes = selectedCategory
@@ -187,8 +187,9 @@ const Shop = ({ defaultCategory = "" }) => {
           .filter((p) => p.category === selectedCategory)
           .flatMap((p) => p.variants?.flatMap((v) => v.selectedSizes || [])),
       ),
-    ]
+    ].filter(Boolean)
     : [];
+
 
   const clearFilters = () => {
     setSelectedCategory("");
@@ -485,8 +486,8 @@ const Shop = ({ defaultCategory = "" }) => {
               }`}
           >
             {currentProducts.length > 0 ? (
-              currentProducts.map((product) => (
-                <ProductCard key={product._id} product={product} />
+              currentProducts.map((product, index) => (
+                <ProductCard key={product._id ?? product.id ?? index} product={product} />
               ))
             ) : (
               <p>No products found</p>

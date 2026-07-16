@@ -97,6 +97,12 @@ app.get("/api/health", (req, res) => {
   res.json({ ok: true });
 });
 
+// Test Route
+app.get("/health", (req, res) => {
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.send("<h1>Backend Server is Running 🚀</h1>");
+});
+
 const frontendPublicPath = path.join(__dirname, "public");
 const frontendDistPath = path.join(__dirname, "..", "Frontend", "dist");
 const frontendPath = fs.existsSync(frontendPublicPath)
@@ -105,18 +111,10 @@ const frontendPath = fs.existsSync(frontendPublicPath)
   ? frontendDistPath
   : null;
 
+// Serve frontend static assets (JS, CSS, images) — must come before API routes
 if (frontendPath) {
-  const frontendIndexPath = path.join(frontendPath, "index.html");
   app.use(express.static(frontendPath));
   console.log(`Serving frontend from ${frontendPath}`);
-
-  app.get("/index.html", (req, res) => {
-    res.sendFile(frontendIndexPath);
-  });
-
-  app.get(/^(?!\/api\/|\/uploads\/|\/assets\/|\/images\/|\/favicon\.ico$|\/logo(?:1)?\.png$|\/robots\.txt$|\/manifest\.json$).*/, (req, res) => {
-    res.sendFile(frontendIndexPath);
-  });
 }
 
 app.use((err, req, res, next) => {
@@ -127,12 +125,6 @@ app.use((err, req, res, next) => {
     });
   }
   next(err);
-});
-
-// Test Route
-app.get("/health", (req, res) => {
-  res.setHeader("Content-Type", "text/html; charset=utf-8");
-  res.send("<h1>Backend Server is Running 🚀</h1>");
 });
 
 app.use("/api/auth", authRouter);
@@ -158,6 +150,7 @@ app.use("/api/salary", salaryRouter);
 app.use("/api/purchases", purchaseRouter);
 app.use("/api/settings", settingsRouter);
 
+// SPA catch-all — MUST be after all API routes so React Router handles unknown paths
 if (frontendPath) {
   const frontendIndexPath = path.join(frontendPath, "index.html");
   app.get(/^(?!\/api\/|\/uploads\/|\/health$).*/, (req, res) => {
