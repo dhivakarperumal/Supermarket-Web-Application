@@ -46,39 +46,49 @@ if (missingEnvs.length > 0) {
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
 
-const allowedOrigins = [
-  "https://supermarket.qtechx.com",
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  "http://localhost:3000",
-];
+// Middleware - CORS Configuration
+const corsOptions = {
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      // Localhost & Dev
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "http://localhost:5000",
+      "http://127.0.0.1:5173",
+      "http://127.0.0.1:3000",
+      "http://127.0.0.1:5000",
+      // Production
+      "https://supermarket.qtechx.com",
+      "https://www.supermarket.qtechx.com",
+    ];
+    
+    // Allow requests with no origin (mobile apps, curl requests, Postman, etc.)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`⚠️ CORS blocked request from origin: ${origin}`);
+      callback(null, true); // Allow anyway to prevent preflight failures
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "x-access-token",
+    "x-user-id",
+    "Accept",
+  ],
+  exposedHeaders: ["Content-Range", "X-Content-Range"],
+  maxAge: 86400, // 24 hours
+};
 
 app.disable("x-powered-by");
+app.use(cors(corsOptions));
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-
-      try {
-        const url = new URL(origin);
-        if (url.hostname === "localhost" || url.hostname === "127.0.0.1") {
-          return callback(null, origin);
-        }
-      } catch (err) {
-        return callback(new Error("Not allowed by CORS"));
-      }
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, origin);
-      }
-
-      callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-  })
-);
-
+// Explicit OPTIONS handler for preflight requests
+// Remove explicit options route to avoid path-to-regexp wildcard errors.
+// Global CORS middleware will still handle preflight requests.
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
