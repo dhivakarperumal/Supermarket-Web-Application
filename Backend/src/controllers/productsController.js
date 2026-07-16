@@ -1,5 +1,5 @@
- const { getPool, getLargePacketConnection } = require("../config/db");
-const { createProductTable } = require("../config/initProductDatabase");
+const { getPool, getLargePacketConnection } = require("../config/db");
+const { createProductTable } = require("../config/initDatabase");
 const crypto = require("crypto");
 
 const parseJsonField = (value) => {

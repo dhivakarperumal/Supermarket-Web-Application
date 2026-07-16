@@ -1,5 +1,5 @@
 const { getPool, getLargePacketConnection } = require("../config/db");
-const { createCategoryTable } = require("../config/initCategoryDatabase");
+const { createCategoryTable } = require("../config/initDatabase");
 const crypto = require("crypto");
 
 const parseJsonField = (value) => {
