@@ -101,12 +101,21 @@ const createReceiptSettingsTable = async (connection) => {
       ADD COLUMN IF NOT EXISTS receipt_id VARCHAR(36) DEFAULT NULL,
       MODIFY COLUMN store_logo LONGTEXT DEFAULT NULL
     `);
-    
-    // Attempt to drop barcode_display if it exists
-    await connection.query(`
-      ALTER TABLE receipt_settings
-      DROP COLUMN barcode_display
+
+    const [columnRows] = await connection.query(`
+      SELECT COUNT(*) AS count
+      FROM information_schema.columns
+      WHERE table_schema = DATABASE()
+        AND table_name = 'receipt_settings'
+        AND column_name = 'barcode_display'
     `);
+
+    if (Number(columnRows?.[0]?.count) > 0) {
+      await connection.query(`
+        ALTER TABLE receipt_settings
+        DROP COLUMN barcode_display
+      `);
+    }
   } catch (err) {
     console.warn('receipt_settings alter skipped:', err?.message || err);
   }
