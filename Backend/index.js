@@ -5,7 +5,7 @@ const fileUpload = require("express-fileupload");
 const path = require("path");
 const fs = require("fs");
 
-const { initDatabase } = require("./src/config/db");
+const { initDatabase } = require("./src/config/initDatabase");
 
 const authRouter = require("./src/routers/authRouter");
 const categoriesRouter = require("./src/routers/categoriesRouter");
@@ -30,9 +30,21 @@ const salaryRouter = require("./src/routers/salaryRouter");
 const purchaseRouter = require("./src/routers/purchaseRoutes");
 const settingsRouter = require("./src/routers/settingsRouter");
 
-dotenv.config({ quiet: true });
+const result = dotenv.config();
+if (result.error) {
+  console.warn("Warning: .env file not found or could not be loaded.");
+}
+
+const missingEnvs = [];
+["DB_HOST", "DB_USER", "DB_NAME", "JWT_SECRET"].forEach((key) => {
+  if (!process.env[key]) missingEnvs.push(key);
+});
+if (missingEnvs.length > 0) {
+  console.warn(`Missing environment variables: ${missingEnvs.join(", ")}`);
+}
 
 const app = express();
+const PORT = Number(process.env.PORT) || 5000;
 
 const allowedOrigins = [
   "https://supermarket.qtechx.com",
@@ -41,6 +53,8 @@ const allowedOrigins = [
   "http://localhost:3000",
 ];
 
+app.disable("x-powered-by");
+
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -48,13 +62,10 @@ app.use(
 
       try {
         const url = new URL(origin);
-        if (
-          url.hostname === "localhost" ||
-          url.hostname === "127.0.0.1"
-        ) {
+        if (url.hostname === "localhost" || url.hostname === "127.0.0.1") {
           return callback(null, origin);
         }
-      } catch {
+      } catch (err) {
         return callback(new Error("Not allowed by CORS"));
       }
 
@@ -73,16 +84,16 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 app.use(
   fileUpload({
+    createParentPath: true,
     limits: {
       fileSize: 500 * 1024 * 1024,
     },
+    abortOnLimit: true,
   })
 );
 
-// Serve static backend uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Resolve frontend path
 const frontendPublicPath = path.join(__dirname, "public");
 const frontendDistPath = path.join(__dirname, "..", "Frontend", "dist");
 const frontendPath = fs.existsSync(frontendPublicPath)
@@ -91,17 +102,14 @@ const frontendPath = fs.existsSync(frontendPublicPath)
   ? frontendDistPath
   : null;
 
-// Serve frontend static assets (must come before API routes)
 if (frontendPath) {
   app.use(express.static(frontendPath));
 }
 
-// Health Check
 app.get("/api/health", (req, res) => {
-  res.json({ success: true });
+  res.json({ success: true, uptime: process.uptime(), env: process.env.NODE_ENV || "development" });
 });
 
-// Routes
 app.use("/api/auth", authRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/products", productsRouter);
@@ -125,7 +133,6 @@ app.use("/api/salary", salaryRouter);
 app.use("/api/purchases", purchaseRouter);
 app.use("/api/settings", settingsRouter);
 
-// SPA catch-all — MUST be after all API routes so React Router handles unknown paths
 if (frontendPath) {
   const frontendIndexPath = path.join(frontendPath, "index.html");
   app.get(/^(?!\/api\/|\/uploads\/|\/assets\/|\/images\/|\/favicon\.ico$|\/logo(?:1)?\.png$|\/robots\.txt$|\/manifest\.json$).*/, (req, res) => {
@@ -133,7 +140,6 @@ if (frontendPath) {
   });
 }
 
-// Invalid JSON Handler
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400) {
     return res.status(400).json({
@@ -141,21 +147,27 @@ app.use((err, req, res, next) => {
       message: "Invalid JSON payload",
     });
   }
-
   next(err);
 });
 
-const PORT = process.env.PORT || 5000;
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: "Endpoint not found" });
+});
 
 async function startServer() {
-  await initDatabase();
+  try {
+    await initDatabase();
+  } catch (error) {
+    console.error("Database initialization failed:", error);
+    process.exit(1);
+  }
 
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
   });
 }
 
-if (process.env.NODE_ENV !== "test") {
+if (require.main === module) {
   startServer();
 }
 

@@ -1,198 +1,53 @@
 const mysql = require("mysql2/promise");
+const { getPool } = require("./db");
+const { initPurchaseTables } = require("../controllers/purchaseController");
 
-const dbName = process.env.DB_NAME || "supermarket_db";
+const dbName = process.env.DB_NAME || process.env.MYSQL_DATABASE || process.env.DB_DATABASE || "supermarket_db";
+const shouldCreateDatabase = process.env.DB_ALLOW_DB_CREATE === "true";
 
-const createDeliveryChargesTable = async (connection) => {
-  await connection.query(`
-    CREATE TABLE IF NOT EXISTS delivery_charges (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      base_delivery_charge DECIMAL(10,2) DEFAULT 0.00,
-      free_delivery_minimum_order_amount DECIMAL(10,2) DEFAULT 0.00,
-      per_km_delivery_charge DECIMAL(10,2) DEFAULT 0.00,
-      maximum_delivery_distance DECIMAL(10,2) DEFAULT 0.00,
-      free_delivery_km DECIMAL(10,2) DEFAULT 0.00,
-      delivery_area_scope VARCHAR(50) DEFAULT 'City',
-      enable_express_delivery TINYINT(1) DEFAULT 0,
-      express_delivery_charge DECIMAL(10,2) DEFAULT 0.00,
-      estimated_delivery_time VARCHAR(100) DEFAULT '',
-      is_enabled TINYINT(1) DEFAULT 1,
-      created_by VARCHAR(36) DEFAULT NULL,
-      updated_by VARCHAR(36) DEFAULT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    )
-  `);
-
-  try {
-    await connection.query(`
-      ALTER TABLE delivery_charges
-      ADD COLUMN IF NOT EXISTS free_delivery_km DECIMAL(10,2) DEFAULT 0.00
-    `);
-  } catch (err) {
-    console.warn('delivery_charges free_delivery_km migration skipped:', err?.message || err);
-  }
-};
-
-const createStoreSettingsTable = async (connection) => {
-  await connection.query(`
-    CREATE TABLE IF NOT EXISTS store_settings (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      store_id VARCHAR(36) DEFAULT NULL,
-      store_name VARCHAR(255) DEFAULT NULL,
-      store_logo LONGTEXT DEFAULT NULL,
-      email VARCHAR(255) DEFAULT NULL,
-      phone VARCHAR(50) DEFAULT NULL,
-      address TEXT DEFAULT NULL,
-      city VARCHAR(100) DEFAULT NULL,
-      state VARCHAR(100) DEFAULT NULL,
-      country VARCHAR(100) DEFAULT NULL,
-      zip_code VARCHAR(20) DEFAULT NULL,
-      gstin VARCHAR(50) DEFAULT NULL,
-      fssai VARCHAR(50) DEFAULT NULL,
-      business_type VARCHAR(100) DEFAULT 'Supermarket',
-      timezone VARCHAR(100) DEFAULT 'Asia/Kolkata (IST)',
-      language VARCHAR(50) DEFAULT 'English',
-      currency VARCHAR(20) DEFAULT 'INR (₹)',
-      opening_time VARCHAR(10) DEFAULT '09:00',
-      closing_time VARCHAR(10) DEFAULT '21:00',
-      latitude VARCHAR(30) DEFAULT NULL,
-      longitude VARCHAR(30) DEFAULT NULL,
-      created_by VARCHAR(36) DEFAULT NULL,
-      updated_by VARCHAR(36) DEFAULT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    )
-  `);
-};
-
-
-const createReceiptSettingsTable = async (connection) => {
-  await connection.query(`
-    CREATE TABLE IF NOT EXISTS receipt_settings (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      store_name VARCHAR(255) DEFAULT NULL,
-      address TEXT DEFAULT NULL,
-      phone VARCHAR(50) DEFAULT NULL,
-      email VARCHAR(255) DEFAULT NULL,
-      gst VARCHAR(50) DEFAULT NULL,
-      fssai VARCHAR(50) DEFAULT NULL,
-      invoice_prefix VARCHAR(50) DEFAULT NULL,
-      invoice_format VARCHAR(50) DEFAULT NULL,
-      currency VARCHAR(10) DEFAULT NULL,
-      date_format VARCHAR(50) DEFAULT 'DD/MM/YYYY',
-      tax_display TINYINT(1) DEFAULT 1,
-      discount_display TINYINT(1) DEFAULT 1,
-      qr_code_display TINYINT(1) DEFAULT 1,
-      footer_message TEXT DEFAULT NULL,
-      thank_you_message TEXT DEFAULT NULL,
-      return_policy TEXT DEFAULT NULL,
-      store_logo LONGTEXT DEFAULT NULL,
-      receipt_id VARCHAR(36) DEFAULT NULL,
-      created_by VARCHAR(36) DEFAULT NULL,
-      updated_by VARCHAR(36) DEFAULT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    )
-  `);
-
-  try {
-    await connection.query(`
-      ALTER TABLE receipt_settings
-      ADD COLUMN IF NOT EXISTS receipt_id VARCHAR(36) DEFAULT NULL,
-      MODIFY COLUMN store_logo LONGTEXT DEFAULT NULL
-    `);
-
-    const [columnRows] = await connection.query(`
-      SELECT COUNT(*) AS count
-      FROM information_schema.columns
-      WHERE table_schema = DATABASE()
-        AND table_name = 'receipt_settings'
-        AND column_name = 'barcode_display'
-    `);
-
-    if (Number(columnRows?.[0]?.count) > 0) {
-      await connection.query(`
-        ALTER TABLE receipt_settings
-        DROP COLUMN barcode_display
-      `);
-    }
-  } catch (err) {
-    console.warn('receipt_settings alter skipped:', err?.message || err);
-  }
-};
-
-const createPaymentIntegrationTable = async (connection) => {
-  await connection.query(`
-    CREATE TABLE IF NOT EXISTS payment_integration (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      payment_id VARCHAR(36) UNIQUE NOT NULL,
-      primary_gateway VARCHAR(100) DEFAULT NULL,
-      cash_support TINYINT(1) DEFAULT 1,
-      online_payment_support TINYINT(1) DEFAULT 1,
-      upi_support TINYINT(1) DEFAULT 1,
-      upi_id VARCHAR(255) DEFAULT NULL,
-      credit_debit_card TINYINT(1) DEFAULT 1,
-      payment_type VARCHAR(50) DEFAULT 'upi',
-      razorpay_enabled TINYINT(1) DEFAULT 1,
-      razorpay_key VARCHAR(255) DEFAULT NULL,
-      merchant_id VARCHAR(255) DEFAULT NULL,
-      api_key VARCHAR(255) DEFAULT NULL,
-      secret_key VARCHAR(255) DEFAULT NULL,
-      webhook_url VARCHAR(255) DEFAULT NULL,
-      callback_url VARCHAR(255) DEFAULT NULL,
-      mode VARCHAR(50) DEFAULT 'Live',
-      auto_payment_verification TINYINT(1) DEFAULT 1,
-      refund_support TINYINT(1) DEFAULT 1,
-      partial_payment TINYINT(1) DEFAULT 0,
-      wallet_payment TINYINT(1) DEFAULT 1,
-      cod TINYINT(1) DEFAULT 1,
-      emi_support TINYINT(1) DEFAULT 0,
-      created_by VARCHAR(36) DEFAULT NULL,
-      updated_by VARCHAR(36) DEFAULT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    )
-  `);
-
-  try {
-    await connection.query(`
-      ALTER TABLE payment_integration
-      ADD COLUMN IF NOT EXISTS online_payment_support TINYINT(1) DEFAULT 1,
-      ADD COLUMN IF NOT EXISTS payment_type VARCHAR(50) DEFAULT 'upi',
-      ADD COLUMN IF NOT EXISTS razorpay_enabled TINYINT(1) DEFAULT 1,
-      ADD COLUMN IF NOT EXISTS razorpay_key VARCHAR(255) DEFAULT NULL
-    `);
-  } catch (err) {
-    console.warn('payment_integration migration skipped:', err?.message || err);
-  }
-};
+const getDbConfig = () => ({
+  host: process.env.DB_HOST || "127.0.0.1",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  port: Number(process.env.DB_PORT || 3306),
+  database: dbName,
+});
 
 const createUsersTable = async () => {
-  const adminConnection = await mysql.createConnection({
-    host: process.env.DB_HOST || "127.0.0.1",
-    user: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "",
-    port: Number(process.env.DB_PORT || 3306),
-  });
+  if (!dbName) {
+    throw new Error("DB_NAME is required. Please set DB_NAME in your environment.");
+  }
 
-  try {
-    await adminConnection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-    // Increase max_allowed_packet globally to support large base64 images
+  const { host, user, password, port } = getDbConfig();
+
+  if (shouldCreateDatabase) {
+    const adminConnection = await mysql.createConnection({
+      host,
+      user,
+      password,
+      port,
+    });
+
     try {
-      await adminConnection.query(`SET GLOBAL max_allowed_packet = 268435456`); // 256MB
-    } catch (e) {
-      console.warn('⚠️  Could not set global max_allowed_packet (may need SUPER privilege). Consider adding max_allowed_packet=256M to my.ini');
+      await adminConnection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+      try {
+        await adminConnection.query(`SET GLOBAL max_allowed_packet = 268435456`);
+      } catch (e) {
+        console.warn("⚠️ Could not set GLOBAL max_allowed_packet, continue without it:", e?.message || e);
+      }
+    } finally {
+      await adminConnection.end();
     }
-  } finally {
-    await adminConnection.end();
+  } else {
+    console.log("Skipping database creation. Ensure the database already exists in cPanel.");
   }
 
   const pool = mysql.createPool({
-    host: process.env.DB_HOST || "127.0.0.1",
-    user: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "",
+    host,
+    user,
+    password,
     database: dbName,
-    port: Number(process.env.DB_PORT || 3306),
+    port,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
@@ -253,79 +108,97 @@ const createUsersTable = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
     `);
-
-    try {
-      await connection.query(`
-        ALTER TABLE employees
-        DROP COLUMN IF EXISTS employee_id,
-        DROP COLUMN IF EXISTS emergency_name,
-        DROP COLUMN IF EXISTS emergency_phone
-      `);
-    } catch (migrationErr) {
-      console.warn('⚠️  employees migration skipped:', migrationErr?.message || migrationErr);
-    }
-
-    // Ensure the employees.user_id foreign key references users.user_id (UUID)
-    try {
-      // Attempt to drop any existing foreign key named fk_employee_user (may reference users.id)
-      try {
-        await connection.query(`ALTER TABLE employees DROP FOREIGN KEY fk_employee_user`);
-      } catch (fkDropErr) {
-        // ignore if it doesn't exist or cannot be dropped
-      }
-
-      // Convert any existing numeric employee.user_id values (old behavior) to the users.user_id UUID
-      try {
-        await connection.query(`UPDATE employees e JOIN users u ON e.user_id = u.id SET e.user_id = u.user_id`);
-      } catch (convertErr) {
-        // ignore conversion errors; proceed to attempt to add the FK
-      }
-
-      // Add the correct foreign key referencing the users.user_id UUID column
-      await connection.query(`ALTER TABLE employees ADD CONSTRAINT fk_employee_user FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE`);
-    } catch (fkErr) {
-      console.warn('⚠️  employees foreign-key migration skipped:', fkErr?.message || fkErr);
-    }
-
-    await connection.query(`
-      ALTER TABLE users
-      ADD COLUMN IF NOT EXISTS name VARCHAR(255) DEFAULT NULL,
-      ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) DEFAULT NULL,
-      ADD COLUMN IF NOT EXISTS budget_mode TINYINT(1) DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS budget_amount DECIMAL(10,2) DEFAULT 0.00
-    `);
-
-    await createDeliveryChargesTable(connection);
-    await createReceiptSettingsTable(connection);
-    await createPaymentIntegrationTable(connection);
-    await createStoreSettingsTable(connection);
-    // Fix older rows where created_by was stored as a token/string instead of a UUID
-    try {
-      await connection.query(`
-        UPDATE delivery_charges
-        SET created_by = updated_by
-        WHERE (
-          created_by IS NULL
-          OR created_by NOT RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
-        )
-        AND (
-          updated_by RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
-        )
-      `);
-    } catch (e) {
-      // If this fails for some reason, don't block initialization.
-      console.warn('delivery_charges migration skipped:', e?.message || e);
-    }
   } finally {
     connection.release();
-    await pool.end();
   }
+};
+
+const createCategoryTable = async () => {
+  const pool = getPool();
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS categories (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        category_id CHAR(36) NOT NULL UNIQUE,
+        catId VARCHAR(100) NOT NULL UNIQUE,
+        name VARCHAR(255) NOT NULL,
+        description TEXT DEFAULT NULL,
+        subcategory JSON DEFAULT NULL,
+        images JSON DEFAULT NULL,
+        show_in_navbar TINYINT(1) DEFAULT 0,
+        created_by VARCHAR(36) DEFAULT NULL,
+        updated_by VARCHAR(36) DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB;
+    `);
+  } finally {
+    connection.release();
+  }
+};
+
+const createProductTable = async () => {
+  const pool = getPool();
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS products (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        product_id CHAR(36) NOT NULL UNIQUE,
+        name VARCHAR(255) NOT NULL,
+        product_code VARCHAR(100) DEFAULT NULL,
+        barcode VARCHAR(100) DEFAULT NULL,
+        barcode_image TEXT DEFAULT NULL,
+        category VARCHAR(255) DEFAULT NULL,
+        category_id INT DEFAULT NULL,
+        subcategory JSON DEFAULT NULL,
+        brand VARCHAR(255) DEFAULT NULL,
+        description TEXT DEFAULT NULL,
+        mrp DECIMAL(12,2) DEFAULT 0,
+        selling_price DECIMAL(12,2) DEFAULT 0,
+        offer DECIMAL(12,2) DEFAULT 0,
+        offer_price DECIMAL(12,2) DEFAULT 0,
+        stock_quantity INT DEFAULT 0,
+        pricing_options JSON DEFAULT NULL,
+        total_stock INT DEFAULT 0,
+        expiry_date DATE DEFAULT NULL,
+        manufacturing_date DATE DEFAULT NULL,
+        country_of_origin VARCHAR(100) DEFAULT NULL,
+        supplier VARCHAR(255) DEFAULT NULL,
+        product_images JSON DEFAULT NULL,
+        thumbnail_image TEXT DEFAULT NULL,
+        status VARCHAR(50) DEFAULT 'Active',
+        featured_product TINYINT(1) DEFAULT 0,
+        best_seller TINYINT(1) DEFAULT 0,
+        todays_deal TINYINT(1) DEFAULT 0,
+        delivery_time VARCHAR(255) DEFAULT NULL,
+        return_available TINYINT(1) DEFAULT 0,
+        rating DECIMAL(3,2) DEFAULT 5,
+        review_count INT DEFAULT 0,
+        combo_items JSON DEFAULT NULL,
+        type VARCHAR(50) DEFAULT NULL,
+        created_by VARCHAR(36) DEFAULT NULL,
+        updated_by VARCHAR(36) DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB;
+    `);
+  } finally {
+    connection.release();
+  }
+};
+
+const initDatabase = async () => {
+  await createUsersTable();
+  await initPurchaseTables();
 };
 
 module.exports = {
   createUsersTable,
-  createDeliveryChargesTable,
-  createReceiptSettingsTable,
-  createPaymentIntegrationTable,
-  createStoreSettingsTable,
+  createCategoryTable,
+  createProductTable,
+  initDatabase,
 };
