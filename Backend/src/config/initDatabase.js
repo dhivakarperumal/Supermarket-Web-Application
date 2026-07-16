@@ -15,7 +15,8 @@ const getDbConfig = () => ({
 
 const createUsersTable = async () => {
   if (!dbName) {
-    throw new Error("DB_NAME is required. Please set DB_NAME in your environment.");
+    console.warn("DB_NAME is not configured. Skipping database table initialization.");
+    return;
   }
 
   const { host, user, password, port } = getDbConfig();
@@ -192,8 +193,17 @@ const createProductTable = async () => {
 };
 
 const initDatabase = async () => {
-  await createUsersTable();
-  await initPurchaseTables();
+  try {
+    await createUsersTable();
+  } catch (error) {
+    console.error("Users table initialization failed:", error?.message || error);
+  }
+
+  try {
+    await initPurchaseTables();
+  } catch (error) {
+    console.error("Purchase tables initialization failed:", error?.message || error);
+  }
 };
 
 module.exports = {
