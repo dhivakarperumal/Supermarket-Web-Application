@@ -21,7 +21,8 @@ import logo from "/logo.png";
 import PageContainer from "./PageContainer";
 import api from "../../api";
 import { toast } from "react-hot-toast";
-import { FiHome, FiShoppingBag, FiGrid, FiFileText, FiPhone, FiChevronDown, FiChevronRight, FiTag } from "react-icons/fi";
+import { FiHome, FiShoppingBag, FiGrid, FiFileText, FiPhone, FiChevronRight, FiTag } from "react-icons/fi";
+import { normalizeApiData } from "../../utils/normalizeApiData";
 
 const Navbar = () => {
 
@@ -107,9 +108,10 @@ const Navbar = () => {
     const fetchCategories = async () => {
       try {
         const res = await api.get("/categories");
-        setAllCategories(res.data);
+        const categoriesData = normalizeApiData(res.data);
+        setAllCategories(categoriesData);
         // Filter: only show categories where show_in_navbar is true (or not set, default visible)
-        const visible = res.data.filter(c => c.show_in_navbar !== false);
+        const visible = categoriesData.filter(c => c.show_in_navbar !== false);
         setCategories(visible);
       } catch (error) {
         console.error(error);
