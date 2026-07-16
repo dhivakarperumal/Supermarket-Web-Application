@@ -45,14 +45,6 @@ export default function About() {
 
             <Heading title="Where Freshness Meets Convenience" />
 
-            {/* <p className="   text-gray-600 leading-8 text-lg">
-              We provide farm-fresh fruits, vegetables, groceries,
-              dairy products, beverages, household essentials, and
-              daily needs at affordable prices. Our mission is to make
-              grocery shopping easy, convenient, and enjoyable for every
-              family.
-            </p> */}
-
             {/* Features */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
 
