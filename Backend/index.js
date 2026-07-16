@@ -30,7 +30,7 @@ const salaryRouter = require("./src/routers/salaryRouter");
 const purchaseRouter = require("./src/routers/purchaseRoutes");
 const settingsRouter = require("./src/routers/settingsRouter");
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const app = express();
 

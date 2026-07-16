@@ -19,8 +19,7 @@ const createPool = () => {
       maxIdle: 10,
       idleTimeout: 60000,
       bigNumberStrings: true,
-      supportBigNumbers: true,
-      connectionAttributes: false
+      supportBigNumbers: true
     });
     console.log("📋 Database pool created.");
   }
