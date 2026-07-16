@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext, useCallback } fr
 import { toast } from "react-hot-toast";
 import api from "../api";
 import { AuthContext } from "./AuthContext";
+import { normalizeApiData } from "../utils/normalizeApiData";
 
 export const StoreContext = createContext();
 
@@ -55,7 +56,7 @@ export const StoreProvider = ({ children }) => {
         try {
             setLoadingCart(true);
             const res = await api.get(`/cart/${user.user_id}`);
-            setCart(res.data);
+            setCart(normalizeApiData(res.data));
         } catch (err) {
             console.error("Fetch cart error:", err);
         } finally {
@@ -69,7 +70,7 @@ export const StoreProvider = ({ children }) => {
         try {
             setLoadingWishlist(true);
             const res = await api.get(`/wishlist/${user.user_id}`);
-            setWishlist(res.data);
+            setWishlist(normalizeApiData(res.data));
         } catch (err) {
             console.error("Fetch wishlist error:", err);
         } finally {

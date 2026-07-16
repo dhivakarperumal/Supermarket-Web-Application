@@ -1,0 +1,1 @@
+import"./rolldown-runtime-QTnfLwEv.js";import{n as e,t}from"./jsx-runtime-CIxEorsV.js";import{An as n}from"./index-0ZHLGXIk.js";import r from"./Shop-Ds0hKT9U.js";e();var i=t(),a=()=>{let{categoryName:e}=n();return(0,i.jsx)(r,{defaultCategory:e})};export{a as default};

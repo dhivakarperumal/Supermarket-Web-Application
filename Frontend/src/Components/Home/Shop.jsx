@@ -5,6 +5,7 @@ import PageHeader from "../CommenComponents/PageHeader";
 import { FiFilter, FiX, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { BsGrid3X3Gap, BsGridFill, BsGrid1X2, BsGrid3X2 } from "react-icons/bs";
 import { StoreContext } from "../../PrivateRouter/StoreContext";
+import { normalizeApiData } from "../../utils/normalizeApiData";
 
 const Shop = ({ defaultCategory = "" }) => {
   const { productsCache, setProductsCache, lastFetchTime, setLastFetchTime } =
@@ -41,8 +42,9 @@ const Shop = ({ defaultCategory = "" }) => {
   const fetchProducts = async () => {
     try {
       const res = await api.get("/products");
-      setProducts(res.data);
-      setFilteredProducts(res.data);
+      const data = normalizeApiData(res.data);
+      setProducts(data);
+      setFilteredProducts(data);
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {

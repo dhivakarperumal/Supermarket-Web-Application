@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const fileUpload = require("express-fileupload");
+const fs = require("fs");
 const path = require("path");
 const { initDatabase } = require("./src/config/db");
 const authRouter = require("./src/routers/authRouter");
@@ -41,6 +42,23 @@ app.use(fileUpload({
 // Serve static files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+const frontendPublicPath = path.join(__dirname, "public");
+const frontendIndexPath = path.join(frontendPublicPath, "index.html");
+const shouldServeFrontend = process.env.NODE_ENV === "production" || process.env.SERVE_FRONTEND === "true";
+
+if (shouldServeFrontend && fs.existsSync(frontendPublicPath)) {
+  app.use(express.static(frontendPublicPath));
+  app.get(["/", "/index.html"], (req, res) => {
+    res.sendFile(frontendIndexPath);
+  });
+  app.get(/^(?!\/api\/).*/, (req, res, next) => {
+    if (req.path.startsWith("/uploads/")) return next();
+    res.sendFile(frontendIndexPath, (err) => {
+      if (err) next(err);
+    });
+  });
+}
+
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
     return res.status(400).json({
@@ -52,11 +70,10 @@ app.use((err, req, res, next) => {
 });
 
 // Test Route
-app.get("/", (req, res) => {
+app.get("/health", (req, res) => {
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.send("<h1>Backend Server is Running 🚀</h1>");
 });
-
 
 app.use("/api/auth", authRouter);
 app.use("/api/categories", categoriesRouter);
