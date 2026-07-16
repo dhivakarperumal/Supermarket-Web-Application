@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import PageContainer from "./PageContainer";
 import { useState, useEffect } from "react";
 import api from "../../api";
+import { normalizeApiData } from "../../utils/normalizeApiData";
 import {
   FaFacebookF,
   FaInstagram,
@@ -45,7 +46,7 @@ const Footer = () => {
     const fetchCategories = async () => {
       try {
         const res = await api.get("/categories");
-        setCategories(res.data);
+        setCategories(normalizeApiData(res.data));
       } catch (err) {
         console.error(err);
       }

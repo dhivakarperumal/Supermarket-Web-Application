@@ -7,6 +7,7 @@ import { Autoplay } from "swiper/modules";
 import "swiper/css";
 
 import ProductCard from "./ProductsCard";
+import { normalizeApiData } from "../../utils/normalizeApiData";
 
 const RelatedProducts = ({ category, currentProductId }) => {
   const [products, setProducts] = useState([]);
@@ -14,8 +15,9 @@ const RelatedProducts = ({ category, currentProductId }) => {
   const fetchRelatedProducts = async () => {
     try {
       const res = await api.get("/products");
+      const productsData = normalizeApiData(res.data);
 
-      const filtered = res.data.filter(
+      const filtered = productsData.filter(
         (p) =>
           p.category?.toLowerCase() === category?.toLowerCase() &&
           p.id !== currentProductId,

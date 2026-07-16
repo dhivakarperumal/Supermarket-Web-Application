@@ -1,4 +1,4 @@
-const { getPool, getLargePacketConnection } = require("../config/db");
+ const { getPool, getLargePacketConnection } = require("../config/db");
 const { createProductTable } = require("../config/initProductDatabase");
 const crypto = require("crypto");
 

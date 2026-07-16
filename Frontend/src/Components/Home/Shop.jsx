@@ -5,6 +5,7 @@ import PageHeader from "../CommenComponents/PageHeader";
 import { FiFilter, FiX, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { BsGrid3X3Gap, BsGridFill, BsGrid1X2, BsGrid3X2 } from "react-icons/bs";
 import { StoreContext } from "../../PrivateRouter/StoreContext";
+import { normalizeApiData } from "../../utils/normalizeApiData";
 
 const Shop = ({ defaultCategory = "" }) => {
   const { productsCache, setProductsCache, lastFetchTime, setLastFetchTime } =
@@ -41,8 +42,9 @@ const Shop = ({ defaultCategory = "" }) => {
   const fetchProducts = async () => {
     try {
       const res = await api.get("/products");
-      setProducts(res.data);
-      setFilteredProducts(res.data);
+      const data = normalizeApiData(res.data);
+      setProducts(data);
+      setFilteredProducts(data);
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -158,7 +160,7 @@ const Shop = ({ defaultCategory = "" }) => {
 
   /* -------- UNIQUE FILTER DATA -------- */
 
-  const categories = [...new Set(products.map((p) => p.category))];
+  const categories = [...new Set(products.map((p) => p.category))].filter(Boolean);
 
   const subCategories = [
     ...new Set(
@@ -166,7 +168,7 @@ const Shop = ({ defaultCategory = "" }) => {
         .filter((p) => p.category === selectedCategory)
         .map((p) => p.subcategory),
     ),
-  ];
+  ].filter(Boolean);
 
   const colors = selectedCategory
     ? [
@@ -175,7 +177,7 @@ const Shop = ({ defaultCategory = "" }) => {
           .filter((p) => p.category === selectedCategory)
           .flatMap((p) => p.variants?.map((v) => v.colorName)),
       ),
-    ]
+    ].filter(Boolean)
     : [];
 
   const sizes = selectedCategory
@@ -185,8 +187,9 @@ const Shop = ({ defaultCategory = "" }) => {
           .filter((p) => p.category === selectedCategory)
           .flatMap((p) => p.variants?.flatMap((v) => v.selectedSizes || [])),
       ),
-    ]
+    ].filter(Boolean)
     : [];
+
 
   const clearFilters = () => {
     setSelectedCategory("");
@@ -483,8 +486,8 @@ const Shop = ({ defaultCategory = "" }) => {
               }`}
           >
             {currentProducts.length > 0 ? (
-              currentProducts.map((product) => (
-                <ProductCard key={product._id} product={product} />
+              currentProducts.map((product, index) => (
+                <ProductCard key={product._id ?? product.id ?? index} product={product} />
               ))
             ) : (
               <p>No products found</p>

@@ -22,6 +22,7 @@ import {
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "react-hot-toast";
+import { normalizeApiData } from "../../utils/normalizeApiData";
 
 
 const Users = ({ initialTab = "All" }) => {
@@ -72,8 +73,9 @@ const Users = ({ initialTab = "All" }) => {
         const fetchUsersInitial = async () => {
             try {
                 const response = await api.get("/auth/users");
+                const usersData = normalizeApiData(response.data);
                 // Transform data if needed for UI
-                const fetchedUsers = response.data.map(u => ({
+                const fetchedUsers = usersData.map(u => ({
                     id: u.id || u.user_id,
                     user_id: u.user_id || null,
                     username: u.username || u.name || u.user_id,
@@ -110,7 +112,8 @@ const Users = ({ initialTab = "All" }) => {
         if (showLoader) setLoading(true);
         try {
             const response = await api.get("/auth/users");
-            const fetchedUsers = response.data.map(u => ({
+            const usersData = normalizeApiData(response.data);
+            const fetchedUsers = usersData.map(u => ({
                 id: u.id || u.user_id,
                 user_id: u.user_id || null,
                 username: u.username || u.name || u.user_id,
