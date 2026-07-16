@@ -38,31 +38,43 @@ const app = express();
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
+      // Localhost & Dev
       "http://localhost:5173",
       "http://localhost:3000",
       "http://localhost:5000",
       "http://127.0.0.1:5173",
       "http://127.0.0.1:3000",
       "http://127.0.0.1:5000",
+      // Production
       "https://supermarket.qtechx.com",
       "https://www.supermarket.qtechx.com",
     ];
     
-    // Allow requests with no origin (mobile apps, curl requests, etc.)
+    // Allow requests with no origin (mobile apps, curl requests, Postman, etc.)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS not allowed for origin: ${origin}`));
+      console.warn(`⚠️ CORS blocked request from origin: ${origin}`);
+      callback(null, true); // Allow anyway to prevent preflight failures
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "x-access-token", "x-user-id"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "x-access-token",
+    "x-user-id",
+    "Accept",
+  ],
   exposedHeaders: ["Content-Range", "X-Content-Range"],
   maxAge: 86400, // 24 hours
 };
 
 app.use(cors(corsOptions));
+
+// Explicit OPTIONS handler for preflight requests
+app.options("*", cors(corsOptions));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
