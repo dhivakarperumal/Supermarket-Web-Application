@@ -189,7 +189,7 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")).render(
-  <GoogleOAuthProvider clientId="198773825099-qjq27fgfarmhjgck6r049f9og64iqsug.apps.googleusercontent.com">
+  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
     <AuthProvider>
       <StoreProvider>
         <Toaster position="top-left" reverseOrder={false} />

@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const mysql = require("mysql2/promise");
+const jwt = require("jsonwebtoken");
 
 const hashPassword = (password) => {
   return crypto.createHash("sha256").update(password).digest("hex");
@@ -39,7 +40,11 @@ const loginUser = async (req, res) => {
     }
 
     const user = rows[0];
-    const token = crypto.randomBytes(24).toString("hex");
+    const token = jwt.sign(
+      { user_id: user.user_id, role: user.role, id: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || "9d" }
+    );
 
     return res.status(200).json({
       success: true,
@@ -128,7 +133,11 @@ const googleLogin = async (req, res) => {
 
     await connection.end();
 
-    const token = crypto.randomBytes(24).toString("hex");
+    const token = jwt.sign(
+      { user_id: user.user_id, role: user.role, id: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || "9d" }
+    );
 
     return res.status(200).json({
       success: true,
