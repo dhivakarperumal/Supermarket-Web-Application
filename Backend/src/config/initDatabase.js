@@ -193,16 +193,20 @@ const createProductTable = async () => {
 };
 
 const initDatabase = async () => {
-  try {
-    await createUsersTable();
-  } catch (error) {
-    console.error("Users table initialization failed:", error?.message || error);
-  }
+  const tasks = [
+    ["Users + Employees", createUsersTable],
+    ["Categories", createCategoryTable],
+    ["Products", createProductTable],
+    ["Purchases", initPurchaseTables],
+  ];
 
-  try {
-    await initPurchaseTables();
-  } catch (error) {
-    console.error("Purchase tables initialization failed:", error?.message || error);
+  for (const [name, fn] of tasks) {
+    try {
+      await fn();
+      console.log(`✅ ${name} table(s) ready`);
+    } catch (error) {
+      console.error(`❌ ${name} table initialization failed:`, error?.message || error);
+    }
   }
 };
 

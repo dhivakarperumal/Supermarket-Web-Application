@@ -1,9 +1,21 @@
+// Load environment variables FIRST before any other requires that might read process.env
+const dotenv = require("dotenv");
+const result = dotenv.config();
+if (result.error) {
+  console.warn("Warning: .env file not found or could not be loaded.");
+}
+
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const fileUpload = require("express-fileupload");
 const path = require("path");
 const fs = require("fs");
+
+// Optional security/performance packages — install with: npm install helmet express-rate-limit compression
+let helmet, rateLimit, compression;
+try { helmet = require("helmet"); } catch (e) { console.warn("helmet not installed — run: npm install helmet"); }
+try { rateLimit = require("express-rate-limit"); } catch (e) { console.warn("express-rate-limit not installed — run: npm install express-rate-limit"); }
+try { compression = require("compression"); } catch (e) { console.warn("compression not installed — run: npm install compression"); }
 
 const { initDatabase } = require("./src/config/initDatabase");
 
@@ -30,11 +42,7 @@ const salaryRouter = require("./src/routers/salaryRouter");
 const purchaseRouter = require("./src/routers/purchaseRoutes");
 const settingsRouter = require("./src/routers/settingsRouter");
 
-const result = dotenv.config();
-if (result.error) {
-  console.warn("Warning: .env file not found or could not be loaded.");
-}
-
+// Warn about missing required environment variables
 const missingEnvs = [];
 ["DB_HOST", "DB_USER", "DB_NAME", "JWT_SECRET"].forEach((key) => {
   if (!process.env[key]) missingEnvs.push(key);
@@ -68,7 +76,7 @@ const corsOptions = {
       callback(null, true);
     } else {
       console.warn(`⚠️ CORS blocked request from origin: ${origin}`);
-      callback(null, true); // Allow anyway to prevent preflight failures
+      callback(new Error(`CORS: Origin ${origin} not allowed`), false);
     }
   },
   credentials: true,
@@ -85,6 +93,36 @@ const corsOptions = {
 };
 
 app.disable("x-powered-by");
+
+// Security headers (helmet)
+if (helmet) {
+  app.use(helmet({ crossOriginEmbedderPolicy: false, contentSecurityPolicy: false }));
+}
+
+// Response compression
+if (compression) {
+  app.use(compression());
+}
+
+// Rate limiting
+if (rateLimit) {
+  const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 200,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: "Too many requests, please try again later." }
+  });
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 15,
+    message: { success: false, message: "Too many login attempts, please try again later." }
+  });
+  app.use("/api/", generalLimiter);
+  app.use("/api/auth/login", authLimiter);
+  app.use("/api/auth/register", authLimiter);
+}
+
 app.use(cors(corsOptions));
 
 // Explicit OPTIONS handler for preflight requests
@@ -121,29 +159,12 @@ app.get("/api/health", (req, res) => {
   res.json({ success: true, uptime: process.uptime(), env: process.env.NODE_ENV || "development" });
 });
 
-app.get("/", (req, res) => {
-  const html = `<!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Supermarket Backend</title>
-    <style>
-      body { font-family: Arial, sans-serif; margin: 0; padding: 40px; background: #f7f7f7; color: #222; }
-      .card { max-width: 700px; margin: 0 auto; background: white; padding: 24px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
-      code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
-    </style>
-  </head>
-  <body>
-    <div class="card">
-      <h1>Supermarket backend is running</h1>
-      <p>The API is available at <code>/api/health</code>.</p>
-      <p>Deployment checks should now receive a successful HTML response.</p>
-    </div>
-  </body>
-  </html>`;
-  res.type("html").status(200).send(html);
-});
+// Root info endpoint — only when no frontend is bundled
+if (!frontendPath) {
+  app.get("/", (req, res) => {
+    res.json({ success: true, message: "Supermarket API running", health: "/api/health" });
+  });
+}
 
 app.use("/api/auth", authRouter);
 app.use("/api/categories", categoriesRouter);
