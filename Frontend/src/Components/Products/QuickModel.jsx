@@ -9,6 +9,8 @@ import {
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import ReactDOM from "react-dom";
+import { useAuth } from "../../PrivateRouter/AuthContext";
+import { toast } from "react-hot-toast";
 
 const QuickViewModal = ({ product, onClose }) => {
 
@@ -80,6 +82,7 @@ const QuickViewModal = ({ product, onClose }) => {
 
   const { addToCart, toggleWishlist, wishlist } = useContext(StoreContext);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [selectedVariant, setSelectedVariant] = useState(
     product?.variants?.[0],
@@ -179,6 +182,19 @@ const QuickViewModal = ({ product, onClose }) => {
   const maxQuantity = stock > 0 ? Math.floor(stock / getVariantUnitSize(selectedVariant)) : 0;
 
   const handleBuyNow = () => {
+    if (!user) {
+      toast.error("Please login to buy products.");
+      return;
+    }
+
+    const isCombo = String(product?.type) === "1";
+    const needsVariant = product?.variants?.length > 0 && !isCombo;
+
+    if (needsVariant && !selectedVariant) {
+      toast.error("Please select a variant");
+      return;
+    }
+
     if (isOutOfStock) {
       return;
     }
@@ -666,6 +682,12 @@ const QuickViewModal = ({ product, onClose }) => {
                   {/* Add To Cart */}
                   <button
                     onClick={() => {
+                      const isCombo = String(product?.type) === "1";
+                      const needsVariant = product?.variants?.length > 0 && !isCombo;
+                      if (needsVariant && !selectedVariant) {
+                        toast.error("Please select a variant");
+                        return;
+                      }
                       addToCart(
                         product,
                         selectedVariant,

@@ -11,6 +11,7 @@ const initAddressTable = async () => {
                 customer_name VARCHAR(255) NOT NULL,
                 customer_email VARCHAR(255),
                 customer_phone VARCHAR(50),
+                address_type VARCHAR(50) DEFAULT 'Home',
                 street_address TEXT NOT NULL,
                 city VARCHAR(100),
                 district VARCHAR(100),
@@ -22,6 +23,10 @@ const initAddressTable = async () => {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )
         `);
+        // Add address_type column if it doesn't exist (for existing tables)
+        try {
+            await connection.query(`ALTER TABLE user_addresses ADD COLUMN IF NOT EXISTS address_type VARCHAR(50) DEFAULT 'Home'`);
+        } catch (e) { /* column may already exist */ }
     } catch (e) {
         console.error("Error creating user_addresses table:", e);
     } finally {
@@ -53,7 +58,7 @@ const addUserAddress = async (req, res) => {
         const pool = getPool();
         const {
             user_id, customer_name, customer_email, customer_phone,
-            street_address, city, district, state, zip_code, country, is_default
+            address_type, street_address, city, district, state, zip_code, country, is_default
         } = req.body;
 
         if (!user_id || !customer_name || !street_address) {
@@ -66,11 +71,11 @@ const addUserAddress = async (req, res) => {
         }
 
         const [result] = await pool.query(`
-            INSERT INTO user_addresses (user_id, customer_name, customer_email, customer_phone, street_address, city, district, state, zip_code, country, is_default)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO user_addresses (user_id, customer_name, customer_email, customer_phone, address_type, street_address, city, district, state, zip_code, country, is_default)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             user_id, customer_name, customer_email || null, customer_phone || null,
-            street_address, city || null, district || null, state || null,
+            address_type || 'Home', street_address, city || null, district || null, state || null,
             zip_code || null, country || 'India', is_default ? 1 : 0
         ]);
 
@@ -89,7 +94,7 @@ const updateUserAddress = async (req, res) => {
         const { id } = req.params;
         const {
             user_id, customer_name, customer_email, customer_phone,
-            street_address, city, district, state, zip_code, country, is_default
+            address_type, street_address, city, district, state, zip_code, country, is_default
         } = req.body;
 
         // If setting as default, unset all other defaults for this user first
@@ -100,12 +105,12 @@ const updateUserAddress = async (req, res) => {
         await pool.query(`
             UPDATE user_addresses SET
                 customer_name = ?, customer_email = ?, customer_phone = ?,
-                street_address = ?, city = ?, district = ?, state = ?,
+                address_type = ?, street_address = ?, city = ?, district = ?, state = ?,
                 zip_code = ?, country = ?, is_default = ?
             WHERE id = ?
         `, [
             customer_name, customer_email || null, customer_phone || null,
-            street_address, city || null, district || null, state || null,
+            address_type || 'Home', street_address, city || null, district || null, state || null,
             zip_code || null, country || 'India', is_default ? 1 : 0, id
         ]);
 

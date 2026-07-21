@@ -18,6 +18,7 @@ import RelatedProducts from "./RelatedProducts";
 import PageHeader from "../CommenComponents/PageHeader";
 import { useAuth } from "../../PrivateRouter/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 const ProductDetails = () => {
   const { addToCart, toggleWishlist, wishlist } = useContext(StoreContext);
@@ -237,9 +238,16 @@ const ProductDetails = () => {
   const isOutOfStock = maxQuantity < 1;
 
   const handleBuyNow = () => {
+    if (!user) {
+      toast.error("Please login to buy products.");
+      return;
+    }
 
-    if (!selectedVariant) {
-      alert("Please select a variant");
+    const isCombo = String(product?.type) === "1";
+    const needsVariant = product?.variants?.length > 0 && !isCombo;
+
+    if (needsVariant && !selectedVariant) {
+      toast.error("Please select a variant");
       return;
     }
 
@@ -655,7 +663,15 @@ const ProductDetails = () => {
             ) : (
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <button
-                  onClick={() => addToCart(product, selectedVariant, selectedSize, quantity)}
+                  onClick={() => {
+                    const isCombo = String(product?.type) === "1";
+                    const needsVariant = product?.variants?.length > 0 && !isCombo;
+                    if (needsVariant && !selectedVariant) {
+                      toast.error("Please select a variant");
+                      return;
+                    }
+                    addToCart(product, selectedVariant, selectedSize, quantity);
+                  }}
                   className="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-white shadow-lg shadow-green-100 transition hover:scale-[1.01]"
                 >
                   <FiShoppingCart size={18} />
