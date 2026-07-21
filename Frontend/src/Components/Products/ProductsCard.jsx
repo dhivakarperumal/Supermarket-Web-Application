@@ -114,52 +114,7 @@ const ProductCard = ({ product }) => {
         onClick={handleClick}
         className="relative bg-white rounded-xl border border-gray-200 p-3 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col h-full"
       >
-        {/* Icons */}
-        {/* <div
-          className="absolute top-2 right-2 flex flex-col gap-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div
-            onClick={() => toggleWishlist(product)}
-            className={`bg-white border border-gray-200 rounded-full p-1.5 shadow-sm transition duration-300 ${isInWishlist
-                ? "text-red-500"
-                : "text-gray-500 hover:text-red-500"
-              }`}
-          >
-            <FiHeart
-              className={`text-sm ${isInWishlist ? "fill-current" : ""}`}
-            />
-          </div>
-
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              setQuickView(true);
-            }}
-            className="bg-white border border-gray-200 rounded-full p-1.5 shadow-sm text-gray-500 hover:text-primary transition duration-300"
-            title="Quick View"
-          >
-            <FiPlus className="text-sm" />
-          </div>
-
-          <div
-            onClick={handleShare}
-            className="bg-white border border-gray-200 rounded-full p-1.5 shadow-sm text-gray-500 hover:text-primary transition duration-300"
-          >
-            <FiShare2 className="text-sm" />
-          </div>
-
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowQR(true);
-            }}
-            className="bg-white border border-gray-200 rounded-full p-1.5 shadow-sm text-gray-500 hover:text-primary transition duration-300"
-          >
-            <BsQrCode className="text-sm" />
-          </div>
-        </div> */}
-
+      
         {/* Image Area */}
         <div
           className="relative  h-48 w-full flex items-center justify-center mb-3"

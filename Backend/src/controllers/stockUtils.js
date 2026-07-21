@@ -7,7 +7,7 @@ const parseVariantValueAndUnit = (value, unit) => {
   if (!rawValue) {
     return { value: 0, unit: providedUnit };
   }
-
+  
   const match = rawValue.match(/^(-?\d+(?:\.\d+)?)\s*([a-zA-Z]+)$/);
   if (match) {
     return {
